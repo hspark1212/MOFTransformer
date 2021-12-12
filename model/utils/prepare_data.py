@@ -27,10 +27,6 @@ FF_PATH = os.path.realpath(os.path.join(__file__, '../../../libs/GRIDAY/FF'))
 def get_logger(filename):
     logger = logging.getLogger(filename)
     logger.setLevel(logging.INFO)
-    
-    # Check handler exists
-    if len(logger.handlers) > 0:
-        return logger # Logger already exists
 
     formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
@@ -231,15 +227,12 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
 
             st.make_supercell(scale_abc)
 
-            # save cssr (remove in future)
-            p = os.path.join(root, f"{cif_id}.cssr")
-            st.to(fmt="cssf", filename=p)
-
             # 3. calculate energy grid
             if calculate_energy_grid:
                 get_energy_grid(st, cif_id, root_dataset, split, eg_logger)
             else:
-                pass
+                p = os.path.join(root, f"{cif_id}.cssr")
+                st.to(fmt="cssf", filename=p)
             
             logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
 
