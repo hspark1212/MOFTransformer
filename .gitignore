@@ -7,3 +7,6 @@ __pycache__/
 .ipynb_checkpoints/
 
 result/
+
+# Griday
+libs/GRIDAY/
