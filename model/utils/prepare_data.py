@@ -86,7 +86,6 @@ def get_crystal_graph(st, radius=8, max_num_nbr=12):
         nbr_idx.extend(sorted_idx[:max_num_nbr])
         nbr_dist.extend(sorted_dist[:max_num_nbr])
 
-    assert len(nbr_idx) % max_num_nbr == 0
     # get same-topo atoms
     uni_idx, uni_count = get_unique_atoms(atoms)
 
@@ -116,7 +115,7 @@ def calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01):
     return scaling_matrix
 
 
-def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., min_length=30.):
+def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., min_length=30., max_num_nbr=12):
     """
     Args:
         root_cifs (str): root for cif files,
@@ -150,13 +149,22 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
 
             # 0. check primitive cell and atom number < max_num_atoms
             p = os.path.join(root, cif_id + ".cif")
-            st = Structure.from_file(p, primitive=True)
+            try:
+                st = Structure.from_file(p, primitive=True)
+            except Exception as e:
+                print(e)
+                continue
 
             if len(st.atomic_numbers) > max_num_atoms:
                 logger.info(f"{cif_id} failed : more than max_num_atoms in primitive cell")
                 continue
+            # 1. get crystal graph
+            atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
+            if len(nbr_idx) % max_num_nbr > 0:
+                print("please make radius larger")
+                continue
 
-            # 1. make orthogonal cell and supercell with min_length and max_length
+            # 2. make orthogonal cell and supercell with min_length and max_length
             cell_matrix = st.lattice.matrix
             scaling_matrix = \
                 calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01)
@@ -177,9 +185,6 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
                 continue
 
             st.make_supercell(scale_abc)
-
-            # 2. get crystal graph
-            atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=12)
 
             # save cssr (remove in future)
             p = os.path.join(root, f"{cif_id}.cssr")
