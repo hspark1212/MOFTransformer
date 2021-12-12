@@ -2,7 +2,6 @@ __pycache__/
 
 *.log
 *.ipynb
-*.json
 
 .ipynb_checkpoints/
 
