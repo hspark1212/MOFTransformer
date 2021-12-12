@@ -128,6 +128,7 @@ def calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01):
     return scaling_matrix
 
 
+
 def get_energy_grid(structure, cif_id, root_dataset, split, eg_logger):
     global GRIDAY_PATH, FF_PATH
     
@@ -155,7 +156,7 @@ def get_energy_grid(structure, cif_id, root_dataset, split, eg_logger):
     _, _ = proc.communicate()
     
 
-def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., min_length=16., calculate_energy_grid=True):
+def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., min_length=30., max_num_nbr=12, calculate_energy_grid=True):
     """
     Args:
         root_cifs (str): root for cif files,
@@ -186,23 +187,29 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
         assert os.path.exists(json_path)
 
         with open(json_path, "r") as f:
-            dict_ = json.load(f)
+            d = json.load(f)
 
         batches = []
-        for i, (k, v) in enumerate(tqdm(dict_.items())):
+        for i, (cif_id, target) in enumerate(tqdm(d.items())):
 
             # 0. check primitive cell and atom number < max_num_atoms
-            cif_id = os.path.split(k)[-1][:-4]
-
-            path = os.path.join(root, k)
-
-            st = Structure.from_file(path, primitive=True)
+            p = os.path.join(root, cif_id + ".cif")
+            try:
+                st = Structure.from_file(p, primitive=True)
+            except Exception as e:
+                print(e)
+                continue
 
             if len(st.atomic_numbers) > max_num_atoms:
                 logger.info(f"{cif_id} failed : more than max_num_atoms in primitive cell")
                 continue
+            # 1. get crystal graph
+            atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
+            if len(nbr_idx) % max_num_nbr > 0:
+                print("please make radius larger")
+                continue
 
-            # 1. make orthogonal cell and supercell with min_length and max_length
+            # 2. make orthogonal cell and supercell with min_length and max_length
             cell_matrix = st.lattice.matrix
             scaling_matrix = \
                 calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01)
@@ -224,8 +231,9 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
 
             st.make_supercell(scale_abc)
 
-            # 2. get crystal graph
-            atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=12)
+            # save cssr (remove in future)
+            p = os.path.join(root, f"{cif_id}.cssr")
+            st.to(fmt="cssf", filename=p)
 
             # 3. calculate energy grid
             if calculate_energy_grid:
@@ -234,9 +242,6 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
                 pass
             
             logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
-
-            # get target
-            target = v
 
             batches.append([cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count, target])
             
@@ -257,4 +262,4 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
 
 
 if __name__ == "__main__":
-    prepare_data("/home/data/pretrained_mof/ver1/cif", "/home/data/pretrained_mof/ver1/dataset")
+    prepare_data("/home/data/pretrained_mof/ver2/cif", "/home/data/pretrained_mof/ver2/dataset")

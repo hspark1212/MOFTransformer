@@ -1,9 +1,12 @@
 __pycache__/
 
+*.out
 *.log
 *.ipynb
-*.json
 
 .ipynb_checkpoints/
 
 result/
+
+# Griday
+libs/GRIDAY/
