@@ -1,7 +1,11 @@
 import os
+import sys # DEBUGGING
 import math
 import logging
+import logging.handlers
 import json
+import subprocess
+import hashlib
 
 import numpy as np
 import pandas as pd
@@ -10,14 +14,23 @@ import pyarrow as pa
 from tqdm import tqdm
 from pymatgen.core.structure import Structure
 from pymatgen.io.ase import AseAtomsAdaptor
+from pymatgen.io.cssr import Cssr
 
 from ase.neighborlist import natural_cutoffs
 from ase import neighborlist
 
 
+GRIDAY_PATH = os.path.realpath(os.path.join(__file__, '../../../libs/GRIDAY/scripts/grid_gen'))
+FF_PATH = os.path.realpath(os.path.join(__file__, '../../../libs/GRIDAY/FF'))
+
+
 def get_logger(filename):
-    logger = logging.getLogger()
+    logger = logging.getLogger(filename)
     logger.setLevel(logging.INFO)
+    
+    # Check handler exists
+    if len(logger.handlers) > 0:
+        return logger # Logger already exists
 
     formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
@@ -115,7 +128,35 @@ def calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01):
     return scaling_matrix
 
 
-def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., min_length=30., max_num_nbr=12):
+
+def get_energy_grid(structure, cif_id, root_dataset, split, eg_logger):
+    global GRIDAY_PATH, FF_PATH
+    
+    eg_file = os.path.join(root_dataset, split)+f'/{cif_id}'
+    
+    if os.path.exists(f'{eg_file}.grid') and os.path.exists(f'{eg_file}.griddata'):
+        eg_logger.info(f"{cif_id} energy grid already exists"); return
+    
+    random_str = str(np.random.rand()).encode()
+    tmp_file = "./{}.cssr".format(hashlib.sha256(random_str).hexdigest())
+
+    Cssr(structure).write_file(tmp_file) # write_file
+    num_grid = [str(round(cell)) for cell in structure.lattice.abc]
+  
+    proc = subprocess.Popen([GRIDAY_PATH, *num_grid, f'{FF_PATH}/UFF_Type.def', f'{FF_PATH}/UFF_FF.def', tmp_file, eg_file],
+                            stdout = subprocess.PIPE, stderr = subprocess.PIPE) 
+    out, err = proc.communicate()
+    
+    if err:
+        eg_logger.info(f"{cif_id} energy grid failed")
+    else:
+        eg_logger.info(f"{cif_id} energy grid success")
+        
+    proc = subprocess.Popen(['rm', './*.cssr'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, _ = proc.communicate()
+    
+
+def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., min_length=30., max_num_nbr=12, calculate_energy_grid=True):
     """
     Args:
         root_cifs (str): root for cif files,
@@ -127,6 +168,7 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
         min_length (float) : minimum length of supercell
     """
     logger = get_logger(filename="prepare_data.log")
+    eg_logger = get_logger(filename="prepare_energy_grid.log")
 
     assert {"train", "val"}.issubset(os.listdir(root_cifs)), \
         print("There is no train or val directories in the root_cifs")
@@ -136,6 +178,9 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
         root = os.path.join(root_cifs, split)
         if not os.path.exists(root):
             continue
+        
+        # make dataset
+        os.makedirs(os.path.join(root_dataset, split), exist_ok=True)
 
         json_path = os.path.join(root, f"target_{split}.json")
 
@@ -191,10 +236,16 @@ def prepare_data(root_cifs, root_dataset, max_num_atoms=1000, max_length=60., mi
             st.to(fmt="cssf", filename=p)
 
             # 3. calculate energy grid
-
+            if calculate_energy_grid:
+                get_energy_grid(st, cif_id, root_dataset, split, eg_logger)
+            else:
+                pass
+            
             logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
 
             batches.append([cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count, target])
+            
+        return batches  # DEBUGGING
 
         # save data using pyarrow
         df = pd.DataFrame(
