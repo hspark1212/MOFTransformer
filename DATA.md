@@ -33,7 +33,7 @@ The example of `root_cifs` directory is as follows.
         ├── [cif_id].cif
         ├── ...
         └── target_test.json
-    
+
 
 Then, please use `model/utils/prepare_data.py` to generate dataset.
 ```angular2html
