@@ -147,10 +147,10 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
         eg_logger.info(f"{cif_id} energy grid success")
 
     for cssr_file in glob.glob(f"{root_dataset}/*.cssr"):
-        if os.path.exists(cssr_file):
+        try:
             os.remove(cssr_file)
-
-    return out, err
+        except Exception as e:
+            print(e)
 
 
 def prepare_data(root_cifs, root_dataset,
@@ -241,10 +241,7 @@ def prepare_data(root_cifs, root_dataset,
 
             # 3. calculate energy grid
             if calculate_energy_grid:
-                out, err = get_energy_grid(st, cif_id, root_dataset_split, eg_logger)
-                if err:
-                    logger.info(f"{cif_id} failed : energy grid failed")
-                    continue
+                get_energy_grid(st, cif_id, root_dataset_split, eg_logger)
 
             logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
 
