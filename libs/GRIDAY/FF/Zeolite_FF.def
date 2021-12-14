@@ -1,0 +1,5 @@
+4
+0  CH4   CH4   LennardJones  148.0   3.73    12.0
+1  CH4   O     LennardJones  115.0   3.47    12.0
+2  O     O     LennardJones    0.0   0.0      1.0
+3  Si    Si    LennardJones    0.0   0.0      1.0

@@ -127,21 +127,15 @@ def calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01):
 def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
     global GRIDAY_PATH, FF_PATH
 
-    eg_file = os.path.join(root_dataset) + f'/{cif_id}'
+    eg_file = os.path.join(root_dataset, cif_id)
 
     random_str = str(np.random.rand()).encode()
-    tmp_file = "{}/{}.cssr".format(root_dataset, hashlib.sha256(random_str).hexdigest())
+    tmp_file = os.path.join(root_dataset, f"{hashlib.sha256(random_str).hexdigest()}.cssr")
+    # tmp_file = "{}/{}.cssr".format(, hashlib.sha256(random_str).hexdigest())
 
     Cssr(structure).write_file(tmp_file)  # write_file
     num_grid = [str(round(cell)) for cell in structure.lattice.abc]
 
-    print(GRIDAY_PATH)
-    print(num_grid)
-    print(f'{FF_PATH}/UFF_Type.def')
-    print(f'{FF_PATH}/UFF_FF.def')
-    print(tmp_file)
-    print(eg_file)
-    assert False
     proc = subprocess.Popen(
         [GRIDAY_PATH, *num_grid, f'{FF_PATH}/UFF_Type.def', f'{FF_PATH}/UFF_FF.def', tmp_file, eg_file],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -155,6 +149,8 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
     for cssr_file in glob.glob(f"{root_dataset}/*.cssr"):
         if os.path.exists(cssr_file):
             os.remove(cssr_file)
+
+    return out, err
 
 
 def prepare_data(root_cifs, root_dataset,
@@ -175,108 +171,114 @@ def prepare_data(root_cifs, root_dataset,
         max_num_nbr (int) : maximum number of neighbors when calculating graph
         calculate_energy_grid (bool) : calculate energy grid using GRIDDAY or not
     """
+    # set logger
     logger = get_logger(filename="prepare_data.log")
     eg_logger = get_logger(filename="prepare_energy_grid.log")
+    assert {"train", "val"}.issubset(os.listdir(root_cifs)), \
+        print("There is no train or val directories in the root_cifs")
 
-    # make dataset
-    os.makedirs(os.path.join(root_dataset), exist_ok=True)
+    for split in ["test", "val", "train"]:
+        # check target json and make root_dataset
+        json_path = os.path.join(root_cifs, split, f"target_{split}.json")
 
-    json_path = os.path.join(root_cifs, f"target.json")
+        assert os.path.exists(json_path)
 
-    assert os.path.exists(json_path)
+        root_dataset_split = os.path.join(root_dataset, split)
+        os.makedirs(root_dataset_split, exist_ok=True)
 
-    with open(json_path, "r") as f:
-        d = json.load(f)
-    d = dict(reversed(d.items()))
+        with open(json_path, "r") as f:
+            d = json.load(f)
 
-    for i, (cif_id, target) in enumerate(tqdm(d.items())):
-        # check file exist
-        p_graphdata = os.path.join(root_dataset, f"{cif_id}.graphdata")
-        p_grid = os.path.join(root_dataset, f"{cif_id}.grid")
-        p_griddata = os.path.join(root_dataset, f"{cif_id}.griddata")
-        if os.path.exists(p_graphdata) and os.path.exists(p_grid) and os.path.exists(p_griddata):
-            logger.info(f"{cif_id} energy grid already exists")
-            eg_logger.info(f"{cif_id} energy grid already exists")
-            continue
+        for i, (cif_id, target) in enumerate(tqdm(d.items())):
+            # check file exist (removed in future)
+            p_graphdata = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
+            p_griddata = os.path.join(root_dataset_split, f"{cif_id}.griddata")
+            p_grid = os.path.join(root_dataset_split, f"{cif_id}.grid")
+            if os.path.exists(p_graphdata) and os.path.exists(p_griddata) and os.path.exists(p_grid):
+                logger.info(f"{cif_id} graph data already exists")
+                eg_logger.info(f"{cif_id} energy grid already exists")
+                continue
 
-        # 0. check primitive cell and atom number < max_num_atoms
-        p = os.path.join(root_cifs, f"{cif_id}.cif")
-        try:
-            st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
-        except Exception as e:
-            print(e)
-            continue
+            # 0. check primitive cell and atom number < max_num_atoms
+            p = os.path.join(root_cifs, split, cif_id + ".cif")
+            try:
+                st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
+            except Exception as e:
+                logger.info(f"{cif_id} failed : {e}")
+                continue
 
-        if len(st.atomic_numbers) > max_num_atoms:
-            logger.info(f"{cif_id} failed : more than max_num_atoms in primitive cell")
-            continue
-        # 1. get crystal graph
-        atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
-        if len(nbr_idx) % max_num_nbr > 0:
-            print("please make radius larger")
-            continue
+            if len(st.atomic_numbers) > max_num_atoms:
+                logger.info(f"{cif_id} failed : more than max_num_atoms in primitive cell")
+                continue
+            # 1. get crystal graph
+            atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
+            if len(nbr_idx) % max_num_nbr > 0:
+                logger.info(f"{cif_id} failed : num_nbr is smaller than max_num_nbr")
+                print("please make radius larger")
+                continue
 
-        # 2. make orthogonal cell and supercell with min_length and max_length
-        cell_matrix = st.lattice.matrix
-        scaling_matrix = \
-            calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01)
+            # 2. make orthogonal cell and supercell with min_length and max_length
+            cell_matrix = st.lattice.matrix
+            scaling_matrix = \
+                calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01)
 
-        st.make_supercell(scaling_matrix)
+            st.make_supercell(scaling_matrix)
 
-        scale_abc = []
-        for l in st.lattice.abc:
-            if l > max_length:
-                logger.info(f"{cif_id} failed : supercell have more than max_length")
-                break
-            elif l < min_length:
-                scale_abc.append(math.ceil(min_length / l))
+            scale_abc = []
+            for l in st.lattice.abc:
+                if l > max_length:
+                    logger.info(f"{cif_id} failed : supercell have more than max_length")
+                    break
+                elif l < min_length:
+                    scale_abc.append(math.ceil(min_length / l))
+                else:
+                    scale_abc.append(1)
+
+            if len(scale_abc) != len(st.lattice.abc):
+                continue
+
+            st.make_supercell(scale_abc)
+
+            # 3. calculate energy grid
+            if calculate_energy_grid:
+                out, err = get_energy_grid(st, cif_id, root_dataset_split, eg_logger)
+                if err:
+                    logger.info(f"{cif_id} failed : energy grid failed")
+                    continue
+
+            logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
+
+            data = [cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count, target]
+
+            p = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
+            with open(p, "wb") as f:
+                pickle.dump(data, f)
+
+        # make pyarrow files
+        batches = []
+        for filename in os.listdir(root_dataset_split):
+
+            if filename.split(".")[-1] == "grid":
+                cif_id = filename[:-5]
             else:
-                scale_abc.append(1)
+                continue
 
-        if len(scale_abc) != len(st.lattice.abc):
-            continue
+            p = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
+            with open(p, "rb") as f:
+                graphdata = pickle.load(f)
+            batches.append(graphdata)
 
-        st.make_supercell(scale_abc)
+        # save data using pyarrow
+        df = pd.DataFrame(
+            batches, columns=["cif_id", "atom_num", "nbr_idx", "nbr_dist", "uni_idx", "uni_count", "target"]
+        )
+        table = pa.Table.from_pandas(df)
+        with pa.OSFile(
+                os.path.join(root_dataset, f"{split}.arrow"), "wb"
+        ) as sink:
+            with pa.RecordBatchFileWriter(sink, table.schema) as writer:
+                writer.write_table(table)
 
-        # 3. calculate energy grid
-        if calculate_energy_grid:
-            get_energy_grid(st, cif_id, root_dataset, eg_logger)
-
-        logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
-
-        data = [cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count, target]
-
-        p = os.path.join(root_dataset, f"{cif_id}.graphdata")
-        with open(p, "wb") as f:
-            pickle.dump(data, f)
-    """
-    # make pyarrow files
-    batches = []
-    for filename in os.listdir(root_dataset):
-
-        if filename.split(".")[-1] == "grid":
-            cif_id = filename[:-5]
-        else:
-            continue
-
-        p = os.path.join(root_dataset, f"{cif_id}.graphdata")
-        with open(p, "rb") as f:
-            graphdata = pickle.load(f)
-        batches.append(graphdata)
-
-    # save data using pyarrow
-    df = pd.DataFrame(
-        batches, columns=["cif_id", "atom_num", "nbr_idx", "nbr_dist", "uni_idx", "uni_count", "target"]
-    )
-
-    table = pa.Table.from_pandas(df)
-    os.makedirs(root_dataset, exist_ok=True)
-    with pa.OSFile(
-            os.path.join(root_dataset, f"data.arrow"), "wb"
-    ) as sink:
-        with pa.RecordBatchFileWriter(sink, table.schema) as writer:
-            writer.write_table(table)
-    """
 
 if __name__ == "__main__":
-    prepare_data("/home/data/pretrained_mof/ver2/cif/raw/proper_optimized/", "/home/data/pretrained_mof/ver2/dataset")
+    prepare_data("/home/data/pretrained_mof/tmp/cif/", "/home/data/pretrained_mof/tmp/dataset/")

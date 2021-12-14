@@ -6,7 +6,6 @@ import numpy as np
 
 import torch
 
-from itertools import product
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(
@@ -185,7 +184,7 @@ class Dataset(torch.utils.data.Dataset):
         for bi in range(batch_size):
             # griddata needs to be reshape with Fortran-like indexing style (ex. np.reshape( , , order="F")
             # with the first index changing fastest, and the last index changing slowest
-            orig = batch_grid_data[bi].view(batch_cell[bi][::-1]).transpose(0,2)
+            orig = batch_grid_data[bi].view(batch_cell[bi][::-1]).transpose(0, 2)
 
             new_grids[bi, :orig.shape[0], :orig.shape[1], :orig.shape[2]] = orig
         new_grids = new_grids[:, None, :, :, :]  # [B, 1, H, W, D]
@@ -201,8 +200,8 @@ class Dataset(torch.utils.data.Dataset):
             new_false_grids = new_false_grids[:, None, :, :, :]  # [B, 1, H, W, D]
             dict_batch["false_grid"] = new_false_grids
 
-        #dict_batch.pop("grid_data", None)
-        #dict_batch.pop("false_grid_data", None)
+        # dict_batch.pop("grid_data", None)
+        # dict_batch.pop("false_grid_data", None)
         # dict_batch.pop("cell", None)
         # dict_batch.pop("false_cell", None)
 

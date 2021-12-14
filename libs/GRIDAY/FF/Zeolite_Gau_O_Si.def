@@ -1,0 +1,8 @@
+7
+0  CH4   CH4   Gaussian    1.0   3.73    12.0
+1  CH4   O     Gaussian    1.0   1.0     4.0
+2  O     CH4   Gaussian    1.0   1.0     4.0
+3  CH4   Si    Gaussian    0.5   1.0     4.0
+4  Si    CH4   Gaussian    0.5   1.0     4.0
+5  O     O     Gaussian    0.0   0.0     1.0
+6  Si    Si    Gaussian    0.0   0.0     1.0

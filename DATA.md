@@ -36,10 +36,13 @@ The example of `root_cifs` directory is as follows.
 
 
 Then, please use `model/utils/prepare_data.py` to generate dataset.
+
 ```angular2html
 from model.utils.prepare_data import prepare_data
 prepare_data(root_cifs, root_dataset) 
 ```
+
+
 Finally, `prepare_data.py` will generate crystal graph and energy grid in `root_dataset` directory.
 
     root_dataset # root for generated inputs 
