@@ -129,16 +129,19 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
 
     eg_file = os.path.join(root_dataset) + f'/{cif_id}'
 
-    if os.path.exists(f'{eg_file}.grid') and os.path.exists(f'{eg_file}.griddata'):
-        eg_logger.info(f"{cif_id} energy grid already exists")
-        return
-
     random_str = str(np.random.rand()).encode()
     tmp_file = "{}/{}.cssr".format(root_dataset, hashlib.sha256(random_str).hexdigest())
 
     Cssr(structure).write_file(tmp_file)  # write_file
     num_grid = [str(round(cell)) for cell in structure.lattice.abc]
 
+    print(GRIDAY_PATH)
+    print(num_grid)
+    print(f'{FF_PATH}/UFF_Type.def')
+    print(f'{FF_PATH}/UFF_FF.def')
+    print(tmp_file)
+    print(eg_file)
+    assert False
     proc = subprocess.Popen(
         [GRIDAY_PATH, *num_grid, f'{FF_PATH}/UFF_Type.def', f'{FF_PATH}/UFF_FF.def', tmp_file, eg_file],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -150,7 +153,8 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
         eg_logger.info(f"{cif_id} energy grid success")
 
     for cssr_file in glob.glob(f"{root_dataset}/*.cssr"):
-        os.remove(cssr_file)
+        if os.path.exists(cssr_file):
+            os.remove(cssr_file)
 
 
 def prepare_data(root_cifs, root_dataset,
@@ -183,11 +187,20 @@ def prepare_data(root_cifs, root_dataset,
 
     with open(json_path, "r") as f:
         d = json.load(f)
+    d = dict(reversed(d.items()))
 
     for i, (cif_id, target) in enumerate(tqdm(d.items())):
+        # check file exist
+        p_graphdata = os.path.join(root_dataset, f"{cif_id}.graphdata")
+        p_grid = os.path.join(root_dataset, f"{cif_id}.grid")
+        p_griddata = os.path.join(root_dataset, f"{cif_id}.griddata")
+        if os.path.exists(p_graphdata) and os.path.exists(p_grid) and os.path.exists(p_griddata):
+            logger.info(f"{cif_id} energy grid already exists")
+            eg_logger.info(f"{cif_id} energy grid already exists")
+            continue
 
         # 0. check primitive cell and atom number < max_num_atoms
-        p = os.path.join(root_cifs, cif_id + ".cif")
+        p = os.path.join(root_cifs, f"{cif_id}.cif")
         try:
             st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
         except Exception as e:
@@ -236,7 +249,7 @@ def prepare_data(root_cifs, root_dataset,
         p = os.path.join(root_dataset, f"{cif_id}.graphdata")
         with open(p, "wb") as f:
             pickle.dump(data, f)
-
+    """
     # make pyarrow files
     batches = []
     for filename in os.listdir(root_dataset):
@@ -263,7 +276,7 @@ def prepare_data(root_cifs, root_dataset,
     ) as sink:
         with pa.RecordBatchFileWriter(sink, table.schema) as writer:
             writer.write_table(table)
-
+    """
 
 if __name__ == "__main__":
-    prepare_data("/home/data/pretrained_mof/ver2/cif/raw/proper_optimized/", "/home/data/pretrained_mof/ver2/dataset/")
+    prepare_data("/home/data/pretrained_mof/ver2/cif/raw/proper_optimized/", "/home/data/pretrained_mof/ver2/dataset")
