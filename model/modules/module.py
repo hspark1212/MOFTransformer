@@ -16,6 +16,7 @@ class Module(LightningModule):
         self.use_cgcnn = config["use_cgcnn"]
         self.use_egcnn = config["use_egcnn"]
         self.use_transformer = config["use_transformer"]
+
         self.max_grid_len = config["max_grid_len"]
 
         if self.use_cgcnn:
@@ -223,7 +224,6 @@ class Module(LightningModule):
         # regression
         if "regression" in self.current_tasks:
             ret.update(objectives.compute_regression(self, batch))
-            pass
 
         # classification
         if "classification" in self.current_tasks:

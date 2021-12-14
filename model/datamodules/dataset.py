@@ -200,9 +200,9 @@ class Dataset(torch.utils.data.Dataset):
             new_false_grids = new_false_grids[:, None, :, :, :]  # [B, 1, H, W, D]
             dict_batch["false_grid"] = new_false_grids
 
-        # dict_batch.pop("grid_data", None)
-        # dict_batch.pop("false_grid_data", None)
-        # dict_batch.pop("cell", None)
-        # dict_batch.pop("false_cell", None)
+        dict_batch.pop("grid_data", None)
+        dict_batch.pop("false_grid_data", None)
+        dict_batch.pop("cell", None)
+        dict_batch.pop("false_cell", None)
 
         return dict_batch
