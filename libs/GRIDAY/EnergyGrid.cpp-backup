@@ -1,0 +1,792 @@
+#include "EnergyGrid.hpp"
+
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <algorithm>
+
+#include <cstdio>
+#include <cmath>
+
+const GReal EnergyGrid::PI = 3.141592;
+
+EnergyGrid::EnergyGrid()
+    {
+
+    }
+
+EnergyGrid::EnergyGrid(std::string filename)
+    {
+    this->read(filename);
+    }
+
+void
+EnergyGrid::read(std::string filename)
+    {
+    using namespace std;
+
+    auto pos = filename.rfind(".grid");
+
+    // Extract file stem if file has extension.
+    string fileStem;
+    if (pos != string::npos)
+        fileStem = filename.substr(0, pos);
+    else
+        fileStem = filename;
+
+    ifstream gridFile ((fileStem + ".grid"));
+
+    if (not gridFile.good())
+        {
+        stringstream msg;
+        msg << "File open fails: " << (fileStem + ".grid");
+        THROW_EXCEPT(msg.str());
+        }
+
+    while (gridFile.good())
+        {
+        string dummy;
+
+        gridFile >> dummy;
+
+        if (dummy == "CELL_PARAMETERS")
+            gridFile >> mCellLengths;
+        else if (dummy == "CELL_ANGLES")
+            {
+            gridFile >> mCellAngles;
+            mCellAngles = mCellAngles / 180.0 * PI;
+            }
+        else if (dummy == "GRID_NUMBERS")
+            {
+            gridFile >> mMaxNx >> mMaxNy >> mMaxNz;
+            mNumGrids = mMaxNx  * mMaxNy  * mMaxNz;
+            }
+        else
+            {
+            stringstream msg;
+            msg << "Invalid option: " << dummy;
+            THROW_EXCEPT(msg.str());
+            }
+        }
+
+    gridFile.close();
+
+    this->makeCellInformation();
+
+    // Read .griddata
+    FILE* gridDataFile = fopen((fileStem + ".griddata").c_str(), "rb");
+    if (gridDataFile == nullptr)
+        {
+        stringstream msg;
+        msg << "File open fails: " << (fileStem + ".griddata");
+        THROW_EXCEPT(msg.str());
+        }
+
+    mGrid.clear();
+    mGrid.resize(mNumGrids);
+
+    fread(mGrid.data(), sizeof (GReal), mNumGrids, gridDataFile);
+    fclose(gridDataFile);
+
+    //mMinimumEnergy = *min_element(mGrid.begin(), mGrid.end());
+    mMinimumEnergy = numeric_limits<GReal>::max();
+
+    for (GIndex nz = 0; nz < mMaxNz; ++nz)
+    for (GIndex ny = 0; ny < mMaxNy; ++ny)
+    for (GIndex nx = 0; nx < mMaxNx; ++nx)
+        {
+        GReal e = (*this)(nx, ny, nz);
+
+        if (e < mMinimumEnergy)
+            {
+            mMinimumEnergy = e;
+            mMinimumEnergyIndex3 = {nx, ny, nz};
+            }
+        }
+
+    }
+
+void
+EnergyGrid::print()
+    {
+    using namespace std;
+
+    cout << setw(80) << setfill('=') << "" << setfill(' ') << endl;
+
+    cout << setw(20) << "Cell length:" <<
+            setw(10) << "a =" << setw(10) << mCellLengths[0] <<
+            setw(10) << "b =" << setw(10) << mCellLengths[1] <<
+            setw(10) << "c =" << setw(10) << mCellLengths[2] <<
+            endl;
+
+    cout << setw(20) << "Cell  angle:" <<
+            setw(10) << "alpha =" << setw(10) << mCellAngles[0] / PI * 180.0 <<
+            setw(10) << "beta ="  << setw(10) << mCellAngles[1] / PI * 180.0 <<
+            setw(10) << "gamma =" << setw(10) << mCellAngles[2] / PI * 180.0 <<
+            endl;
+
+    cout << setw(20) << "Cell height:" <<
+            setw(10) << "bc =" << setw(10) << mCellHeights[0] <<
+            setw(10) << "ca =" << setw(10) << mCellHeights[1] <<
+            setw(10) << "ab =" << setw(10) << mCellHeights[2] <<
+            endl << endl;
+
+    cout << setw(20) << "Cell matrix:" << endl;
+    cout << mCell << endl << endl;
+
+    cout << setw(20) << "Volume:" << setw(15) << mVolume << endl << endl;
+    cout << setw(20) << "Minimum energy:" << setw(15) << mMinimumEnergy <<
+            endl << endl;
+
+    cout << setw(20) << "# of grids:" <<
+            setw(7) << "nx =" << setw(5) << mMaxNx <<
+            setw(7) << "ny =" << setw(5) << mMaxNy <<
+            setw(7) << "nz =" << setw(5) << mMaxNz <<
+            setw(14) << "total =" << setw(10) << mNumGrids <<
+            endl;
+
+    cout << setw(80) << setfill('=') << "" << setfill(' ') << endl;
+    }
+
+void
+EnergyGrid::writeVisitInput(std::string fileStem, bool onlyInUnitCell)
+    {
+    using namespace std;
+
+    Vector a = mCell.a;
+    Vector b = mCell.b;
+    Vector c = mCell.c;
+
+    Vectors vertices (8);
+    vertices[0] = Vector {0, 0, 0};
+    vertices[1] = a;
+    vertices[2] = b;
+    vertices[3] = c;
+    vertices[4] = b + c;
+    vertices[5] = c + a;
+    vertices[6] = a + b;
+    vertices[7] = a + b + c;
+
+    const GReal max = numeric_limits<GReal>::max();
+    const GReal min = numeric_limits<GReal>::min();
+
+    GReal minX = max;
+    GReal minY = max;
+    GReal minZ = max;
+
+    GReal maxX = min;
+    GReal maxY = min;
+    GReal maxZ = min;
+
+    for (int i = 0; i < 8; ++i)
+        {
+        const auto& vertex = vertices[i];
+
+        if (vertex[0] < minX)
+            minX = vertex[0];
+        if (vertex[0] > maxX)
+            maxX = vertex[0];
+
+        if (vertex[1] < minY)
+            minY = vertex[1];
+        if (vertex[1] > maxY)
+            maxY = vertex[1];
+
+        if (vertex[2] < minZ)
+            minZ = vertex[2];
+        if (vertex[2] > maxZ)
+            maxZ = vertex[2];
+        }
+
+    Cell cell;
+    cell.a = Vector {maxX - minX, 0, 0};
+    cell.b = Vector {0, maxY - minY, 0};
+    cell.c = Vector {0, 0, maxZ - minZ};
+
+    GReal da = mCellLengths[0] / static_cast<GReal>(mMaxNx);
+    GReal db = mCellLengths[1] / static_cast<GReal>(mMaxNy);
+    GReal dc = mCellLengths[2] / static_cast<GReal>(mMaxNz);
+
+    GIndex maxNx = ceil(norm(cell.a) / da);
+    GIndex maxNy = ceil(norm(cell.b) / db);
+    GIndex maxNz = ceil(norm(cell.c) / dc);
+
+    GIndex numGrids = maxNx * maxNy * maxNz;
+
+    Cell grid {cell.a / static_cast<GReal>(maxNx),
+               cell.b / static_cast<GReal>(maxNy),
+               cell.c / static_cast<GReal>(maxNz)};
+
+    vector<GReal> energyGrid (numGrids);
+
+    GReal infinite = numeric_limits<GReal>::max();
+    GIndex index = 0;
+    for (GIndex nz = 0; nz < maxNz; ++nz)
+    for (GIndex ny = 0; ny < maxNy; ++ny)
+    for (GIndex nx = 0; nx < maxNx; ++nx)
+        {
+        Vector r = {static_cast<GReal>(nx),
+                    static_cast<GReal>(ny),
+                    static_cast<GReal>(nz)};
+
+        r = grid * r;
+
+        if (onlyInUnitCell)
+            {
+            Vector s = mInvCell * r;
+
+            bool isOut = false;
+            for (const auto& si : s)
+                {
+                if (si > 1.0)
+                    isOut = true;
+                if (si < 0.0)
+                    isOut = true;
+                }
+
+            if (isOut)
+                energyGrid[index] = infinite;
+            else
+                energyGrid[index] = this->interpolate(r);
+            }
+        else
+            {
+            energyGrid[index] = this->interpolate(r);
+            }
+
+        index++;
+        }
+
+    ofstream bovFile {fileStem + ".bov"};
+    if (not bovFile.good())
+        THROW_EXCEPT("Writing VISIT input fails: bov open files");
+
+    bovFile << "TIME: 1.000000" << endl <<
+               "DATA_FILE: " << fileStem + ".times" << endl <<
+
+               "DATA_SIZE:" << setw(8) << maxNx <<
+                               setw(8) << maxNy <<
+                               setw(8) << maxNz << endl <<
+
+               "DATA_FORMAT: FLOAT"  << endl <<
+               "VARIABLE: data"      << endl <<
+               "DATA_ENDIAN: LITTLE" << endl <<
+               "CENTERING: nodal"    << endl <<
+
+               "BRICK_ORIGIN:" << setw(8) << 0.0 <<
+                                  setw(8) << 0.0 <<
+                                  setw(8) << 0.0 << endl <<
+
+               "BRICK_SIZE:" << setw(8) << norm(cell.a) <<
+                                setw(8) << norm(cell.b) <<
+                                setw(8) << norm(cell.c);
+
+    bovFile.close();
+
+    FILE* timesFile = fopen((fileStem + ".times").c_str(), "wb");
+    if (timesFile == nullptr)
+        THROW_EXCEPT("Writing VISIT input filas: times open fails");
+
+    fwrite(energyGrid.data(), sizeof (GReal), numGrids, timesFile);
+    fclose(timesFile);
+    }
+
+void
+EnergyGrid::writeEnergyHistogram(std::string filename,
+                                 const GReal bin,
+                                 const GReal max)
+    {
+    using namespace std;
+
+    // Find minimum energy
+    GReal min = mMinimumEnergy;
+
+    GIndex histSize = ceil((max - min) / bin);
+    vector<GReal> histogram (histSize);
+
+    for (const auto& ene : mGrid)
+        {
+        if (ene > max)
+            continue;
+
+        GIndex idx = floor((ene - min) / bin);
+
+        histogram[idx] += 1.0;
+        }
+
+    ofstream file (filename);
+    for (GIndex idx = 0; idx < histSize; ++idx)
+        {
+        GReal x = static_cast<GReal>(idx) * bin + min;
+        file << setw(15) << x << setw(15) << histogram[idx] << endl;
+        }
+    }
+
+GReal
+EnergyGrid::at(GIndex nx, GIndex ny, GIndex nz)
+    {
+    if (nx > mMaxNx)
+        THROW_EXCEPT("nx > mMaxNx");
+    if (ny > mMaxNy)
+        THROW_EXCEPT("ny > mMaxNy");
+    if (nz > mMaxNz)
+        THROW_EXCEPT("nz > mMaxNz");
+
+    /*
+    if (nx < 0)
+        THROW_EXCEPT("nx < 0");
+    if (ny < 0)
+        THROW_EXCEPT("ny < 0");
+    if (nz < 0)
+        THROW_EXCEPT("nz < 0");
+    */
+
+    GIndex index = nx + mMaxNx * (ny + mMaxNy * nz);
+
+    return mGrid[index];
+    }
+
+GReal
+EnergyGrid::at(const GIndex3& n)
+    {
+    return this->at(n[0], n[1], n[2]);
+    }
+
+GReal
+EnergyGrid::operator () (GIndex nx, GIndex ny, GIndex nz)
+    {
+    GIndex index = nx + mMaxNx * (ny + mMaxNy * nz);
+
+    return mGrid[index];
+    }
+
+GReal
+EnergyGrid::operator () (const GIndex3& n)
+    {
+    return (*this)(n[0], n[1], n[2]);
+    }
+/*
+GReal
+EnergyGrid::periodicAt(GIndex nx, GIndex nz, GIndex nz)
+    {
+
+    }
+*/
+
+GReal
+EnergyGrid::interpolate(GReal x, GReal y, GReal z)
+    {
+    return this->interpolate(Vector {x, y, z});
+    }
+
+GReal
+EnergyGrid::interpolate(const Vector& r)
+    {
+    using namespace std;
+
+    // Apply PBC
+    Vector s = mInvCell * r;
+
+    // Make s[i] to be in [0,1]
+    for (auto& si : s)
+        si = si - floor(si);
+
+    vector<GReal> maxes {static_cast<GReal>(mMaxNx),
+                         static_cast<GReal>(mMaxNy),
+                         static_cast<GReal>(mMaxNz)};
+
+    // Position at index space
+    Vector rIndex = s;
+    for (int i = 0; i < 3; ++i)
+        rIndex[i] *= maxes[i];
+
+    // Lower index
+    vector<GIndex> idx0 (3);
+    for (int i = 0; i < 3; ++i)
+        idx0[i] = floor(rIndex[i]);
+
+    // Upper index
+    vector<GIndex> idx1 (3);
+    for (int i = 0; i < 3; ++i)
+        idx1[i] = idx0[i] + 1;
+
+    if (idx1[0] == mMaxNx)
+        idx1[0] = 0;
+    if (idx1[1] == mMaxNy)
+        idx1[1] = 0;
+    if (idx1[2] == mMaxNz)
+        idx1[2] = 0;
+
+    // x, y, z in [0,1]
+    GReal x = rIndex[0] - static_cast<GReal>(idx0[0]);
+    GReal y = rIndex[1] - static_cast<GReal>(idx0[1]);
+    GReal z = rIndex[2] - static_cast<GReal>(idx0[2]);
+
+    GReal one_x = 1.0 - x;
+    GReal one_y = 1.0 - y;
+    GReal one_z = 1.0 - z;
+
+    GReal v000 = (*this)(idx0[0], idx0[1], idx0[2]);
+    GReal v100 = (*this)(idx1[0], idx0[1], idx0[2]);
+    GReal v010 = (*this)(idx0[0], idx1[1], idx0[2]);
+    GReal v001 = (*this)(idx0[0], idx0[1], idx1[2]);
+    GReal v101 = (*this)(idx1[0], idx0[1], idx1[2]);
+    GReal v011 = (*this)(idx0[0], idx1[1], idx1[2]);
+    GReal v110 = (*this)(idx1[0], idx1[1], idx0[2]);
+    GReal v111 = (*this)(idx1[0], idx1[1], idx1[2]);
+
+    GReal ene =
+         v000 * one_x * one_y * one_z +
+         v100 *     x * one_y * one_z +
+         v010 * one_x *     y * one_z +
+         v001 * one_x * one_y *     z +
+         v101 *     x * one_y *     z +
+         v011 * one_x *     y *     z +
+         v110 *     x *     y * one_z +
+         v111 *     x *     y *     z;
+
+    return ene;
+    }
+
+Vector
+EnergyGrid::getCellLengths()
+    {
+    return mCellLengths;
+    }
+
+Vector
+EnergyGrid::getCellAngles()
+    {
+    return mCellAngles;
+    }
+
+Vector
+EnergyGrid::getCellHeights()
+    {
+    return mCellHeights;
+    }
+
+GIndex
+EnergyGrid::getMaxNx()
+    {
+    return mMaxNx;
+    }
+
+GIndex
+EnergyGrid::getMaxNy()
+    {
+    return mMaxNy;
+    }
+
+GIndex
+EnergyGrid::getMaxNz()
+    {
+    return mMaxNz;
+    }
+
+GIndex
+EnergyGrid::getNumGrids()
+    {
+    return mNumGrids;
+    }
+
+Cell
+EnergyGrid::getCell()
+    {
+    return mCell;
+    }
+
+Cell
+EnergyGrid::getContainingBox()
+    {
+    using namespace std;
+
+    Vector a = mCell.a;
+    Vector b = mCell.b;
+    Vector c = mCell.c;
+
+    Vectors vertices (8);
+    vertices[0] = Vector {0, 0, 0};
+    vertices[1] = a;
+    vertices[2] = b;
+    vertices[3] = c;
+    vertices[4] = b + c;
+    vertices[5] = c + a;
+    vertices[6] = a + b;
+    vertices[7] = a + b + c;
+
+    const GReal max = numeric_limits<GReal>::max();
+    const GReal min = numeric_limits<GReal>::min();
+
+    GReal minX = max;
+    GReal minY = max;
+    GReal minZ = max;
+
+    GReal maxX = min;
+    GReal maxY = min;
+    GReal maxZ = min;
+
+    for (int i = 0; i < 8; ++i)
+        {
+        const auto& vertex = vertices[i];
+
+        if (vertex[0] < minX)
+            minX = vertex[0];
+        if (vertex[0] > maxX)
+            maxX = vertex[0];
+
+        if (vertex[1] < minY)
+            minY = vertex[1];
+        if (vertex[1] > maxY)
+            maxY = vertex[1];
+
+        if (vertex[2] < minZ)
+            minZ = vertex[2];
+        if (vertex[2] > maxZ)
+            maxZ = vertex[2];
+        }
+
+    Cell cell;
+    cell.a = Vector {maxX - minX, 0, 0};
+    cell.b = Vector {0, maxY - minY, 0};
+    cell.c = Vector {0, 0, maxZ - minZ};
+
+    return cell;
+    }
+
+GReal
+EnergyGrid::getVolume()
+    {
+    return mVolume;
+    }
+
+GReal
+EnergyGrid::getMinimumEnergy()
+    {
+    return mMinimumEnergy;
+    }
+
+GIndex3
+EnergyGrid::getMinimumEnergyIndex3()
+    {
+    return mMinimumEnergyIndex3;
+    }
+
+GReal
+EnergyGrid::getInaccessibleRangeRatio(GReal inf)
+    {
+    // inf = infinite energy.
+    // so if E > inf, that region is inaccessible.
+    using namespace std;
+
+    GIndex numInf = count_if(mGrid.begin(), mGrid.end(),
+        [inf](const GReal& v) {return v > inf;});
+
+    return static_cast<GReal>(numInf) /
+           static_cast<GReal>(mNumGrids);
+    }
+
+std::vector<GIndex3>
+EnergyGrid::getLocalMinimumIndices(GReal maxEnergy)
+    {
+    using namespace std;
+    // maxEnergy = 15kT in usual case
+
+    GIndex maxNz = this->getMaxNz();
+    GIndex maxNy = this->getMaxNy();
+    GIndex maxNx = this->getMaxNx();
+
+    //std::vector<GReal> mins;
+    //Vectors minPositions;
+    vector<GIndex3> minIndices;
+
+    for (GIndex nz = 0; nz < maxNz; ++nz)
+    for (GIndex ny = 0; ny < maxNy; ++ny)
+    for (GIndex nx = 0; nx < maxNx; ++nx)
+        {
+        GIndex up   = nz + 1;
+        if (up == maxNz)
+            up = 0;
+
+        GIndex down = nz - 1;
+        if (nz == 0)
+            down = maxNz - 1;
+
+        GIndex right = ny + 1;
+        if (right == maxNy)
+            right = 0;
+
+        GIndex left  = ny - 1;
+        if (ny == 0)
+            left = maxNy - 1;
+
+        GIndex front = nx + 1;
+        if (front == maxNx)
+            front = 0;
+
+        GIndex back  = nx - 1;
+        if (nx == 0)
+            back = maxNx - 1;
+
+        GReal upValue    = (*this)(nx, ny, up);
+        GReal downValue  = (*this)(nx, ny, down);
+
+        GReal rightValue = (*this)(nx, right, nz);
+        GReal leftValue  = (*this)(nx, left, nz);
+
+        GReal frontValue = (*this)(front, ny, nz);
+        GReal backValue  = (*this)(back, ny, nz);
+
+        GReal currentValue = (*this)(nx, ny, nz);
+
+        if (currentValue > maxEnergy)
+            continue;
+
+        bool isMinimum =
+            currentValue < upValue    and
+            currentValue < downValue  and
+            currentValue < rightValue and
+            currentValue < leftValue  and
+            currentValue < frontValue and
+            currentValue < backValue;
+
+        if (isMinimum)
+            {
+            //mins.push_back(currentValue);
+            //Vector r = {static_cast<GReal>(nx) / maxNx,
+            //            static_cast<GReal>(ny) / maxNy,
+            //            static_cast<GReal>(nz) / maxNz};
+
+            //r = mCell * r;
+
+            //minPositions.push_back(r);
+            minIndices.push_back(GIndex3 {nx, ny, nz});
+            }
+        }
+
+    //return minPositions;
+    return minIndices;
+    }
+
+Vectors
+EnergyGrid::getLocalMinimumPositions(GReal maxEnergy)
+    {
+    using namespace std;
+
+    vector<GIndex3> idx = this->getLocalMinimumIndices(maxEnergy);
+    Vectors pos (idx.size());
+
+    int size = pos.size();
+    for (int i = 0; i < size; ++i)
+        {
+        Vector r = {static_cast<GReal>(idx[i][0]) / mMaxNx,
+                    static_cast<GReal>(idx[i][1]) / mMaxNy,
+                    static_cast<GReal>(idx[i][2]) / mMaxNz};
+
+        r = mCell * r;
+
+        pos[i] = r;
+        }
+
+    return pos;
+    }
+
+void
+EnergyGrid::makeCellInformation()
+    {
+    using namespace std;
+
+    GReal a = mCellLengths[0];
+    GReal b = mCellLengths[1];
+    GReal c = mCellLengths[2];
+
+    GReal cosa = cos(mCellAngles[0]);
+    GReal cosb = cos(mCellAngles[1]);
+    GReal cosg = cos(mCellAngles[2]);
+
+    GReal sing = sin(mCellAngles[2]);
+
+    GReal v = a * b * c *
+        sqrt(1.0 + 2.0 * cosa * cosb * cosg -
+             cosa * cosa - cosb * cosb - cosg * cosg);
+
+    mCell.a[0] = a;
+    mCell.a[1] = 0.0;
+    mCell.a[2] = 0.0;
+
+    mCell.b[0] = b * cosg;
+    mCell.b[1] = b * sing;
+    mCell.b[2] = 0.0;
+
+    mCell.c[0] = c * cosb;
+    mCell.c[1] = c * (cosa - cosb * cosg) / sing;
+    mCell.c[2] = v / a / b / sing;
+
+    mInvCell = inverse(mCell);
+
+    mVolume = det(mCell);
+
+    mCellHeights[0] = mVolume / norm(cross(mCell.b, mCell.c));
+    mCellHeights[1] = mVolume / norm(cross(mCell.c, mCell.a));
+    mCellHeights[2] = mVolume / norm(cross(mCell.a, mCell.b));
+    }
+
+void
+EnergyGrid::transformToProbability(GReal temper)
+    {
+    // Transform to boltzmann factor
+    for (auto& e : mGrid)
+        e = std::exp(-e / temper);
+
+    // Normalize
+    GReal sum = 0.0;
+    for (auto& e : mGrid)
+        sum += e;
+
+    for (auto& e : mGrid)
+        e /= sum;
+    }
+
+
+void
+EnergyGrid::transformToInverse()
+    {
+    for (auto& e : mGrid)
+        e = 1.0 / (e - mMinimumEnergy + 1.0);
+    }
+
+void
+EnergyGrid::transformToLog()
+    {
+    for (auto& e : mGrid)
+        e = std::log(e - mMinimumEnergy + 1.0);
+    }
+
+void
+EnergyGrid::transformToPartialMap()
+    {
+    for (auto& e : mGrid)
+        if (e > 5000.0)
+            e = 5000.0;
+    }
+
+const std::vector<GReal>&
+EnergyGrid::data()
+    {
+    return mGrid;
+    }
+
+GReal
+EnergyGrid::henry(GReal temperature)
+    {
+    GReal sum = 0;
+
+    for (auto& e : mGrid)
+        sum += std::exp(-e / temperature);
+
+    sum /= static_cast<GReal>(mGrid.size());
+
+    return sum;
+    }
