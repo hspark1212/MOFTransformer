@@ -30,6 +30,7 @@ def set_task(pl_module):
 
 def epoch_wrapup(pl_module):
     phase = "train" if pl_module.training else "val"
+
     the_metric = 0
 
     for loss_name, v in pl_module.hparams.config["loss_names"].items():
@@ -139,6 +140,7 @@ def set_schedule(pl_module):
                 * pl_module.trainer.max_epochs
                 // pl_module.trainer.accumulate_grad_batches
         )
+
     else:
         max_steps = pl_module.trainer.max_steps
 
@@ -154,6 +156,7 @@ def set_schedule(pl_module):
             num_warmup_steps=warmup_steps,
             num_training_steps=max_steps,
         )
+
     else:
         scheduler = get_polynomial_decay_schedule_with_warmup(
             optimizer,

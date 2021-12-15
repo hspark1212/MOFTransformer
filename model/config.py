@@ -32,9 +32,14 @@ def config():
     use_egcnn = False  # use EGCNN (energy grid CNN)
     use_transformer = False  # use graph embedding + vision transformer 3D
     loss_names = _loss_names({})
+
     # cgcnn
-    atom_fea_len = 64  # default of CGCNN
+    n_conv = 5 # default of CGCNN=3
+    atom_fea_len = 64  # default of CGCNN=64
     nbr_fea_len = 41  # dim for gaussian basis expansion
+
+    # egcnn
+    egcnn_depth = 18  # 10, 18, 34, 50, 101, 152, 200
 
     # graph seeting
     max_atom_len = 1000  # number of maximum atoms in primitive cell
@@ -62,20 +67,19 @@ def config():
     learning_rate = 1e-4
     weight_decay = 1e-2
     decay_power = 1  # or cosine
-    max_epoch = 100
-    max_steps = None #  num_data * max_epoch // batch_size (accumulate_grad_batches)
+    max_epochs = 100
+    max_steps = -1  # num_data * max_epoch // batch_size (accumulate_grad_batches)
     warmup_steps = 0.1  # float, max_steps * 10 %
     end_lr = 0
     lr_mult = 1  # multiply lr for downstream heads
 
     # PL Trainer Setting
     resume_from = None
-    fast_dev_run = False
     val_check_interval = 1.0
     test_only = False
 
     # below params varies with the environment
-    data_root = "/home/data/pretrained_mof/ver1/dataset/"
+    data_root = ""
     log_dir = "result"
     batch_size = 256  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
@@ -86,11 +90,231 @@ def config():
     precision = 16
 
 
+"""
+topology classfication (ver 2)
+"""
+
+
 @ex.named_config
 def task_ggm_mpp():
     exp_name = "task_ggm_mpp"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+
+    # model
     use_transformer = True
     loss_names = _loss_names({"ggm": 1, "mpp": 1})
+
+
+"""
+topology classfication (ver 2, 1k)
+"""
+
+
+@ex.named_config
+def cgcnn_topology_1k():
+    exp_name = "cgcnn_topology_1k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
+
+    # model
+    use_cgcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 32
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def egcnn_topology_1k():
+    exp_name = "egcnn_topology_1k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
+
+    # model
+    use_egcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 32
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def cgcnn_egcnn_topology_1k():
+    exp_name = "cgcnn_egcnn_topology_1k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
+
+    # model
+    use_cgcnn = True
+    use_egcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 32
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+"""
+topology classfication (ver 2, 10k)
+"""
+
+
+@ex.named_config
+def cgcnn_topology_10k():
+    exp_name = "cgcnn_topology_10k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
+
+    # model
+    use_cgcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 256
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def egcnn_topology_10k():
+    exp_name = "egcnn_topology_10k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
+
+    # model
+    use_egcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 256
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def cgcnn_egcnn_topology_10k():
+    exp_name = "cgcnn_egcnn_topology_10k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
+
+    # model
+    use_cgcnn = True
+    use_egcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 256
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+"""
+topology classfication (ver 2, 100k)
+"""
+
+
+@ex.named_config
+def cgcnn_topology_100k():
+    exp_name = "cgcnn_topology_100k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+
+    # model
+    use_cgcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 256
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def egcnn_topology_100k():
+    exp_name = "egcnn_topology_100k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+
+    # model
+    use_egcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 256
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def cgcnn_egcnn_topology_100k():
+    exp_name = "cgcnn_egcnn_topology_100k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+
+    # model
+    use_cgcnn = True
+    use_egcnn = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 256
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+"""
+regression (tmp version)
+"""
 
 
 @ex.named_config
@@ -99,9 +323,6 @@ def cgcnn_regression():
     use_cgcnn = True
     loss_names = _loss_names({"regression": 1})
     draw_false_grid = False
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
 
 
 @ex.named_config
@@ -110,9 +331,7 @@ def egcnn_regression():
     use_egcnn = True
     loss_names = _loss_names({"regression": 1})
     draw_false_grid = False
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
+
 
 
 @ex.named_config
@@ -122,42 +341,4 @@ def cgcnn_egcnn_regression():
     use_egcnn = True
     loss_names = _loss_names({"regression": 1})
     draw_false_grid = False
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
 
-
-@ex.named_config
-def cgcnn_classification():
-    exp_name = "cgcnn_classification"
-    use_cgcnn = True
-    loss_names = _loss_names({"classification": 1})
-    n_classes = 200
-    draw_false_grid = False
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
-
-@ex.named_config
-def egcnn_classification():
-    exp_name = "egcnn_classification"
-    use_egcnn = True
-    loss_names = _loss_names({"classification": 1})
-    n_classes = 200
-    draw_false_grid = False
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
-
-
-@ex.named_config
-def cgcnn_egcnn_classification():
-    exp_name = "cgcnn_egcnn_classification"
-    use_cgcnn = True
-    use_egcnn = True
-    loss_names = _loss_names({"classification": 1})
-    n_classes = 200
-    draw_false_grid = False
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.

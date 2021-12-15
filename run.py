@@ -55,7 +55,7 @@ def main(_config):
         strategy=DDPPlugin(find_unused_parameters=False),
         # deterministic=True,
         benchmark=True,
-        max_epochs=_config["max_epoch"] if max_steps is None else 100,
+        max_epochs=_config["max_epochs"],
         max_steps=max_steps,
         callbacks=callbacks,
         logger=logger,

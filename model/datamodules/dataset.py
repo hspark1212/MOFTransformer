@@ -27,6 +27,7 @@ class Dataset(torch.utils.data.Dataset):
 
         assert split in {"train", "test", "val"}
         path_file = os.path.join(data_dir, f"{split}.arrow")
+        self.split = split
 
         assert os.path.isfile(path_file), print(f"{path_file} doesn't exist in {data_dir}")
 
@@ -55,8 +56,8 @@ class Dataset(torch.utils.data.Dataset):
         return new_grid_data
 
     def get_raw_grid_data(self, filename):
-        file_grid = os.path.join(self.data_dir, "grid", f"{filename}.grid")
-        file_griddata = os.path.join(self.data_dir, "griddata", f"{filename}.griddata")
+        file_grid = os.path.join(self.data_dir, self.split, f"{filename}.grid")
+        file_griddata = os.path.join(self.data_dir, self.split, f"{filename}.griddata")
 
         # get grid
         with open(file_grid, "r") as f:
