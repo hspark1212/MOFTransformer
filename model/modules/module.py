@@ -23,13 +23,14 @@ class Module(LightningModule):
             self.cgcnn = CrystalGraphConvNet(
                 atom_fea_len=config["atom_fea_len"],
                 nbr_fea_len=config["nbr_fea_len"],
-                hid_dim=config["hid_dim"]
+                n_conv=config["n_conv"],
+                hid_dim=config["hid_dim"],
             )
             self.cgcnn.apply(objectives.init_weights)
 
         if self.use_egcnn:
             self.egcnn = generate_resnet_model(
-                model_depth=50,
+                model_depth=config["egcnn_depth"],
                 n_input_channels=1,
                 n_classes=config["hid_dim"],
             )

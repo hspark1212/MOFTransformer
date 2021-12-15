@@ -54,7 +54,7 @@ class Datamodule(LightningDataModule):
             self.set_test_dataset()
 
         self.collate = functools.partial(
-            self.train_dataset.collate,
+            self.dataset_cls.collate,
             img_size=self.img_size,
         )
 

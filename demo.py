@@ -27,17 +27,24 @@ def main(_config):
 
     dm = Datamodule(_config)
     model = Module(_config)
-    exp_name = f"{_config['exp_name']}"
-
-
-    dm = Datamodule(_config)
     dm.setup()
-    print(dm.train_dataset[0].keys())
-    data_iter = dm.train_dataloader()
+    data_iter = dm.test_dataloader()
     for batch in data_iter:
-        print(batch.keys())
         break
-    print(len(dm.train_dataset))
+
+
+
+    """
+        dm = Datamodule(_config)
+        dm.setup()
+        print(dm.train_dataset[0].keys())
+        data_iter = dm.train_dataloader()
+        for batch in data_iter:
+            print(batch.keys())
+            break
+        print(len(dm.train_dataset))
+    """
+
 
 
 
