@@ -152,7 +152,7 @@ class Module(LightningModule):
             return ret
 
         elif self.use_transformer:
-            print(batch["cif_id"])
+
             (graph_embeds,  # [B, max_graph_len, hid_dim],
              graph_masks,  # [B, max_graph_len],
              ) = self.graph_embeddings(

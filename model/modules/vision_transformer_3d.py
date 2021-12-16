@@ -361,7 +361,7 @@ class VisionTransformer3D(nn.Module):
                 .transpose(1, 2)  # [1, embed_dim, num_patches]
                 .view(1, emb_dim, self.patch_dim, self.patch_dim, self.patch_dim)
         )  # # [1, emb_dim, patch_dim, patch_dim, patch_dim] interpolate in the next line
-        print(x_h, x_w, x_d)
+        
         pos_embed = torch.cat(
             [
                 F.pad(
