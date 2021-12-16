@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ase.io import read
 
 
-def visualize_grid(grid_data, cell=None, zero_index=101, sign="=", path_cif=None):
+def visualize_grid(grid_data, cell=None, zero_index=30, sign="<", path_cif=None):
     """
     :param grid_data:
     :param cell: (x, y, z) cell size, List
@@ -23,6 +23,8 @@ def visualize_grid(grid_data, cell=None, zero_index=101, sign="=", path_cif=None
         mask = grid_data == zero_index
     elif sign == ">":
         mask = grid_data > zero_index
+
+
     else:
         mask = np.logical_and(grid_data < zero_index, grid_data > 0)
 
@@ -36,8 +38,8 @@ def visualize_grid(grid_data, cell=None, zero_index=101, sign="=", path_cif=None
         ys=y,
         zs=z,
         c=grid_data[mask],
-        cmap=plt.cm.Greens,
-        s=1,
+        cmap=plt.cm.plasma,
+        s=10,
         alpha=0.5)
 
     if path_cif:
@@ -48,6 +50,7 @@ def visualize_grid(grid_data, cell=None, zero_index=101, sign="=", path_cif=None
             ys=pos[:, 1],
             zs=pos[:, 2],
             c=atoms.numbers,
+            s=30,
             alpha=1.0,
         )
     if cell:
@@ -59,6 +62,6 @@ def visualize_grid(grid_data, cell=None, zero_index=101, sign="=", path_cif=None
     ax.set_ylim(0, _y)
     ax.set_zlim(0, _z)
 
-    ax.view_init(30, 300)
+    ax.view_init(0, 300)
     fig.colorbar(p, ax=ax)
     plt.show()

@@ -347,6 +347,7 @@ class VisionTransformer3D(nn.Module):
 
         x = self.patch_embed(_x)  # [B, emb_dim, ph, pw, pd]
         x_mask = (_x.sum(dim=1) != 0).float()[:, None, :, :, :]  # [B, 1, H, W, D]
+
         x_mask = F.interpolate(x_mask, size=(x.shape[2], x.shape[3], x.shape[4])).long()  # [B, 1, ph, pw, pd]
 
         x_h = x_mask[:, 0].sum(dim=1)[:, 0, 0]  # [B], # of non-mask pixel
@@ -360,13 +361,14 @@ class VisionTransformer3D(nn.Module):
                 .transpose(1, 2)  # [1, embed_dim, num_patches]
                 .view(1, emb_dim, self.patch_dim, self.patch_dim, self.patch_dim)
         )  # # [1, emb_dim, patch_dim, patch_dim, patch_dim] interpolate in the next line
-
+        
         pos_embed = torch.cat(
             [
                 F.pad(
                     F.interpolate(
                         spatial_pos, size=(h, w, d), mode="trilinear", align_corners=True,
-                    ),  # spatial_pos : [1, emb_dim, patch_dim, patch_dim] -> [1, emb_dim, h(x_h), w(x_w)]
+                    ),
+                    # spatial_pos : [1, emb_dim, patch_dim, patch_dim, patch_dim] -> [1, emb_dim, h(x_h), w(x_w), d(x_d)]
                     (0, pd - d, 0, pw - w, 0, ph - h),  # [1, emb_dim, ph, pw]
                 )
                 for h, w, d in zip(x_h, x_w, x_d)
