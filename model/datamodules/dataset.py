@@ -39,20 +39,18 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.data)
 
     @staticmethod
-    def make_grid_data(grid_data, bins=201, emin=-2000., emax=2000.):
+    def make_grid_data(grid_data, emin=2000.):
         """
         make grid_data within range (emin, emax) and
         make bins with logit function
         and digitize (0, bins)
         """
-        x = torch.linspace(0, 1, bins)
-        y = 0.1 * torch.log(x / (1 - x))
+        grid_data[grid_data < -emin] = -emin
+        grid_data = np.log((grid_data + emin) / emin)
 
-        bins = y * emax
-        bins[bins > emax] = emax
-        bins[bins <= emin] = emin
+        bins = np.linspace(-3, 30, 34)
+        new_grid_data = np.digitize(grid_data, bins)
 
-        new_grid_data = np.digitize(grid_data, bins, right=False)
         return new_grid_data
 
     def get_raw_grid_data(self, filename):

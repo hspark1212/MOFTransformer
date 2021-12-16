@@ -103,6 +103,7 @@ def task_ggm_mpp():
     # model
     use_transformer = True
     loss_names = _loss_names({"ggm": 1, "mpp": 1})
+    n_classes = 300
 
 
 """
