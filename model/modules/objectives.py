@@ -68,15 +68,13 @@ def compute_classification(pl_module, batch):
 def compute_mpp(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=True)
 
-    mpp_logits = pl_module.mpp_head(infer["grid_feats"])  # [B, max_image_len+1, 201]
+    mpp_logits = pl_module.mpp_head(infer["grid_feats"])  # [B, max_image_len+1, bins]
     mpp_labels = infer["grid_labels"]  # [B, max_image_len+1, C=1]
+
     mask = mpp_labels != -100.  # [B, max_image_len, 1]
 
-    # mpp_labels // 50. + 100
-    mpp_labels = torch.div(mpp_labels, 50) + 100  # [-5000, 5000] -> [0,200]
-
     # masking
-    mpp_logits = mpp_logits[mask.squeeze(-1)]  # [mask, 201]
+    mpp_logits = mpp_logits[mask.squeeze(-1)]  # [mask, bins]
     mpp_labels = mpp_labels[mask].long()  # [mask]
 
     mpp_loss = F.cross_entropy(mpp_logits, mpp_labels)
@@ -120,7 +118,7 @@ def compute_ggm(pl_module, batch):
     batch["grid"] = ggm_images
 
     infer = pl_module.infer(batch, mask_grid=False)
-    ggm_logits = pl_module.ggm_head(infer["cls_feats"])
+    ggm_logits = pl_module.ggm_head(infer["output"])  # cls_feats
     ggm_loss = F.cross_entropy(ggm_logits, ggm_labels.long())
 
     ret = {

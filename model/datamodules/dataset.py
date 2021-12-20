@@ -44,7 +44,8 @@ class Dataset(torch.utils.data.Dataset):
         make grid_data within range (emin, emax) and
         make bins with logit function
         and digitize (0, bins)
-        **** it should be made unnormalize in vision_transformer.mask_tokens)
+        ****
+            caution : 'zero' should be padding !!
             when you change bins, heads.MPP_heads should be changed
         ****
         """

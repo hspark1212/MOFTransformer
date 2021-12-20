@@ -15,6 +15,7 @@ warnings.filterwarnings(
     "ignore", ".*Trying to infer the `batch_size` from an ambiguous collection.*"
 )
 
+
 @ex.automain
 def main(_config):
     _config = copy.deepcopy(_config)
@@ -43,7 +44,7 @@ def main(_config):
 
     # gradient accumulation
     accumulate_grad_batches = _config["batch_size"] // (
-        _config["per_gpu_batchsize"] * _config["num_gpus"] * _config["num_nodes"]
+            _config["per_gpu_batchsize"] * _config["num_gpus"] * _config["num_nodes"]
     )
 
     max_steps = _config["max_steps"] if _config["max_steps"] is not None else None
@@ -52,7 +53,7 @@ def main(_config):
         gpus=_config["num_gpus"],
         num_nodes=_config["num_nodes"],
         precision=_config["precision"],
-        strategy=DDPPlugin(find_unused_parameters=False),
+        strategy=DDPPlugin(find_unused_parameters=False if _config["load_path"] == "" else True),
         # deterministic=True,
         benchmark=True,
         max_epochs=_config["max_epochs"],
@@ -69,4 +70,3 @@ def main(_config):
         trainer.fit(model, datamodule=dm)
     else:
         trainer.test(model, datamodule=dm)
-
