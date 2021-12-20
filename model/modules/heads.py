@@ -44,11 +44,11 @@ class MPPHead(nn.Module):
             hidden_size=hid_dim,
         )
         self.transform = BertPredictionHeadTransform(bert_config)
-        self.decoder = nn.Linear(hid_dim, 101+1)  # bins
+        self.decoder = nn.Linear(hid_dim, 101+2)  # bins
 
     def forward(self, x):  # [B, max_len, hid_dim]
         x = self.transform(x)  # [B, max_len, hid_dim]
-        x = self.decoder(x)  # [B, max_len, 201]
+        x = self.decoder(x)  # [B, max_len, bins]
         return x
 
 

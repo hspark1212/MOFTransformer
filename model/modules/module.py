@@ -75,6 +75,11 @@ class Module(LightningModule):
             self.mpp_head.apply(objectives.init_weights)
 
         # ===================== Downstream =====================
+        if config["load_path"] != "" and not config["test_only"]:
+            ckpt = torch.load(self.hparams.config["load_path"], map_location="cpu")
+            state_dict = ckpt["state_dict"]
+            self.load_state_dict(state_dict, strict=False)
+
         if self.use_cgcnn and self.use_egcnn:
             # concat
             hid_dim = config["hid_dim"] * 2
@@ -94,8 +99,8 @@ class Module(LightningModule):
         self.current_tasks = list()
         # ===================== load downstream (test_only) ======================
 
-        if self.hparams.config["load_path"] != "" and self.hparams.config["test_only"]:
-            ckpt = torch.load(self.hparams.config["load_path"], map_location="cpu")
+        if config["load_path"] != "" and config["test_only"]:
+            ckpt = torch.load(config["load_path"], map_location="cpu")
             state_dict = ckpt["state_dict"]
             self.load_state_dict(state_dict, strict=False)
 
@@ -145,6 +150,7 @@ class Module(LightningModule):
             return ret
 
         elif not self.use_cgcnn and self.use_egcnn:
+
             out_egcnn = self.egcnn(grid)  # [B, hid_dim]
             ret = {
                 "output": out_egcnn,
@@ -199,7 +205,7 @@ class Module(LightningModule):
             ret = {
                 "graph_feats": graph_feats,
                 "grid_feats": grid_feats,
-                "cls_feats": cls_feats,
+                "output": cls_feats,
                 "raw_cls_feats": x[:, 0],
                 "graph_masks": graph_masks,
                 "grid_masks": grid_masks,

@@ -19,9 +19,9 @@ def config():
     """
     # prepare_data
     max_num_atoms = 1000
-    min_length = 16
+    min_length = 30
     max_length = 60
-    radius = 12
+    radius = 8
     max_nbr_atoms = 12
     """
 
@@ -34,7 +34,7 @@ def config():
     loss_names = _loss_names({})
 
     # cgcnn
-    n_conv = 5 # default of CGCNN=3
+    n_conv = 5  # default of CGCNN=3
     atom_fea_len = 64  # default of CGCNN=64
     nbr_fea_len = 41  # dim for gaussian basis expansion
 
@@ -49,7 +49,7 @@ def config():
     img_size = 60
     patch_size = 10  # length of patch
     in_chans = 1  # channels of grid image
-    max_grid_len = 200  # when -1, max_image_len is set to maximum ph*ow of batch images
+    max_grid_len = -1  # when -1, max_image_len is set to maximum ph*pw of batch images
     draw_false_grid = True
 
     # transformer setting
@@ -103,7 +103,27 @@ def task_ggm_mpp():
     # model
     use_transformer = True
     loss_names = _loss_names({"ggm": 1, "mpp": 1})
+
+
+@ex.named_config
+def task_topology_10k():
+    exp_name = "task_topology_10k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
+    load_path = "/home/hspark8//PycharmProjects/pretrained_mof/result/task_ggm_mpp_seed0_from_/version_0/checkpoints/last.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"classification": 1})
     n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
 
 
 """
@@ -334,7 +354,6 @@ def egcnn_regression():
     draw_false_grid = False
 
 
-
 @ex.named_config
 def cgcnn_egcnn_regression():
     exp_name = "cgcnn_egcnn_regression"
@@ -342,4 +361,3 @@ def cgcnn_egcnn_regression():
     use_egcnn = True
     loss_names = _loss_names({"regression": 1})
     draw_false_grid = False
-

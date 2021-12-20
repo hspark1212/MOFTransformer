@@ -217,9 +217,11 @@ class VisionTransformer3D(nn.Module):
             norm_layer: (nn.Module): normalization layer
         """
         super().__init__()
-
+        drop_rate = drop_rate if config is None else config["drop_rate"]
         self.in_chans = in_chans
-
+        self.num_features = (
+            self.embed_dim
+        ) = embed_dim  # num_features for consistency with other models
         norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
         self.add_norm_before_transformer = add_norm_before_transformer
 
@@ -275,6 +277,10 @@ class VisionTransformer3D(nn.Module):
         elif isinstance(m, nn.LayerNorm):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
+
+    @torch.jit.ignore
+    def no_weight_decay(self):
+        return {"pos_embed", "cls_token"}
 
     def mask_tokens(self, orig_image, feats):
         """
@@ -332,31 +338,138 @@ class VisionTransformer3D(nn.Module):
             (patch_index, (H, W, D)): [[B, max_image_len+1, 3], [H, W, D]]
             label: [B, max_image_len+1, C]
         """
-        B, _, _, _, _ = _x.shape
-        x = self.patch_embed(_x)  # [B, emb_dim, ph, pw, pd]
-        x = x.flatten(2).transpose(1, 2)  # [B, ph*pw*pd, embed_dim]
 
-        # mpp
+        x = self.patch_embed(_x)  # [B, emb_dim, ph, pw, pd]
+        x_mask = (_x.sum(dim=1) != 0).float()[:, None, :, :, :]  # [B, 1, H, W, D]
+
+        x_mask = F.interpolate(x_mask, size=(x.shape[2], x.shape[3], x.shape[4])).long()  # [B, 1, ph, pw, pd]
+
+        x_h = x_mask[:, 0].sum(dim=1)[:, 0, 0]  # [B], # of non-mask pixel
+        x_w = x_mask[:, 0].sum(dim=2)[:, 0, 0]  # [B], # of non_mask pixel
+        x_d = x_mask[:, 0].sum(dim=3)[:, 0, 0]  # [B], # of non_mask pixel
+
+        B, emb_dim, ph, pw, pd = x.shape  # [B, emb_dim, ph, pw, pd]
+
+        spatial_pos = (
+            self.pos_embed[:, 1:, :]  # [1, num_patches, embed_dim]
+                .transpose(1, 2)  # [1, embed_dim, num_patches]
+                .view(1, emb_dim, self.patch_dim, self.patch_dim, self.patch_dim)
+        )  # # [1, emb_dim, patch_dim, patch_dim, patch_dim] interpolate in the next line
+        
+        pos_embed = torch.cat(
+            [
+                F.pad(
+                    F.interpolate(
+                        spatial_pos, size=(h, w, d), mode="trilinear", align_corners=True,
+                    ),
+                    # spatial_pos : [1, emb_dim, patch_dim, patch_dim, patch_dim] -> [1, emb_dim, h(x_h), w(x_w), d(x_d)]
+                    (0, pd - d, 0, pw - w, 0, ph - h),  # [1, emb_dim, ph, pw, pd]
+                )
+                for h, w, d in zip(x_h, x_w, x_d)
+            ],
+            dim=0,
+        )  # [B, emb_dim, ph, pw, pd]
+
+        # flatten and get patch_index
+        pos_embed = pos_embed.flatten(2).transpose(1, 2)  # [B, ph*pw*pd, emb_dim]
+        x = x.flatten(2).transpose(1, 2)  # [B, ph*pw*pd, emb_dim]
+
+        patch_index = (
+            torch.stack(
+                torch.meshgrid(
+                    torch.arange(x_mask.shape[-3]),
+                    torch.arange(x_mask.shape[-2]),
+                    torch.arange(x_mask.shape[-1]),
+                    indexing="ij",
+                ),
+                dim=-1,
+            )[None, None, :, :, :, :]  # [ph, pw, pd, 3] -> [1, 1, ph, pw, pd, 3]
+                .expand(x_mask.shape[0], x_mask.shape[1], -1, -1, -1, -1)  # [B, 1, ph, pw, pd, 3]
+                .flatten(1, 4)
+        )  # [B, ph*pw*pd, 3]
+
+        x_mask = x_mask.flatten(1)  # [B, ph*pw*pd]
+
         if mask_it:
             x, label = self.mask_tokens(_x, x)  # [B, ph*pw*pd, emb_dim], [B, ph*pw*pd, C]
+
+        if (
+                max_image_len < 0
+                or max_image_len is None
+                or not isinstance(max_image_len, int)
+        ):
+            # suppose aug is 800 x 1333, then, maximum effective res is 800 x 1333 (if one side gets bigger, the other will be constrained and be shrinked)
+            # (800 // self.patch_size) * (1333 // self.patch_size) is the maximum number of patches that single image can get.
+            # if self.patch_size = 32, 25 * 41 = 1025
+            # if res is 384 x 640, 12 * 20 = 240
+            eff = x_h * x_w * x_d
+            max_image_len = eff.max()
+        else:
+            eff = x_h * x_w * x_d
+            max_image_len = min(eff.max(), max_image_len)
+
+        # x_mask = [B, ph*pw*pd]
+        valid_idx = x_mask.nonzero(as_tuple=False)
+        non_valid_idx = (1 - x_mask).nonzero(as_tuple=False)
+        unique_rows = valid_idx[:, 0].unique()
+        valid_row_idx = [valid_idx[valid_idx[:, 0] == u] for u in unique_rows]
+        non_valid_row_idx = [
+            non_valid_idx[non_valid_idx[:, 0] == u] for u in unique_rows
+        ]
+
+        valid_nums = [v.size(0) for v in valid_row_idx]
+        non_valid_nums = [v.size(0) for v in non_valid_row_idx]
+        pad_nums = [max_image_len - v for v in valid_nums]
+
+        select = list()
+        for i, (v, nv, p) in enumerate(zip(valid_nums, non_valid_nums, pad_nums)):
+            if p <= 0:  # no padding -> valid_nums = max_len
+                valid_choice = torch.multinomial(torch.ones(v).float(), max_image_len)
+                select.append(valid_row_idx[i][valid_choice])
+
+            else:  # existing padding -> valid_nums < max_len
+                # randomly choice pad
+                pad_choice = torch.multinomial(
+                    torch.ones(nv).float(), p, replacement=True
+                )
+
+                # valid_row_idx and (randomly choice non_valid_row_idx with # of pad)
+                select.append(
+                    torch.cat(
+                        [valid_row_idx[i], non_valid_row_idx[i][pad_choice]], dim=0,
+                    )
+                )
+
+        select = torch.cat(select, dim=0)  # [max_len * B, ]
+
+        x = x[select[:, 0], select[:, 1]].view(B, -1, emb_dim)  # [B, max_len, emb_dim]
+        x_mask = x_mask[select[:, 0], select[:, 1]].view(B, -1)  # [B, max_len]
+        patch_index = patch_index[select[:, 0], select[:, 1]].view(B, -1, 3)  # [B, max_len, 2]
+        pos_embed = pos_embed[select[:, 0], select[:, 1]].view(B, -1, emb_dim)  # [B, max_len, emb_dim]
+
+        if mask_it:
+            label = label[select[:, 0], select[:, 1]].view(B, -1, self.in_chans)  # [B, max_len, C]
+
+            label[x_mask == 0] = -100  # [B, max_len, C]
+
             label = torch.cat(
-                [torch.full((label.shape[0], 1, self.in_chans), -100).to(label), label], dim=1,
+                [torch.full((label.shape[0], 1, self.in_chans), -100).to(label), label, ], dim=1,
             )  # [B, max_len+1, C]
 
-        # cls tokens
-        cls_token = self.cls_token.expand(B, -1, -1)  # [B, 1, embed_dim]
-        x = torch.cat([cls_token, x], dim=1)  # [B, ph*pw*pd, embed_dim]
-
-        # positional embedding
-        x += self.pos_embed
+        cls_tokens = self.cls_token.expand(B, -1, -1)  # [B, 1, emb_dim]
+        x = torch.cat((cls_tokens, x), dim=1)  # [B, max_len+1, C]
+        pos_embed = torch.cat(
+            (self.pos_embed[:, 0, :][:, None, :].expand(B, -1, -1), pos_embed), dim=1
+        )  # [B, max_len+1, C]
+        x = x + pos_embed
         x = self.pos_drop(x)
 
         if self.add_norm_before_transformer:
             x = self.pre_norm(x)
-
-        x_mask = torch.ones(x.shape[:2]).to(x) # [B, ph*pw*pd]
+        # x_mask = [B, max_len] -> [B, max_len+1]
+        x_mask = torch.cat([torch.ones(x_mask.shape[0], 1).to(x_mask), x_mask], dim=1)
 
         if mask_it:
-            return x, x_mask, None, label
+            return x, x_mask, (patch_index, (ph, pw)), label
         else:
-            return x, x_mask, None, None
+            return x, x_mask, (patch_index, (ph, pw)), None
