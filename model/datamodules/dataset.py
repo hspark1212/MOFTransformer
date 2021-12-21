@@ -13,6 +13,7 @@ class Dataset(torch.utils.data.Dataset):
             data_dir: str,
             split: str,
             draw_false_grid=True,
+            downstream="",
     ):
         """
         Dataset for pretrained MOF.
@@ -26,7 +27,10 @@ class Dataset(torch.utils.data.Dataset):
         self.draw_false_grid = draw_false_grid
 
         assert split in {"train", "test", "val"}
-        path_file = os.path.join(data_dir, f"{split}.arrow")
+        if downstream:
+            path_file = os.path.join(data_dir, f"{split}_{downstream}.arrow")
+        else:
+            path_file = os.path.join(data_dir, f"{split}.arrow")
         self.split = split
 
         assert os.path.isfile(path_file), print(f"{path_file} doesn't exist in {data_dir}")
