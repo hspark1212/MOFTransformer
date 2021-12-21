@@ -9,3 +9,4 @@ __pycache__/
 result/
 
 libs/GRIDAY/
+model/config_YH.py

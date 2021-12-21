@@ -278,4 +278,4 @@ def prepare_data(root_cifs, root_dataset,
 
 
 if __name__ == "__main__":
-    prepare_data("/home/data/pretrained_mof/tmp/cif/", "/home/data/pretrained_mof/tmp/dataset/")
+    prepare_data("/home/dudgns1675/data/qmof/cifs", "/home/dudgns1675/data/qmof/dataset")

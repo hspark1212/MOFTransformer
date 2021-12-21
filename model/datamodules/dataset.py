@@ -13,6 +13,7 @@ class Dataset(torch.utils.data.Dataset):
             data_dir: str,
             split: str,
             draw_false_grid=True,
+            downstream="",
     ):
         """
         Dataset for pretrained MOF.
@@ -26,7 +27,10 @@ class Dataset(torch.utils.data.Dataset):
         self.draw_false_grid = draw_false_grid
 
         assert split in {"train", "test", "val"}
-        path_file = os.path.join(data_dir, f"{split}.arrow")
+        if downstream:
+            path_file = os.path.join(data_dir, f"{split}_{downstream}.arrow")
+        else:
+            path_file = os.path.join(data_dir, f"{split}.arrow")
         self.split = split
 
         assert os.path.isfile(path_file), print(f"{path_file} doesn't exist in {data_dir}")
@@ -39,20 +43,21 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.data)
 
     @staticmethod
-    def make_grid_data(grid_data, bins=201, emin=-2000., emax=2000.):
+    def make_grid_data(grid_data, emin=-5000., emax=5000, bins=101):
         """
         make grid_data within range (emin, emax) and
         make bins with logit function
         and digitize (0, bins)
+        **** it should be made unnormalize in vision_transformer.mask_tokens)
+            when you change bins, heads.MPP_heads should be changed
+        ****
         """
-        x = torch.linspace(0, 1, bins)
-        y = 0.1 * torch.log(x / (1 - x))
+        grid_data[grid_data <= emin] = emin
+        grid_data[grid_data > emax] = emax
 
-        bins = y * emax
-        bins[bins > emax] = emax
-        bins[bins <= emin] = emin
+        x = np.linspace(emin, emax, bins)
+        new_grid_data = np.digitize(grid_data, x) + 1
 
-        new_grid_data = np.digitize(grid_data, bins, right=False)
         return new_grid_data
 
     def get_raw_grid_data(self, filename):
