@@ -76,26 +76,19 @@ def get_unique_atoms(atoms):
 
 
 def get_crystal_graph(st, radius=8, max_num_nbr=12):
-    atoms = AseAtomsAdaptor().get_atoms(st)
+    atom_num = list(st.atomic_numbers)
 
-    atom_num = list(atoms.numbers)  # [N]
-
-    dist_matrix = atoms.get_all_distances(mic=True)
+    all_nbrs = st.get_all_neighbors(radius)
+    all_nbrs = [sorted(nbrs, key=lambda x: x.nn_distance)[:max_num_nbr] for nbrs in all_nbrs]
 
     nbr_idx = []
     nbr_dist = []
-
-    for i, row in enumerate(dist_matrix):
-        cond = np.logical_and(row > 0., row < radius)
-        idx = np.where(cond)[0]
-        sort = np.argsort(row[idx])
-        sorted_idx = idx[sort]
-        sorted_dist = row[sorted_idx]
-
-        nbr_idx.extend(sorted_idx[:max_num_nbr])
-        nbr_dist.extend(sorted_dist[:max_num_nbr])
+    for nbrs in all_nbrs:
+        nbr_idx.extend(list(map(lambda x: x.index, nbrs)))
+        nbr_dist.extend(list(map(lambda x: x.nn_distance, nbrs)))
 
     # get same-topo atoms
+    atoms = AseAtomsAdaptor().get_atoms(st)
     uni_idx, uni_count = get_unique_atoms(atoms)
 
     return atom_num, nbr_idx, nbr_dist, uni_idx, uni_count
@@ -142,15 +135,14 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
     out, err = proc.communicate()
 
     if err:
-        eg_logger.info(f"{cif_id} energy grid failed")
+        eg_logger.info(f"{cif_id} energy grid failed {err}")
     else:
         eg_logger.info(f"{cif_id} energy grid success")
 
-    for cssr_file in glob.glob(f"{root_dataset}/*.cssr"):
-        try:
-            os.remove(cssr_file)
-        except Exception as e:
-            print(e)
+    try:
+        os.remove(tmp_file)
+    except Exception as e:
+        print(e)
 
 
 def prepare_data(root_cifs, root_dataset,
