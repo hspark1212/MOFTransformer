@@ -19,6 +19,7 @@ class Datamodule(LightningDataModule):
 
         self.draw_false_grid = _config["draw_false_grid"]
         self.img_size = _config["img_size"]
+        self.downstream = _config["downstream"]
 
     @property
     def dataset_cls(self):
@@ -29,6 +30,7 @@ class Datamodule(LightningDataModule):
             self.data_dir,
             split="train",
             draw_false_grid=self.draw_false_grid,
+            downstream=self.downstream,
         )
 
     def set_val_dataset(self):
@@ -36,6 +38,7 @@ class Datamodule(LightningDataModule):
             self.data_dir,
             split="val",
             draw_false_grid=self.draw_false_grid,
+            downstream=self.downstream,
         )
 
     def set_test_dataset(self):
@@ -43,6 +46,7 @@ class Datamodule(LightningDataModule):
             self.data_dir,
             split="test",
             draw_false_grid=self.draw_false_grid,
+            downstream=self.downstream,
         )
 
     def setup(self, stage: Optional[str] = None):
