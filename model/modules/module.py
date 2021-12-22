@@ -18,6 +18,8 @@ class Module(LightningModule):
         self.use_transformer = config["use_transformer"]
 
         self.max_grid_len = config["max_grid_len"]
+        self.strategy = config["strategy"]
+        
 
         if self.use_cgcnn:
             self.cgcnn = CrystalGraphConvNet(
@@ -80,7 +82,7 @@ class Module(LightningModule):
             state_dict = ckpt["state_dict"]
             self.load_state_dict(state_dict, strict=False)
 
-        if self.use_cgcnn and self.use_egcnn:
+        if self.use_cgcnn and self.use_egcnn and self.strategy == 'concat':
             # concat
             hid_dim = config["hid_dim"] * 2
         else:
@@ -128,7 +130,14 @@ class Module(LightningModule):
             )  # [B,hid_dim]
             out_egcnn = self.egcnn(grid)  # [B, hid_dim]
 
-            out = torch.cat([out_cgcnn, out_egcnn], dim=-1)  # [B, hid_dim*2]
+            if self.strategy == 'concat':
+                out = torch.cat([out_cgcnn, out_egcnn], dim=-1)  # [B, hid_dim*2]
+            elif self.strategy == 'element_wise_sum':
+                out = out_cgcnn + out_egcnn
+            elif self.strategy == 'element_wise_multiplication':
+                out = torch.mul(out_cgcnn, out_egcnn)
+            else:
+                raise ValueError(f'Strategy must be concat, element_wise_sum, or element_wise_multiplication, not {self.strategy}')
 
             ret = {
                 "output": out

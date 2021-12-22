@@ -40,6 +40,9 @@ def config():
 
     # egcnn
     egcnn_depth = 18  # 10, 18, 34, 50, 101, 152, 200
+    
+    # cgcnn + egcnn
+    strategy = 'concat'
 
     # graph seeting
     max_atom_len = 1000  # number of maximum atoms in primitive cell
