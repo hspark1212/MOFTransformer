@@ -2,7 +2,7 @@ import copy
 import os
 import pytorch_lightning as pl
 
-from model.config import ex
+from model.config_YH import ex
 
 from model.datamodules.datamodule import Datamodule
 from model.modules.module import Module
@@ -41,10 +41,14 @@ def main(_config):
 
     lr_callback = pl.callbacks.LearningRateMonitor(logging_interval="step")
     callbacks = [checkpoint_callback, lr_callback]
-
+    
+    num_gpus = _config["num_gpus"]
+    if isinstance(num_gpus, list):
+        num_gpus = len(num_gpus)
+    
     # gradient accumulation
     accumulate_grad_batches = _config["batch_size"] // (
-            _config["per_gpu_batchsize"] * _config["num_gpus"] * _config["num_nodes"]
+            _config["per_gpu_batchsize"] * num_gpus * _config["num_nodes"]
     )
 
     max_steps = _config["max_steps"] if _config["max_steps"] is not None else None

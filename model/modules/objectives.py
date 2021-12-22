@@ -19,6 +19,7 @@ def compute_regression(pl_module, batch):
 
     logits = pl_module.regression_head(infer["output"]).squeeze(-1)  # [B]
     labels = torch.FloatTensor(batch["target"]).to(logits.device)  # [B]
+    
     assert len(labels.shape) == 1
 
     loss = F.mse_loss(logits, labels)
@@ -27,6 +28,8 @@ def compute_regression(pl_module, batch):
         "regression_logits": logits,
         "regression_labels": labels,
     }
+    
+    #print (logits, labels, loss)
 
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
