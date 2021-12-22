@@ -15,6 +15,7 @@ def set_metrics(pl_module):
             if v < 1:
                 continue
             if k == "regression":
+                setattr(pl_module, f"{split}_{k}_r2", Scalar())
                 setattr(pl_module, f"{split}_{k}_loss", Scalar())
             else:
                 setattr(pl_module, f"{split}_{k}_accuracy", Accuracy())
@@ -40,6 +41,9 @@ def epoch_wrapup(pl_module):
         value = torch.FloatTensor([0])
 
         if loss_name == "regression":
+            value = getattr(pl_module, f"{phase}_{loss_name}_r2").compute()
+            pl_module.log(f"{loss_name}/{phase}/r2_epoch", value)
+            getattr(pl_module, f"{phase}_{loss_name}_r2").reset()
             pl_module.log(
                 f"{loss_name}/{phase}/loss_epoch",
                 getattr(pl_module, f"{phase}_{loss_name}_loss").compute(),
@@ -56,7 +60,6 @@ def epoch_wrapup(pl_module):
             getattr(pl_module, f"{phase}_{loss_name}_loss").reset()
 
         the_metric += value
-
 
     pl_module.log(f"{phase}/the_metric", the_metric)
 
@@ -107,8 +110,8 @@ def set_schedule(pl_module):
             "params": [
                 p
                 for n, p in pl_module.named_parameters()
-                if not any(nd in n for nd in no_decay) # not within no_decay
-                   and any(bb in n for bb in head_names) # within head_names
+                if not any(nd in n for nd in no_decay)  # not within no_decay
+                   and any(bb in n for bb in head_names)  # within head_names
             ],
             "weight_decay": wd,
             "lr": lr * lr_mult,
@@ -134,7 +137,7 @@ def set_schedule(pl_module):
     elif optim_type == "sgd":
         optimizer = torch.optim.SGD(optimizer_grouped_parameters, lr=lr, momentum=0.9)
 
-    if pl_module.trainer.max_steps == -1: # when max_steps=None in config.
+    if pl_module.trainer.max_steps == -1:  # when max_steps=None in config.
         max_steps = (
                 len(pl_module.trainer.datamodule.train_dataloader())
                 * pl_module.trainer.max_epochs

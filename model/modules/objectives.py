@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchmetrics.functional import r2_score
 
 
 def init_weights(module):
@@ -19,7 +20,7 @@ def compute_regression(pl_module, batch):
 
     logits = pl_module.regression_head(infer["output"]).squeeze(-1)  # [B]
     labels = torch.FloatTensor(batch["target"]).to(logits.device)  # [B]
-    
+
     assert len(labels.shape) == 1
 
     loss = F.mse_loss(logits, labels)
@@ -28,14 +29,16 @@ def compute_regression(pl_module, batch):
         "regression_logits": logits,
         "regression_labels": labels,
     }
-    
-    #print (logits, labels, loss)
 
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_regression_loss")(ret["regression_loss"])
+    r2 = getattr(pl_module, f"{phase}_regression_r2")(
+        r2_score(ret["regression_logits"], ret["regression_labels"])
+    )
 
     pl_module.log(f"regression/{phase}/loss", loss)
+    pl_module.log(f"classification/{phase}/r2", r2)
 
     return ret
 
