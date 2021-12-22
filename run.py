@@ -2,7 +2,7 @@ import copy
 import os
 import pytorch_lightning as pl
 
-from model.config_YH import ex
+from model.config import ex
 
 from model.datamodules.datamodule import Datamodule
 from model.modules.module import Module

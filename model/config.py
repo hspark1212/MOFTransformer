@@ -60,6 +60,7 @@ def config():
     drop_rate = 0.1
 
     # downstream
+    downstream = ""
     n_classes = 0
 
     # Optimizer Setting
@@ -340,6 +341,7 @@ regression (tmp version)
 
 @ex.named_config
 def cgcnn_regression():
+    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
     exp_name = "cgcnn_regression"
     use_cgcnn = True
     loss_names = _loss_names({"regression": 1})
