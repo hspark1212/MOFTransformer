@@ -61,6 +61,10 @@ class Module(LightningModule):
                 drop_rate=config["drop_rate"],
             )
 
+            # pooler
+            self.pooler = heads.Pooler(config["hid_dim"])
+            self.pooler.apply(objectives.init_weights)
+
         self.use_only_vit = config["use_only_vit"]
         if self.use_only_vit:
             """future removed..."""
@@ -75,9 +79,9 @@ class Module(LightningModule):
                 mlp_ratio=config["mlp_ratio"],
                 drop_rate=config["drop_rate"],
             )
-        # pooler
-        self.pooler = heads.Pooler(config["hid_dim"])
-        self.pooler.apply(objectives.init_weights)
+            # pooler
+            self.pooler = heads.Pooler(config["hid_dim"])
+            self.pooler.apply(objectives.init_weights)
 
         # ===================== loss =====================
         if config["loss_names"]["ggm"] > 0:
