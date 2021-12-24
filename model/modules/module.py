@@ -61,9 +61,23 @@ class Module(LightningModule):
                 drop_rate=config["drop_rate"],
             )
 
-            # pooler
-            self.pooler = heads.Pooler(config["hid_dim"])
-            self.pooler.apply(objectives.init_weights)
+        self.use_only_vit = config["use_only_vit"]
+        if self.use_only_vit:
+            """future removed..."""
+            # set vision transformer transformer
+            self.transformer = VisionTransformer3D(
+                img_size=config["img_size"],
+                patch_size=config["patch_size"],
+                in_chans=config["in_chans"],
+                embed_dim=config["hid_dim"],
+                depth=config["num_layers"],
+                num_heads=config["num_heads"],
+                mlp_ratio=config["mlp_ratio"],
+                drop_rate=config["drop_rate"],
+            )
+        # pooler
+        self.pooler = heads.Pooler(config["hid_dim"])
+        self.pooler.apply(objectives.init_weights)
 
         # ===================== loss =====================
         if config["loss_names"]["ggm"] > 0:
@@ -208,6 +222,34 @@ class Module(LightningModule):
                 "output": cls_feats,
                 "raw_cls_feats": x[:, 0],
                 "graph_masks": graph_masks,
+                "grid_masks": grid_masks,
+                "grid_labels": grid_labels,  # if MPP, else None
+            }
+
+            return ret
+
+        elif self.use_only_vit:
+            """future removed..."""
+            (grid_embeds,  # [B, max_grid_len+1, hid_dim]
+             grid_masks,  # [B, max_grid_len+1]
+             patch_index,  # (patch_index [B, grid+1, 2], (H, W))
+             grid_labels,  # [B, grid+1, C] if mask_image == True
+             ) = self.transformer.visual_embed(
+                grid,
+                max_image_len=self.max_grid_len,
+                mask_it=mask_grid,
+            )
+
+            x = grid_embeds
+            for i, blk in enumerate(self.transformer.blocks):
+                x, _attn = blk(x, mask=grid_masks)
+
+            cls_feats = self.pooler(x)  # [B, hid_dim]
+
+            ret = {
+                "grid_feats": grid_embeds,
+                "output": cls_feats,
+                "raw_cls_feats": x[:, 0],
                 "grid_masks": grid_masks,
                 "grid_labels": grid_labels,  # if MPP, else None
             }

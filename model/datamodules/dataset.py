@@ -32,7 +32,7 @@ class Dataset(torch.utils.data.Dataset):
         else:
             path_file = os.path.join(data_dir, f"{split}.arrow")
         self.split = split
-
+        print(path_file)
         assert os.path.isfile(path_file), print(f"{path_file} doesn't exist in {data_dir}")
 
         self.data = pa.ipc.RecordBatchFileReader(

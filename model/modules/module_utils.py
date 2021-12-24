@@ -17,6 +17,7 @@ def set_metrics(pl_module):
             if k == "regression":
                 setattr(pl_module, f"{split}_{k}_r2", Scalar())
                 setattr(pl_module, f"{split}_{k}_loss", Scalar())
+                setattr(pl_module, f"{split}_{k}_mae", Scalar())
             else:
                 setattr(pl_module, f"{split}_{k}_accuracy", Accuracy())
                 setattr(pl_module, f"{split}_{k}_loss", Scalar())
@@ -38,17 +39,23 @@ def epoch_wrapup(pl_module):
         if v < 1:
             continue
 
-        value = torch.FloatTensor([0])
-
         if loss_name == "regression":
+            # r2
             value = getattr(pl_module, f"{phase}_{loss_name}_r2").compute()
             pl_module.log(f"{loss_name}/{phase}/r2_epoch", value)
             getattr(pl_module, f"{phase}_{loss_name}_r2").reset()
+            # mse loss
             pl_module.log(
                 f"{loss_name}/{phase}/loss_epoch",
                 getattr(pl_module, f"{phase}_{loss_name}_loss").compute(),
             )
             getattr(pl_module, f"{phase}_{loss_name}_loss").reset()
+            # mae loss
+            pl_module.log(
+                f"{loss_name}/{phase}/mae_epoch",
+                getattr(pl_module, f"{phase}_{loss_name}_mae").compute(),
+            )
+            getattr(pl_module, f"{phase}_{loss_name}_mae").reset()
         else:
             value = getattr(pl_module, f"{phase}_{loss_name}_accuracy").compute()
             pl_module.log(f"{loss_name}/{phase}/accuracy_epoch", value)
@@ -151,7 +158,7 @@ def set_schedule(pl_module):
     if isinstance(pl_module.hparams.config["warmup_steps"], float):
         warmup_steps = int(max_steps * warmup_steps)
 
-    print(f"max_steps: {max_steps} | warmup_steps : {warmup_steps}")
+    print(f"max_epochs: {pl_module.trainer.max_epochs} | max_steps: {max_steps} | warmup_steps : {warmup_steps}")
 
     if decay_power == "cosine":
         scheduler = get_cosine_schedule_with_warmup(
