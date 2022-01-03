@@ -4,6 +4,8 @@ from transformers.optimization import AdamW
 from transformers import (
     get_polynomial_decay_schedule_with_warmup,
     get_cosine_schedule_with_warmup,
+    get_constant_schedule,
+    get_constant_schedule_with_warmup,
 )
 
 from model.gadgets.my_metrics import Accuracy, Scalar
@@ -159,7 +161,15 @@ def set_schedule(pl_module):
             num_warmup_steps=warmup_steps,
             num_training_steps=max_steps,
         )
-
+    elif decay_power == 'constant':
+        scheduler = get_constant_schedule(
+            optimizer,
+        )
+    elif decay_power == 'constant_with_warmup':
+        scheduler = get_constant_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=warmup_steps,
+        )
     else:
         scheduler = get_polynomial_decay_schedule_with_warmup(
             optimizer,
@@ -172,6 +182,6 @@ def set_schedule(pl_module):
     sched = {"scheduler": scheduler, "interval": "step"}
 
     return (
-        [optimizer],
-        [sched],
-    )
+         [optimizer],
+         [sched],
+            )
