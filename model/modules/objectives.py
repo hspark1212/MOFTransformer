@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics.functional import r2_score
+from torchmetrics.functional import r2_score, mean_absolute_error
 
 
 def init_weights(module):
@@ -36,9 +36,13 @@ def compute_regression(pl_module, batch):
     r2 = getattr(pl_module, f"{phase}_regression_r2")(
         r2_score(ret["regression_logits"], ret["regression_labels"])
     )
+    mae = getattr(pl_module,  f"{phase}_regression_mae")(
+        mean_absolute_error(ret["regression_logits"], ret["regression_labels"])
+    )
 
     pl_module.log(f"regression/{phase}/loss", loss)
-    pl_module.log(f"classification/{phase}/r2", r2)
+    pl_module.log(f"regression/{phase}/r2", r2)
+    pl_module.log(f"regression/{phase}/mae", mae)
 
     return ret
 

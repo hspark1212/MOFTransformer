@@ -93,32 +93,221 @@ def config():
     num_workers = 16  # the number of cpu's core
     precision = 16
 
+    # experiments
+    use_only_vit = False
+
 
 """
-topology classfication (ver 2)
+pretraining (ver 2)
 """
 
 
 @ex.named_config
 def task_ggm_mpp():
     exp_name = "task_ggm_mpp"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
 
     # model
     use_transformer = True
     loss_names = _loss_names({"ggm": 1, "mpp": 1})
 
 
+"""
+finetuning (ver2) - topology
+"""
+
+
 @ex.named_config
-def task_topology_10k():
-    exp_name = "task_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
-    load_path = "/home/hspark8//PycharmProjects/pretrained_mof/result/task_ggm_mpp_seed0_from_/version_0/checkpoints/last.ckpt"
+def task_topology_1k():
+    exp_name = "task_topology_1k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    downstream = "topology"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
 
     # model
     use_transformer = True
     loss_names = _loss_names({"classification": 1})
     n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 32
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def task_topology_10k():
+    exp_name = "task_topology_10k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    downstream = "topology"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def task_topology_15k():
+    exp_name = "task_topology_15k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/15k/"
+    downstream = "topology"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 300
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+"""
+finetuning (ver2) - cgmc
+"""
+
+
+@ex.named_config
+def task_gcmc_1k():
+    exp_name = "task_gcmc_1k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    downstream = "gcmc_h2_scaled_5bar"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 32
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def task_gcmc_10k():
+    exp_name = "task_gcmc_10k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    downstream = "gcmc_h2_scaled_5bar"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def task_gcmc_15k():
+    exp_name = "task_gcmc_15k"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/15k/"
+    downstream = "gcmc_h2_scaled_5bar"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+"""
+finetuning (ver2) - qmof
+"""
+
+
+@ex.named_config
+def task_qmof_1k():
+    exp_name = "task_qmof_1k"
+    data_root = "/home/data/pretrained_mof/qmof_ver14/dataset/1k/"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+    batch_size = 32
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def task_qmof_10k():
+    exp_name = "task_qmof_10k"
+    data_root = "/home/data/pretrained_mof/qmof_ver14/dataset/10k/"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+    draw_false_grid = False
+
+    # trainer
+    max_epochs = 100
+
+    # optimizer
+    optim_type = "sgd"
+    learning_rate = 1e-2
+    weight_decay = 0.
+
+
+@ex.named_config
+def task_qmof_15k():
+    exp_name = "task_qmof_15k"
+    data_root = "/home/data/pretrained_mof/qmof_ver14/dataset/15k/"
+    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
     draw_false_grid = False
 
     # trainer
@@ -138,7 +327,8 @@ topology classfication (ver 2, 1k)
 @ex.named_config
 def cgcnn_topology_1k():
     exp_name = "cgcnn_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    downstream = "topology"
 
     # model
     use_cgcnn = True
@@ -159,7 +349,8 @@ def cgcnn_topology_1k():
 @ex.named_config
 def egcnn_topology_1k():
     exp_name = "egcnn_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    downstream = "topology"
 
     # model
     use_egcnn = True
@@ -180,7 +371,8 @@ def egcnn_topology_1k():
 @ex.named_config
 def cgcnn_egcnn_topology_1k():
     exp_name = "cgcnn_egcnn_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    downstream = "topology"
 
     # model
     use_cgcnn = True
@@ -207,7 +399,8 @@ topology classfication (ver 2, 10k)
 @ex.named_config
 def cgcnn_topology_10k():
     exp_name = "cgcnn_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    downstream = "topology"
 
     # model
     use_cgcnn = True
@@ -228,7 +421,8 @@ def cgcnn_topology_10k():
 @ex.named_config
 def egcnn_topology_10k():
     exp_name = "egcnn_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    downstream = "topology"
 
     # model
     use_egcnn = True
@@ -249,7 +443,8 @@ def egcnn_topology_10k():
 @ex.named_config
 def cgcnn_egcnn_topology_10k():
     exp_name = "cgcnn_egcnn_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    downstream = "topology"
 
     # model
     use_cgcnn = True
@@ -276,7 +471,8 @@ topology classfication (ver 2, 100k)
 @ex.named_config
 def cgcnn_topology_100k():
     exp_name = "cgcnn_topology_100k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
+    downstream = "topology"
 
     # model
     use_cgcnn = True
@@ -297,7 +493,8 @@ def cgcnn_topology_100k():
 @ex.named_config
 def egcnn_topology_100k():
     exp_name = "egcnn_topology_100k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
+    downstream = "topology"
 
     # model
     use_egcnn = True
@@ -318,7 +515,8 @@ def egcnn_topology_100k():
 @ex.named_config
 def cgcnn_egcnn_topology_100k():
     exp_name = "cgcnn_egcnn_topology_100k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
+    downstream = "topology"
 
     # model
     use_cgcnn = True
@@ -335,34 +533,3 @@ def cgcnn_egcnn_topology_100k():
     optim_type = "sgd"
     learning_rate = 1e-2
     weight_decay = 0.
-
-
-"""
-regression (tmp version)
-"""
-
-
-@ex.named_config
-def cgcnn_regression():
-    data_root = "/home/data/pretrained_mof/ver2/dataset/topology/1k/"
-    exp_name = "cgcnn_regression"
-    use_cgcnn = True
-    loss_names = _loss_names({"regression": 1})
-    draw_false_grid = False
-
-
-@ex.named_config
-def egcnn_regression():
-    exp_name = "egcnn_regression"
-    use_egcnn = True
-    loss_names = _loss_names({"regression": 1})
-    draw_false_grid = False
-
-
-@ex.named_config
-def cgcnn_egcnn_regression():
-    exp_name = "cgcnn_egcnn_regression"
-    use_cgcnn = True
-    use_egcnn = True
-    loss_names = _loss_names({"regression": 1})
-    draw_false_grid = False
