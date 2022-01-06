@@ -21,8 +21,8 @@ from functools import partial
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
+from torch.nn import AvgPool3d
 from timm.models.layers import DropPath, trunc_normal_
 
 
@@ -197,6 +197,7 @@ class VisionTransformer3D(nn.Module):
             drop_path_rate=0.0,
             norm_layer=None,
             add_norm_before_transformer=False,
+            mpp_ratio=0.15,
             config=None,
     ):
         """
@@ -219,6 +220,7 @@ class VisionTransformer3D(nn.Module):
         super().__init__()
 
         self.in_chans = in_chans
+        self.mpp_ratio = mpp_ratio
 
         norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
         self.add_norm_before_transformer = add_norm_before_transformer
@@ -276,7 +278,7 @@ class VisionTransformer3D(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    def mask_tokens(self, orig_image, feats):
+    def mask_tokens(self, orig_image, feats, patch_size, mpp_ratio):
         """
         Prepare masked tokens inputs/labels for masked patch prediction: 80% MASK, 10% random, 10% original.
         :param orig_image = _x, Tensor [B, C, H, W, D]
@@ -285,39 +287,30 @@ class VisionTransformer3D(nn.Module):
         :return feats [B, ph*pw, emb_dim], labels [B, ph*pw, C]
 
         """
-        B, C, _, _, _ = orig_image.shape
 
-        _, _, P, P, P = self.patch_embed.proj.weight.shape
-
-        # [B, C, H, W, D] -> [B, C, ph, pw, pd] with average channel in patch
+        m = AvgPool3d(patch_size, patch_size)
         with torch.no_grad():
-            img_unnorm_patch = F.conv3d(
-                orig_image,
-                weight=torch.ones(C, 1, P, P, P).to(orig_image) / (P * P * P),
-                bias=None,
-                stride=(P, P, P),
-                padding=0,
-                groups=C,  # when channel=3 -> groups=3
-            )  # [B, C, ph, pw, pd]
+            img_patch = m(orig_image)
 
         labels = (
-            (img_unnorm_patch.long().flatten(start_dim=2, end_dim=4))  # [B, C, ph*pw*pd]
+            (img_patch.long().flatten(start_dim=2, end_dim=4))  # [B, C, ph*pw*pd]
                 .permute(0, 2, 1)
                 .contiguous()
         )  # [B, ph*pw*pd, C]
 
         # We sample a few tokens in each sequence for MLM training (with probability `self.mlm_probability`)
-        probability_matrix = torch.full(labels.shape[:-1], 0.15)  # [B, ph*pw*pd]
+        # probability_matrix = torch.full(labels.shape[:-1], 0.15)  # [B, ph*pw*pd]
+        probability_matrix = torch.full(labels.shape[:-1], mpp_ratio)  # [B, ph*pw*pd]
         masked_indices = torch.bernoulli(probability_matrix).bool()
         labels[~masked_indices] = -100  # We only compute loss on masked tokens [B, ph*pw*pd, C]
-
+        """
         # 80% of the time, we replace masked input tokens with tokenizer.mask_token ([MASK])
         indices_replaced = (
                 torch.bernoulli(torch.full(labels.shape[:-1], 0.8)).bool() & masked_indices
         )  # [B, ph*pw*pd]
 
         feats[indices_replaced] = self.mask_token.to(feats)
-
+        """
         return feats, labels
 
     def visual_embed(self, _x, max_image_len, mask_it=False):
@@ -332,13 +325,14 @@ class VisionTransformer3D(nn.Module):
             (patch_index, (H, W, D)): [[B, max_image_len+1, 3], [H, W, D]]
             label: [B, max_image_len+1, C]
         """
+
         B, _, _, _, _ = _x.shape
         x = self.patch_embed(_x)  # [B, emb_dim, ph, pw, pd]
         x = x.flatten(2).transpose(1, 2)  # [B, ph*pw*pd, embed_dim]
 
         # mpp
         if mask_it:
-            x, label = self.mask_tokens(_x, x)  # [B, ph*pw*pd, emb_dim], [B, ph*pw*pd, C]
+            x, label = self.mask_tokens(_x, x, self.patch_size, self.mpp_ratio)  # [B, ph*pw*pd, emb_dim], [B, ph*pw*pd, C]
             label = torch.cat(
                 [torch.full((label.shape[0], 1, self.in_chans), -100).to(label), label], dim=1,
             )  # [B, max_len+1, C]
@@ -354,9 +348,9 @@ class VisionTransformer3D(nn.Module):
         if self.add_norm_before_transformer:
             x = self.pre_norm(x)
 
-        x_mask = torch.ones(x.shape[:2]).to(x) # [B, ph*pw*pd]
+        x_mask = torch.ones(x.shape[:2]).to(x)  # [B, ph*pw*pd]
 
         if mask_it:
-            return x, x_mask, None, label
+            return x, x_mask, label
         else:
-            return x, x_mask, None, None
+            return x, x_mask, None

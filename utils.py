@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ase.io import read
 
 
-def visualize_grid(grid_data, cell=None, zero_index=102, sign="<", path_cif=None):
+def visualize_grid(grid_data, cell=None, zero_index=51, sign="<", path_cif=None):
     """
     :param grid_data:
     :param cell: (x, y, z) cell size, List
@@ -62,6 +62,6 @@ def visualize_grid(grid_data, cell=None, zero_index=102, sign="<", path_cif=None
     ax.set_ylim(0, _y)
     ax.set_zlim(0, _z)
 
-    ax.view_init(0, 300)
+    ax.view_init(30, 300)
     fig.colorbar(p, ax=ax)
     plt.show()

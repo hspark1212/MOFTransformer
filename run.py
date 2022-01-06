@@ -2,7 +2,7 @@ import copy
 import os
 import pytorch_lightning as pl
 
-from model.config_YH import ex
+from model.config import ex
 
 from model.datamodules.datamodule import Datamodule
 from model.modules.module import Module
@@ -57,7 +57,8 @@ def main(_config):
         gpus=_config["num_gpus"],
         num_nodes=_config["num_nodes"],
         precision=_config["precision"],
-        strategy=DDPPlugin(find_unused_parameters=False if _config["load_path"] == "" else True),
+        # strategy=DDPPlugin(find_unused_parameters=False if _config["load_path"] == "" else True),
+        strategy=DDPPlugin(find_unused_parameters=True),
         # deterministic=True,
         benchmark=True,
         max_epochs=_config["max_epochs"],

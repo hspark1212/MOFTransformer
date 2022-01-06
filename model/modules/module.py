@@ -19,7 +19,6 @@ class Module(LightningModule):
 
         self.max_grid_len = config["max_grid_len"]
         self.strategy = config["strategy"]
-        
 
         if self.use_cgcnn:
             self.cgcnn = CrystalGraphConvNet(
@@ -61,6 +60,7 @@ class Module(LightningModule):
                 num_heads=config["num_heads"],
                 mlp_ratio=config["mlp_ratio"],
                 drop_rate=config["drop_rate"],
+                mpp_ratio=config["mpp_ratio"],
             )
 
             # pooler
@@ -80,6 +80,7 @@ class Module(LightningModule):
                 num_heads=config["num_heads"],
                 mlp_ratio=config["mlp_ratio"],
                 drop_rate=config["drop_rate"],
+                mpp_ratio=config["mpp_ratio"],
             )
             # pooler
             self.pooler = heads.Pooler(config["hid_dim"])
@@ -99,19 +100,21 @@ class Module(LightningModule):
             ckpt = torch.load(self.hparams.config["load_path"], map_location="cpu")
             state_dict = ckpt["state_dict"]
             self.load_state_dict(state_dict, strict=False)
+            print(f"load model : {config['load_path']}")
 
         if self.use_cgcnn and self.use_egcnn and self.strategy == 'concat':
             # concat
             hid_dim = config["hid_dim"] * 2
         else:
             hid_dim = config["hid_dim"]
-        n_classes = config["n_classes"]
+
 
         if self.hparams.config["loss_names"]["regression"] > 0:
             self.regression_head = heads.RegressionHead(hid_dim)
             self.regression_head.apply(objectives.init_weights)
 
         if self.hparams.config["loss_names"]["classification"] > 0:
+            n_classes = config["n_classes"]
             self.classification_head = heads.ClassificationHead(hid_dim, n_classes)
             self.classification_head.apply(objectives.init_weights)
 
@@ -123,6 +126,7 @@ class Module(LightningModule):
             ckpt = torch.load(config["load_path"], map_location="cpu")
             state_dict = ckpt["state_dict"]
             self.load_state_dict(state_dict, strict=False)
+            print(f"load model : {config['load_path']}")
 
     def infer(self,
               batch,
@@ -155,7 +159,8 @@ class Module(LightningModule):
             elif self.strategy == 'element_wise_multiplication':
                 out = torch.mul(out_cgcnn, out_egcnn)
             else:
-                raise ValueError(f'Strategy must be concat, element_wise_sum, or element_wise_multiplication, not {self.strategy}')
+                raise ValueError(
+                    f'Strategy must be concat, element_wise_sum, or element_wise_multiplication, not {self.strategy}')
 
             ret = {
                 "output": out
@@ -199,7 +204,6 @@ class Module(LightningModule):
 
             (grid_embeds,  # [B, max_grid_len+1, hid_dim]
              grid_masks,  # [B, max_grid_len+1]
-             patch_index,  # (patch_index [B, grid+1, 2], (H, W))
              grid_labels,  # [B, grid+1, C] if mask_image == True
              ) = self.transformer.visual_embed(
                 grid,
@@ -245,7 +249,6 @@ class Module(LightningModule):
             """future removed..."""
             (grid_embeds,  # [B, max_grid_len+1, hid_dim]
              grid_masks,  # [B, max_grid_len+1]
-             patch_index,  # (patch_index [B, grid+1, 2], (H, W))
              grid_labels,  # [B, grid+1, C] if mask_image == True
              ) = self.transformer.visual_embed(
                 grid,

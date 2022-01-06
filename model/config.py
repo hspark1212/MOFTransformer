@@ -40,7 +40,7 @@ def config():
 
     # egcnn
     egcnn_depth = 18  # 10, 18, 34, 50, 101, 152, 200
-    
+
     # cgcnn + egcnn
     strategy = 'concat'
 
@@ -61,6 +61,7 @@ def config():
     num_layers = 12
     mlp_ratio = 4
     drop_rate = 0.1
+    mpp_ratio = 0.15
 
     # downstream
     downstream = ""
@@ -73,7 +74,7 @@ def config():
     decay_power = 1  # or cosine
     max_epochs = 100
     max_steps = -1  # num_data * max_epoch // batch_size (accumulate_grad_batches)
-    warmup_steps = 0.1  # float, max_steps * 10 %
+    warmup_steps = 0.1  # int or float ( max_steps * warmup_steps)
     end_lr = 0
     lr_mult = 1  # multiply lr for downstream heads
 
@@ -98,6 +99,133 @@ def config():
 
 
 """
+pretraining (ver 3)
+"""
+
+
+@ex.named_config
+def task_topology_ver3():
+    exp_name = "task_topology_ver3"
+    data_root = "/home/data/pretrained_mof/ver3_unrelaxed/"
+    downstream = "topology"
+    log_dir = "result_ver3"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 16
+    warmup_steps = 0.05
+
+    # model
+    use_only_vit = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 1120
+
+
+@ex.named_config
+def task_mpp_ver3_with_pretrained():
+    exp_name = "task_mpp_ver3_with_pretrained"
+    data_root = "/home/data/pretrained_mof/ver3_unrelaxed/"
+    downstream = "topology"
+    log_dir = "result_ver3"
+    load_path = "/home/hspark8/PycharmProjects/pretrained_mof/result_ver3/task_topology_ver3_seed0_from_/best.ckpt"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 16
+    warmup_steps = 0.05
+
+    # model
+    use_only_vit = True
+    loss_names = _loss_names({"mpp": 1})
+
+
+@ex.named_config
+def task_mpp_ver3_without_pretrained():
+    exp_name = "task_mpp_ver3_without_pretrained"
+    data_root = "/home/data/pretrained_mof/ver3_unrelaxed/"
+    downstream = "topology"
+    log_dir = "result_ver3"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 16
+    warmup_steps = 0.05
+
+    # model
+    use_only_vit = True
+    loss_names = _loss_names({"mpp": 1})
+
+
+@ex.named_config
+def task_mpp_ver3_small_patch():
+    exp_name = "task_mpp_ver3_small_patch"
+    data_root = "/home/data/pretrained_mof/ver3_unrelaxed/"
+    downstream = "topology"
+    log_dir = "result_ver3"
+
+    # trainer
+    patch_size = 5
+    max_grid_len = 200
+
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 16
+    warmup_steps = 0.05
+
+    # model
+    use_only_vit = True
+    loss_names = _loss_names({"mpp": 1})
+
+
+@ex.named_config
+def task_mpp_ver3_interpolate():
+    exp_name = "task_mpp_ver3_interpolate"
+    data_root = "/home/data/pretrained_mof/ver3_unrelaxed/"
+    downstream = "topology"
+    log_dir = "result_ver3"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 16
+    warmup_steps = 0.05
+
+    # model
+    use_only_vit = True
+    loss_names = _loss_names({"mpp": 1})
+
+    img_size = 30
+    patch_size = 5
+    draw_false_grid = False
+
+
+@ex.named_config
+def task_mpp_ver3_interpolate_mppratio():
+    exp_name = "task_mpp_ver3_interpolate_mppratio"
+    data_root = "/home/data/pretrained_mof/ver3_unrelaxed/"
+    downstream = "topology"
+    log_dir = "result_ver3"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 16
+    warmup_steps = 0.05
+
+    # model
+    use_only_vit = True
+    loss_names = _loss_names({"mpp": 1})
+
+    img_size = 30
+    patch_size = 5
+    draw_false_grid = False
+    mpp_ratio = 0.5
+
+
+"""
 pretraining (ver 2)
 """
 
@@ -105,7 +233,7 @@ pretraining (ver 2)
 @ex.named_config
 def task_ggm_mpp():
     exp_name = "task_ggm_mpp"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/100k/"
 
     # model
     use_transformer = True
@@ -120,7 +248,7 @@ finetuning (ver2) - topology
 @ex.named_config
 def task_topology_1k():
     exp_name = "task_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/1k/"
     downstream = "topology"
     load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
 
@@ -143,7 +271,7 @@ def task_topology_1k():
 @ex.named_config
 def task_topology_10k():
     exp_name = "task_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/10k/"
     downstream = "topology"
     load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
 
@@ -165,7 +293,7 @@ def task_topology_10k():
 @ex.named_config
 def task_topology_15k():
     exp_name = "task_topology_15k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/15k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/15k/"
     downstream = "topology"
     load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
 
@@ -192,7 +320,7 @@ finetuning (ver2) - cgmc
 @ex.named_config
 def task_gcmc_1k():
     exp_name = "task_gcmc_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/1k/"
     downstream = "gcmc_h2_scaled_5bar"
     load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
 
@@ -214,7 +342,7 @@ def task_gcmc_1k():
 @ex.named_config
 def task_gcmc_10k():
     exp_name = "task_gcmc_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/10k/"
     downstream = "gcmc_h2_scaled_5bar"
     load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
 
@@ -235,7 +363,7 @@ def task_gcmc_10k():
 @ex.named_config
 def task_gcmc_15k():
     exp_name = "task_gcmc_15k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/15k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/15k/"
     downstream = "gcmc_h2_scaled_5bar"
     load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
 
@@ -327,7 +455,7 @@ topology classfication (ver 2, 1k)
 @ex.named_config
 def cgcnn_topology_1k():
     exp_name = "cgcnn_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/1k/"
     downstream = "topology"
 
     # model
@@ -349,7 +477,7 @@ def cgcnn_topology_1k():
 @ex.named_config
 def egcnn_topology_1k():
     exp_name = "egcnn_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/1k/"
     downstream = "topology"
 
     # model
@@ -371,7 +499,7 @@ def egcnn_topology_1k():
 @ex.named_config
 def cgcnn_egcnn_topology_1k():
     exp_name = "cgcnn_egcnn_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/1k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/1k/"
     downstream = "topology"
 
     # model
@@ -399,7 +527,7 @@ topology classfication (ver 2, 10k)
 @ex.named_config
 def cgcnn_topology_10k():
     exp_name = "cgcnn_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/10k/"
     downstream = "topology"
 
     # model
@@ -421,7 +549,7 @@ def cgcnn_topology_10k():
 @ex.named_config
 def egcnn_topology_10k():
     exp_name = "egcnn_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/10k/"
     downstream = "topology"
 
     # model
@@ -443,7 +571,7 @@ def egcnn_topology_10k():
 @ex.named_config
 def cgcnn_egcnn_topology_10k():
     exp_name = "cgcnn_egcnn_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/10k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/10k/"
     downstream = "topology"
 
     # model
@@ -471,7 +599,7 @@ topology classfication (ver 2, 100k)
 @ex.named_config
 def cgcnn_topology_100k():
     exp_name = "cgcnn_topology_100k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/100k/"
     downstream = "topology"
 
     # model
@@ -493,7 +621,7 @@ def cgcnn_topology_100k():
 @ex.named_config
 def egcnn_topology_100k():
     exp_name = "egcnn_topology_100k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/100k/"
     downstream = "topology"
 
     # model
@@ -515,7 +643,7 @@ def egcnn_topology_100k():
 @ex.named_config
 def cgcnn_egcnn_topology_100k():
     exp_name = "cgcnn_egcnn_topology_100k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/downstream/100k/"
+    data_root = "/home/data/pretrained_mof/ver2/dataset/100k/"
     downstream = "topology"
 
     # model
