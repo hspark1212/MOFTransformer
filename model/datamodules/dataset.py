@@ -64,7 +64,7 @@ class Dataset(torch.utils.data.Dataset):
 
     def get_raw_grid_data(self, cif_id):
         file_grid = os.path.join(self.data_dir, self.split, f"{cif_id}.grid")
-        file_griddata = os.path.join(self.data_dir, self.split, f"{cif_id}.griddata")
+        file_griddata = os.path.join(self.data_dir, self.split, f"{cif_id}.griddata16")
 
         # get grid
         with open(file_grid, "r") as f:
