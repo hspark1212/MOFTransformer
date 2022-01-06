@@ -1,10 +1,12 @@
 import os
 import random
+import json
+import pickle
 
-import pyarrow as pa
 import numpy as np
 
 import torch
+from torch.nn.functional import interpolate
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -25,22 +27,21 @@ class Dataset(torch.utils.data.Dataset):
         super().__init__()
         self.data_dir = data_dir
         self.draw_false_grid = draw_false_grid
+        self.split = split
 
         assert split in {"train", "test", "val"}
         if downstream:
-            path_file = os.path.join(data_dir, f"{split}_{downstream}.arrow")
+            path_file = os.path.join(data_dir, f"{split}_{downstream}.json")
         else:
-            path_file = os.path.join(data_dir, f"{split}.arrow")
-        self.split = split
+            path_file = os.path.join(data_dir, f"{split}.json")
         print(path_file)
-        assert os.path.isfile(path_file), print(f"{path_file} doesn't exist in {data_dir}")
+        assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
 
-        self.data = pa.ipc.RecordBatchFileReader(
-            pa.memory_map(path_file, "r")
-        ).read_all().to_pandas()
+        dict_target = json.load(open(path_file, "r"))
+        self.cif_ids, self.targets = zip(*dict_target.items())
 
     def __len__(self):
-        return len(self.data)
+        return len(self.cif_ids)
 
     @staticmethod
     def make_grid_data(grid_data, emin=-5000., emax=5000, bins=101):
@@ -61,33 +62,33 @@ class Dataset(torch.utils.data.Dataset):
 
         return new_grid_data
 
-    def get_raw_grid_data(self, filename):
-        file_grid = os.path.join(self.data_dir, self.split, f"{filename}.grid")
-        file_griddata = os.path.join(self.data_dir, self.split, f"{filename}.griddata")
+    def get_raw_grid_data(self, cif_id):
+        file_grid = os.path.join(self.data_dir, self.split, f"{cif_id}.grid")
+        file_griddata = os.path.join(self.data_dir, self.split, f"{cif_id}.griddata16")
 
         # get grid
         with open(file_grid, "r") as f:
             cell = [int(i) for i in f.readlines()[2].split()[1:]]
 
         # get grid data
-        grid_data = np.fromfile(file_griddata, dtype=np.float32)
+        grid_data = pickle.load(open(file_griddata, "rb"))
         grid_data = self.make_grid_data(grid_data)
         grid_data = torch.FloatTensor(grid_data)
 
         return cell, grid_data
 
-    def get_grid_data(self, index, draw_false_grid=False):
-        filename = self.data["cif_id"][index]
-        cell, grid_data = self.get_raw_grid_data(filename)
+    def get_grid_data(self, cif_id, draw_false_grid=False):
+
+        cell, grid_data = self.get_raw_grid_data(cif_id)
         ret = {
             "cell": cell,
             "grid_data": grid_data,
         }
 
         if draw_false_grid:
-            random_index = random.randint(0, len(self.data) - 1)
-            filename = self.data["cif_id"][random_index]
-            cell, grid_data = self.get_raw_grid_data(filename)
+            random_index = random.randint(0, len(self.cif_ids) - 1)
+            cif_id = self.cif_ids[random_index]
+            cell, grid_data = self.get_raw_grid_data(cif_id)
             ret.update(
                 {
                     "false_cell": cell,
@@ -113,15 +114,18 @@ class Dataset(torch.utils.data.Dataset):
         return np.exp(-(distances[..., np.newaxis] - _filter) ** 2 /
                       var ** 2).float()
 
-    def get_graph(self, index):
+    def get_graph(self, cif_id):
+        file_graph = os.path.join(self.data_dir, self.split, f"{cif_id}.graphdata")
 
-        atom_num = torch.LongTensor(self.data["atom_num"][index].copy())
-        nbr_idx = torch.LongTensor(self.data["nbr_idx"][index].copy()).view(len(atom_num), -1)
-        nbr_dist = torch.FloatTensor(self.data["nbr_dist"][index].copy()).view(len(atom_num), -1)
+        graphdata = pickle.load(open(file_graph, "rb"))
+        # graphdata = ["cif_id", "atom_num", "nbr_idx", "nbr_dist", "uni_idx", "uni_count", "target"]
+        atom_num = torch.LongTensor(graphdata[1].copy())
+        nbr_idx = torch.LongTensor(graphdata[2].copy()).view(len(atom_num), -1)
+        nbr_dist = torch.FloatTensor(graphdata[3].copy()).view(len(atom_num), -1)
         nbr_fea = torch.FloatTensor(self.get_gaussian_distance(nbr_dist, dmax=8))
 
-        uni_idx = self.data["uni_idx"][index].tolist()
-        uni_count = self.data["uni_count"][index].tolist()
+        uni_idx = graphdata[4]
+        uni_count = graphdata[5]
 
         return {
             "atom_num": atom_num,
@@ -134,14 +138,16 @@ class Dataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
 
         ret = dict()
+        cif_id = self.cif_ids[index]
+        target = self.targets[index]
         ret.update(
             {
-                "cif_id": self.data["cif_id"][index],
-                "target": self.data["target"][index],
+                "cif_id": cif_id,
+                "target": target,
             }
         )
-        ret.update(self.get_grid_data(index, draw_false_grid=self.draw_false_grid))
-        ret.update(self.get_graph(index))
+        ret.update(self.get_grid_data(cif_id, draw_false_grid=self.draw_false_grid))
+        ret.update(self.get_graph(cif_id))
 
         return ret
 
@@ -184,6 +190,7 @@ class Dataset(torch.utils.data.Dataset):
         dict_batch["crystal_atom_idx"] = crystal_atom_idx
 
         # grid
+        """
         new_grids = torch.zeros(batch_size, img_size, img_size, img_size)
         batch_grid_data = dict_batch["grid_data"]
         batch_cell = dict_batch["cell"]
@@ -195,6 +202,19 @@ class Dataset(torch.utils.data.Dataset):
 
             new_grids[bi, :orig.shape[0], :orig.shape[1], :orig.shape[2]] = orig
         new_grids = new_grids[:, None, :, :, :]  # [B, 1, H, W, D]
+        dict_batch["grid"] = new_grids
+        """
+        batch_grid_data = dict_batch["grid_data"]
+        batch_cell = dict_batch["cell"]
+        new_grids = []
+        for bi in range(batch_size):
+            orig = batch_grid_data[bi].view(batch_cell[bi][::-1]).transpose(0, 2)
+            orig = interpolate(orig[None, None, :, :, :],
+                               size=[img_size, img_size, img_size],
+                               mode="trilinear",
+                               align_corners=True,)
+            new_grids.append(orig)
+        new_grids = torch.concat(new_grids, axis=0)
         dict_batch["grid"] = new_grids
 
         if "false_grid_data" in dict_batch.keys():

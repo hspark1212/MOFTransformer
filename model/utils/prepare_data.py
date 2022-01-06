@@ -5,12 +5,9 @@ import logging.handlers
 import json
 import subprocess
 import hashlib
-import glob
 import pickle
 
 import numpy as np
-import pandas as pd
-import pyarrow as pa
 
 from tqdm import tqdm
 from pymatgen.io.cif import CifParser
@@ -91,6 +88,12 @@ def get_crystal_graph(st, radius=8, max_num_nbr=12):
     atoms = AseAtomsAdaptor().get_atoms(st)
     uni_idx, uni_count = get_unique_atoms(atoms)
 
+    # convert to small size
+    atom_num = np.array(atom_num, dtype=np.int8)
+    nbr_idx = np.array(nbr_idx, dtype=np.int16)
+    nbr_dist = np.array(nbr_dist, dtype=np.float16)
+    uni_idx = np.array(uni_idx, dtype=np.int16)
+    uni_count = np.array(uni_count, dtype=np.int16)
     return atom_num, nbr_idx, nbr_dist, uni_idx, uni_count
 
 
@@ -115,6 +118,14 @@ def calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01):
     scaling_matrix = np.around(normed_inv).astype(np.int32)
 
     return scaling_matrix
+
+
+def make_float16_griddata(file_griddata):
+    griddata = np.fromfile(file_griddata, dtype=np.float32)
+    griddata[griddata > 6e4] = 6e4
+    griddata[griddata < -6e4] = -6e4
+    griddata = griddata.astype(np.float16)
+    return griddata
 
 
 def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
@@ -144,6 +155,15 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
     except Exception as e:
         print(e)
 
+    if os.path.exists(eg_file + ".griddata"):
+        grid_data = make_float16_griddata(eg_file + ".griddata")
+        path_save = os.path.join(root_dataset, f"{cif_id}.grid_data")
+        pickle.dump(grid_data, open(path_save, "wb"))
+        eg_logger.info(f"{cif_id} energy grid changed to np16")
+    else:
+        eg_logger.info(f"{cif_id} energy grid failed to change to np16")
+
+
 
 def prepare_data(root_cifs, root_dataset,
                  max_num_atoms=1000,
@@ -166,12 +186,10 @@ def prepare_data(root_cifs, root_dataset,
     # set logger
     logger = get_logger(filename="prepare_data.log")
     eg_logger = get_logger(filename="prepare_energy_grid.log")
-    assert {"train", "val"}.issubset(os.listdir(root_cifs)), \
-        print("There is no train or val directories in the root_cifs")
 
     for split in ["test", "val", "train"]:
         # check target json and make root_dataset
-        json_path = os.path.join(root_cifs, split, f"target_{split}.json")
+        json_path = os.path.join(root_cifs, f"target_{split}.json")
 
         assert os.path.exists(json_path)
 
@@ -192,9 +210,9 @@ def prepare_data(root_cifs, root_dataset,
                 continue
 
             # 0. check primitive cell and atom number < max_num_atoms
-            p = os.path.join(root_cifs, split, cif_id + ".cif")
+            p = os.path.join(root_cifs, f"{cif_id}.cif")
             try:
-                st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
+                st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=False)[0]
             except Exception as e:
                 logger.info(f"{cif_id} failed : {e}")
                 continue
@@ -204,17 +222,12 @@ def prepare_data(root_cifs, root_dataset,
                 continue
             # 1. get crystal graph
             atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
-            if len(nbr_idx) % max_num_nbr > 0:
+            if len(nbr_idx) < len(atom_num) * max_num_nbr:
                 logger.info(f"{cif_id} failed : num_nbr is smaller than max_num_nbr")
                 print("please make radius larger")
                 continue
 
             # 2. make orthogonal cell and supercell with min_length and max_length
-            cell_matrix = st.lattice.matrix
-            scaling_matrix = \
-                calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01)
-
-            st.make_supercell(scaling_matrix)
 
             scale_abc = []
             for l in st.lattice.abc:
@@ -242,31 +255,6 @@ def prepare_data(root_cifs, root_dataset,
             p = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
             with open(p, "wb") as f:
                 pickle.dump(data, f)
-
-        # make pyarrow files
-        batches = []
-        for filename in os.listdir(root_dataset_split):
-
-            if filename.split(".")[-1] == "grid":
-                cif_id = filename[:-5]
-            else:
-                continue
-
-            p = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
-            with open(p, "rb") as f:
-                graphdata = pickle.load(f)
-            batches.append(graphdata)
-
-        # save data using pyarrow
-        df = pd.DataFrame(
-            batches, columns=["cif_id", "atom_num", "nbr_idx", "nbr_dist", "uni_idx", "uni_count", "target"]
-        )
-        table = pa.Table.from_pandas(df)
-        with pa.OSFile(
-                os.path.join(root_dataset, f"{split}.arrow"), "wb"
-        ) as sink:
-            with pa.RecordBatchFileWriter(sink, table.schema) as writer:
-                writer.write_table(table)
 
 
 if __name__ == "__main__":

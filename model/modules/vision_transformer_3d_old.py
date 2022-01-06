@@ -470,6 +470,12 @@ class VisionTransformer3D(nn.Module):
         x_mask = torch.cat([torch.ones(x_mask.shape[0], 1).to(x_mask), x_mask], dim=1)
 
         if mask_it:
+            return x, x_mask, label
+        else:
+            return x, x_mask, None
+        """
+        if mask_it:
             return x, x_mask, (patch_index, (ph, pw)), label
         else:
             return x, x_mask, (patch_index, (ph, pw)), None
+        """

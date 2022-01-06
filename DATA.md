@@ -21,19 +21,11 @@ The example  of json files is as follows.
 The example of `root_cifs` directory is as follows.
 
     root_cifs # root for cif files
-    ├── train            
-    │   ├── [cif_id].cif
-    │   ├── ...
-    │   └── target_train.json
-    ├── val       
-    │   ├── [cif_id].cif
-    │   ├── ...
-    │   └── target_val.json
-    └── test (optional)
-        ├── [cif_id].cif
-        ├── ...
-        └── target_test.json
-
+    ├── [cif_id].cif
+    ├── ...
+    ├── targe_train.json
+    ├── targe_val.json
+    └── target_test.json
 
 Then, please use `model/utils/prepare_data.py` to generate dataset.
 
@@ -46,20 +38,23 @@ prepare_data(root_cifs, root_dataset)
 Finally, `prepare_data.py` will generate crystal graph and energy grid in `root_dataset` directory.
 
     root_dataset # root for generated inputs 
-    ├── train            
+    ├── train
+    │   ├── [cif_id].graphdata # graphdata
     │   ├── [cif_id].grid # energy grid information
-    │   ├── [cif_id].griddata # grid data
-    │   ├── ...
-    ├── val          
+    │   ├── [cif_id].grid_data # grid data
+    │   └── ...
+    ├── val
+    │   ├── [cif_id].graphdata # graphdata
     │   ├── [cif_id].grid # energy grid information
-    │   ├── [cif_id].griddata # grid data
-    │   ├── ...
+    │   ├── [cif_id].grid_data # grid data
+    │   └── ...
     ├── test (optional)      
+    │   ├── [cif_id].graphdata # graphdata
     │   ├── [cif_id].grid # energy grid information
-    │   ├── [cif_id].griddata # grid data
-    │   ├── ...
-    ├── train.arrow
-    ├── val.arrow
-    └── test.arrow (optional)
+    │   ├── [cif_id].grid_data # grid data
+    │   └── ...
+    ├── target_train.json
+    ├── target_val.json
+    └── target_test.json (optional)
 
 
