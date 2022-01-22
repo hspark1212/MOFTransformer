@@ -89,11 +89,11 @@ class RegressionHead(nn.Module):
 
     def __init__(self, hid_dim):
         super().__init__()
-        self.bn = nn.BatchNorm1d(hid_dim)
+        # self.bn = nn.BatchNorm1d(hid_dim)
         self.fc = nn.Linear(hid_dim, 1)
 
     def forward(self, x):
-        x = self.bn(x)
+        # x = self.bn(x)
         x = self.fc(x)
         return x
 
