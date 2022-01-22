@@ -170,6 +170,80 @@ class CrystalGraphConvNet(nn.Module):
 
 class GraphEmbeddings(nn.Module):
     """
+    Graph Embedding Layer for MOF Graph Transformer
+    """
+
+    def __init__(self, max_nbr_atoms, max_graph_len, hid_dim):
+        super().__init__()
+        assert hid_dim % max_nbr_atoms == 0
+        graph_emb_dim = hid_dim // max_nbr_atoms
+
+        self.node_embedding = nn.Embedding(119, graph_emb_dim)
+        self.edge_embedding = nn.Embedding(119, graph_emb_dim)
+
+        self.max_nbr_atoms = max_nbr_atoms
+        self.max_graph_len = max_graph_len
+        self.hid_dim = hid_dim
+
+    def forward(self, atom_num, nbr_idx, nbr_fea, crystal_atom_idx):
+        """
+        Args:
+            atom_num (tensor): [N']
+            nbr_idx (tensor): [N', M]
+            nbr_fea (tensor): [N', M, nbr_fea_len]
+            crystal_atom_idx (list): [B]
+        Returns:
+            new_atom_fea (tensor): [B, max_graph_len, hid_dim]
+            mask (tensor): [B, max_graph_len]
+        """
+        batch_size = len(crystal_atom_idx)
+        nbr_atom_num = atom_num[nbr_idx]
+
+        emb_node = self.node_embedding(atom_num)[:, None, :].repeat(1, self.max_nbr_atoms, 1)  # [N', 64], [N', 12, 64]
+        emb_edge = self.edge_embedding(nbr_atom_num)  # [N', 12, 64]
+        emb_dist = nbr_fea  # [N', 12, 64]
+
+        emb_total = emb_node + emb_edge + emb_dist  # [N', 12, 64]
+        emb_total = emb_total.reshape([len(atom_num), -1])  # [N', 768]
+
+        graph_emb = torch.zeros([batch_size, self.max_graph_len, self.hid_dim]).to(emb_total)
+        # [B, max_graph_len, hid_dim]
+
+        for bi, c_atom_idx in enumerate(crystal_atom_idx):
+            c_total_emb = emb_total[c_atom_idx]
+            c_atom_num = atom_num[c_atom_idx]
+
+            # carbon
+            device_ = c_total_emb.device
+            idx_carbon = torch.where(c_atom_num == 6)[0]
+            if len(idx_carbon) > 120:
+                idx = torch.randperm(len(idx_carbon))[:120].long().to(device_)
+                emb_carbon = c_total_emb[idx]
+            else:
+                idx = torch.randperm(len(idx_carbon)).long().to(device_)
+                emb_carbon = torch.cat([c_total_emb[idx], torch.zeros([120 - len(idx), self.hid_dim]).to(device_)],
+                                       dim=0)
+
+            # others = non carbon and hydrogen
+            mask_others = torch.logical_and(c_atom_num != 6, c_atom_num != 1)
+            idx_others = torch.where(mask_others)[0]
+            if len(idx_others) > 180:
+                idx = torch.randperm(len(idx_others))[:180].long().to(device_)
+                emb_others = c_total_emb[idx]
+            else:
+                idx = torch.randperm(len(idx_others)).long().to(device_)
+                emb_others = torch.cat([c_total_emb[idx], torch.zeros([180 - len(idx), self.hid_dim]).to(device_)],
+                                       dim=0)
+
+            final_emb = torch.cat([emb_others, emb_carbon], dim=0)
+            graph_emb[bi] = final_emb
+        mask = (graph_emb.sum(dim=-1) != 0).float()
+
+        return graph_emb, mask
+
+
+class GraphEmbeddings_Uni_Index(nn.Module):
+    """
     Generate Embedding layers made by only convolution layers of CGCNN (not pooling)
     (https://github.com/txie-93/cgcnn)
     """

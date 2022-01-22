@@ -6,6 +6,7 @@ import json
 import subprocess
 import hashlib
 import pickle
+import shutil
 
 import numpy as np
 
@@ -157,12 +158,16 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
 
     if os.path.exists(eg_file + ".griddata"):
         grid_data = make_float16_griddata(eg_file + ".griddata")
-        path_save = os.path.join(root_dataset, f"{cif_id}.grid_data")
+        path_save = os.path.join(root_dataset, f"{cif_id}.griddata16")
         pickle.dump(grid_data, open(path_save, "wb"))
         eg_logger.info(f"{cif_id} energy grid changed to np16")
+
+        try:
+            os.remove(eg_file + ".griddata")
+        except Exception as e:
+            print(e)
     else:
         eg_logger.info(f"{cif_id} energy grid failed to change to np16")
-
 
 
 def prepare_data(root_cifs, root_dataset,
@@ -195,6 +200,7 @@ def prepare_data(root_cifs, root_dataset,
 
         root_dataset_split = os.path.join(root_dataset, split)
         os.makedirs(root_dataset_split, exist_ok=True)
+        shutil.copy(json_path, root_dataset)
 
         with open(json_path, "r") as f:
             d = json.load(f)
@@ -202,7 +208,7 @@ def prepare_data(root_cifs, root_dataset,
         for i, (cif_id, target) in enumerate(tqdm(d.items())):
             # check file exist (removed in future)
             p_graphdata = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
-            p_griddata = os.path.join(root_dataset_split, f"{cif_id}.griddata")
+            p_griddata = os.path.join(root_dataset_split, f"{cif_id}.griddata16")
             p_grid = os.path.join(root_dataset_split, f"{cif_id}.grid")
             if os.path.exists(p_graphdata) and os.path.exists(p_griddata) and os.path.exists(p_grid):
                 logger.info(f"{cif_id} graph data already exists")
@@ -212,7 +218,7 @@ def prepare_data(root_cifs, root_dataset,
             # 0. check primitive cell and atom number < max_num_atoms
             p = os.path.join(root_cifs, f"{cif_id}.cif")
             try:
-                st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=False)[0]
+                st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
             except Exception as e:
                 logger.info(f"{cif_id} failed : {e}")
                 continue

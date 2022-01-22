@@ -39,12 +39,21 @@ class Module(LightningModule):
 
         if self.use_transformer:
             self.graph_embeddings = GraphEmbeddings(
+                max_nbr_atoms=config["max_nbr_atoms"],
+                max_graph_len=config["max_graph_len"],
+                hid_dim=config["hid_dim"],
+            )
+            self.graph_embeddings.apply(objectives.init_weights)
+
+            """ (old version) -> future removed...
+            self.graph_embeddings = GraphEmbeddings(
                 atom_fea_len=config["atom_fea_len"],
                 nbr_fea_len=config["nbr_fea_len"],
                 max_graph_len=config["max_graph_len"],
                 hid_dim=config["hid_dim"],
             )
             self.graph_embeddings.apply(objectives.init_weights)
+            """
 
             # token type embeddings
             self.token_type_embeddings = nn.Embedding(2, config["hid_dim"])
@@ -63,6 +72,10 @@ class Module(LightningModule):
                 mpp_ratio=config["mpp_ratio"],
             )
 
+            # volume token
+            self.volume_embeddings = nn.Linear(1, config["hid_dim"])
+            self.volume_embeddings.apply(objectives.init_weights)
+
             # pooler
             self.pooler = heads.Pooler(config["hid_dim"])
             self.pooler.apply(objectives.init_weights)
@@ -70,7 +83,7 @@ class Module(LightningModule):
         self.use_only_vit = config["use_only_vit"]
         if self.use_only_vit:
             """future removed..."""
-            # set vision transformer transformer
+            # set vision transformer
             self.transformer = VisionTransformer3D(
                 img_size=config["img_size"],
                 patch_size=config["patch_size"],
@@ -82,9 +95,36 @@ class Module(LightningModule):
                 drop_rate=config["drop_rate"],
                 mpp_ratio=config["mpp_ratio"],
             )
+
+            # volume token
+            self.volume_embeddings = nn.Linear(1, config["hid_dim"])
+            self.volume_embeddings.apply(objectives.init_weights)
+
             # pooler
             self.pooler = heads.Pooler(config["hid_dim"])
             self.pooler.apply(objectives.init_weights)
+
+        self.use_only_mgt = config["use_only_mgt"]
+        if self.use_only_mgt:
+            """future removed..."""
+            self.graph_embeddings = GraphEmbeddings(
+                max_nbr_atoms=config["max_nbr_atoms"],
+                max_graph_len=config["max_graph_len"],
+                hid_dim=config["hid_dim"],
+            )
+            self.graph_embeddings.apply(objectives.init_weights)
+
+            self.transformer = VisionTransformer3D(
+                img_size=config["img_size"],
+                patch_size=config["patch_size"],
+                in_chans=config["in_chans"],
+                embed_dim=config["hid_dim"],
+                depth=config["num_layers"],
+                num_heads=config["num_heads"],
+                mlp_ratio=config["mlp_ratio"],
+                drop_rate=config["drop_rate"],
+                mpp_ratio=config["mpp_ratio"],
+            )
 
         # ===================== loss =====================
         if config["loss_names"]["ggm"] > 0:
@@ -94,6 +134,14 @@ class Module(LightningModule):
         if config["loss_names"]["mpp"] > 0:
             self.mpp_head = heads.MPPHead(config["hid_dim"])
             self.mpp_head.apply(objectives.init_weights)
+
+        if config["loss_names"]["mtp"] > 0:
+            self.mtp_head = heads.MTPHead(config["hid_dim"])
+            self.mtp_head.apply(objectives.init_weights)
+
+        if config["loss_names"]["vfp"] > 0:
+            self.vfp_head = heads.VFPHead(config["hid_dim"])
+            self.vfp_head.apply(objectives.init_weights)
 
         # ===================== Downstream =====================
         if config["load_path"] != "" and not config["test_only"]:
@@ -107,7 +155,6 @@ class Module(LightningModule):
             hid_dim = config["hid_dim"] * 2
         else:
             hid_dim = config["hid_dim"]
-
 
         if self.hparams.config["loss_names"]["regression"] > 0:
             self.regression_head = heads.RegressionHead(hid_dim)
@@ -137,10 +184,11 @@ class Module(LightningModule):
         nbr_idx = batch["nbr_idx"]  # [N', M]
         nbr_fea = batch["nbr_fea"]  # [N', M, nbr_fea_len]
         crystal_atom_idx = batch["crystal_atom_idx"]  # list [B]
-        uni_idx = batch["uni_idx"]  # list [B]
-        uni_count = batch["uni_count"]  # list [B]
+        # uni_idx = batch["uni_idx"]  # list [B]
+        # uni_count = batch["uni_count"]  # list [B]
 
         grid = batch["grid"]  # [B, C, H, W, D]
+        volume = batch["volume"]  # list [B]
 
         if self.use_cgcnn and self.use_egcnn:
 
@@ -198,8 +246,6 @@ class Module(LightningModule):
                 nbr_idx=nbr_idx,
                 nbr_fea=nbr_fea,
                 crystal_atom_idx=crystal_atom_idx,
-                uni_idx=uni_idx,
-                uni_count=uni_count,
             )
 
             (grid_embeds,  # [B, max_grid_len+1, hid_dim]
@@ -210,6 +256,13 @@ class Module(LightningModule):
                 max_image_len=self.max_grid_len,
                 mask_it=mask_grid,
             )
+            # add volume embeds to grid_embeds
+            volume = torch.FloatTensor(volume).to(grid_embeds)  # [B]
+            volume_embeds = self.volume_embeddings(volume[:, None, None])  # [B, 1, hid_dim]
+            volume_mask = torch.ones(volume.shape[0], 1).to(grid_masks)
+
+            grid_embeds = torch.cat([grid_embeds, volume_embeds], dim=1)  # [B, max_grid_len+2, hid_dim]
+            grid_masks = torch.cat([grid_masks, volume_mask], dim=1)  # [B, max_grid_len+2, hid_dim]
 
             # add token_type_embeddings
             graph_embeds = graph_embeds \
@@ -229,7 +282,7 @@ class Module(LightningModule):
             graph_feats, grid_feats = (
                 x[:, :graph_embeds.shape[1]],
                 x[:, graph_embeds.shape[1]:],
-            )  # [B, max_graph_len, hid_dim], [B, max_grid_len+1, hid_dim]
+            )  # [B, max_graph_len, hid_dim], [B, max_grid_len+2, hid_dim]
 
             cls_feats = self.pooler(x)  # [B, hid_dim]
 
@@ -256,18 +309,58 @@ class Module(LightningModule):
                 mask_it=mask_grid,
             )
 
+            # volume embeds
+            volume = torch.FloatTensor(volume).to(grid_embeds)  # [B]
+            volume_embeds = self.volume_embeddings(volume[:, None, None])  # [B, 1, hid_dim]
+            volume_mask = torch.ones(volume.shape[0], 1).to(grid_masks)
+
+            grid_embeds = torch.cat([grid_embeds, volume_embeds], dim=1)
+            grid_masks = torch.cat([grid_masks, volume_mask], dim=1)
+
             x = grid_embeds
             for i, blk in enumerate(self.transformer.blocks):
                 x, _attn = blk(x, mask=grid_masks)
 
+            x = self.transformer.norm(x)
+            grid_feats = x
+
             cls_feats = self.pooler(x)  # [B, hid_dim]
 
             ret = {
-                "grid_feats": grid_embeds,
+                "grid_feats": grid_feats,
                 "output": cls_feats,
                 "raw_cls_feats": x[:, 0],
                 "grid_masks": grid_masks,
                 "grid_labels": grid_labels,  # if MPP, else None
+            }
+
+            return ret
+
+        elif self.use_only_mgt:
+
+            (graph_embeds,  # [B, max_graph_len, hid_dim],
+             graph_masks,  # [B, max_graph_len],
+             ) = self.graph_embeddings(
+                atom_num=atom_num,
+                nbr_idx=nbr_idx,
+                nbr_fea=nbr_fea,
+                crystal_atom_idx=crystal_atom_idx,
+            )
+
+            x = graph_embeds
+
+            for i, blk in enumerate(self.transformer.blocks):
+                x, _attn = blk(x, mask=graph_masks)
+
+            x = self.transformer.norm(x)
+            graph_feats = x
+
+            cls_feats = self.pooler(x)  # [B, hid_dim]
+
+            ret = {
+                "graph_feats": graph_feats,
+                "output": cls_feats,
+                "graph_masks": graph_masks,
             }
 
             return ret
@@ -286,6 +379,14 @@ class Module(LightningModule):
         # Graph Grid Matching
         if "ggm" in self.current_tasks:
             ret.update(objectives.compute_ggm(self, batch))
+
+        # MOF Topology Prediction
+        if "mtp" in self.current_tasks:
+            ret.update(objectives.compute_mtp(self, batch))
+
+        # Void Fraction Prediction
+        if "vfp" in self.current_tasks:
+            ret.update(objectives.compute_vfp(self, batch))
 
         # regression
         if "regression" in self.current_tasks:
