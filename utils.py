@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ase.io import read
 
 
-def visualize_grid(grid_data, cell=None, zero_index=51, sign="<", path_cif=None):
+def visualize_grid(grid_data, cell=None, zero_index=51, sign=">", path_cif=None):
     """
     :param grid_data:
     :param cell: (x, y, z) cell size, List

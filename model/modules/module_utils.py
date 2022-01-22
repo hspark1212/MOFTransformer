@@ -16,7 +16,7 @@ def set_metrics(pl_module):
         for k, v in pl_module.hparams.config["loss_names"].items():
             if v < 1:
                 continue
-            if k == "regression":
+            if k == "regression" or k == "vfp":
                 setattr(pl_module, f"{split}_{k}_r2", Scalar())
                 setattr(pl_module, f"{split}_{k}_loss", Scalar())
                 setattr(pl_module, f"{split}_{k}_mae", Scalar())
@@ -41,7 +41,7 @@ def epoch_wrapup(pl_module):
         if v < 1:
             continue
 
-        if loss_name == "regression":
+        if loss_name == "regression" or loss_name == "vfp":
             # r2
             value = getattr(pl_module, f"{phase}_{loss_name}_r2").compute()
             pl_module.log(f"{loss_name}/{phase}/r2_epoch", value)
@@ -58,6 +58,7 @@ def epoch_wrapup(pl_module):
                 getattr(pl_module, f"{phase}_{loss_name}_mae").compute(),
             )
             getattr(pl_module, f"{phase}_{loss_name}_mae").reset()
+
         else:
             value = getattr(pl_module, f"{phase}_{loss_name}_accuracy").compute()
             pl_module.log(f"{loss_name}/{phase}/accuracy_epoch", value)
@@ -189,6 +190,6 @@ def set_schedule(pl_module):
     sched = {"scheduler": scheduler, "interval": "step"}
 
     return (
-         [optimizer],
-         [sched],
-            )
+        [optimizer],
+        [sched],
+    )

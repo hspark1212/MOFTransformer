@@ -44,11 +44,41 @@ class MPPHead(nn.Module):
             hidden_size=hid_dim,
         )
         self.transform = BertPredictionHeadTransform(bert_config)
-        self.decoder = nn.Linear(hid_dim, 101+2)  # bins
+        self.decoder = nn.Linear(hid_dim, 101 + 2)  # bins
 
     def forward(self, x):  # [B, max_len, hid_dim]
         x = self.transform(x)  # [B, max_len, hid_dim]
         x = self.decoder(x)  # [B, max_len, bins]
+        return x
+
+
+class MTPHead(nn.Module):
+    """
+    head for MOF Topology Prediction
+    """
+
+    def __init__(self, hid_dim):
+        super().__init__()
+        self.fc = nn.Linear(hid_dim, 1100)
+
+    def forward(self, x):
+        x = self.fc(x)
+        return x
+
+
+class VFPHead(nn.Module):
+    """
+    head for Void Fraction Prediction
+    """
+
+    def __init__(self, hid_dim):
+        super().__init__()
+        self.bn = nn.BatchNorm1d(hid_dim)
+        self.fc = nn.Linear(hid_dim, 1)
+
+    def forward(self, x):
+        x = self.bn(x)
+        x = self.fc(x)
         return x
 
 
@@ -75,14 +105,19 @@ class ClassificationHead(nn.Module):
 
     def __init__(self, hid_dim, n_classes):
         super().__init__()
+        self.fc = nn.Linear(hid_dim, n_classes)
+        """
         self.fc1 = nn.Linear(hid_dim, hid_dim)
         self.ln = nn.LayerNorm(hid_dim)
         self.gelu = nn.GELU()
         self.fc2 = nn.Linear(hid_dim, n_classes)
-
+        """
     def forward(self, x):
+        x = self.fc(x)
+        """
         x = self.fc1(x)
         x = self.ln(x)
         x = self.gelu(x)
         x = self.fc2(x)
+        """
         return x

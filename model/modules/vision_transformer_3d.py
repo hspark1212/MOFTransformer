@@ -22,6 +22,8 @@ from functools import partial
 import torch
 import torch.nn as nn
 
+from einops.layers.torch import Rearrange
+
 from torch.nn import AvgPool3d
 from timm.models.layers import DropPath, trunc_normal_
 
@@ -75,6 +77,7 @@ class Attention(nn.Module):
 
     def forward(self, x, mask=None):
         B, N, C = x.shape
+        assert C % self.num_heads == 0
         qkv = (
             self.qkv(x)  # [B, N, 3*C]
                 .reshape(B, N, 3, self.num_heads, C // self.num_heads)  # [B, N, 3, num_heads, C//num_heads]
@@ -156,21 +159,18 @@ class PatchEmbed3D(nn.Module):
 
         assert img_size % patch_size == 0
         num_patches = (img_size ** 3) // (patch_size ** 3)
-        self.img_size = img_size
-        self.patch_size = patch_size
+        self.img_size = img_size  # default: 30
+        self.patch_size = patch_size  # default: 5
         self.num_patches = num_patches
 
-        self.proj = nn.Conv3d(
-            in_chans,
-            embed_dim,
-            kernel_size=patch_size,
-            stride=patch_size,
-            bias=False if no_patch_embed_bias else True,
+        self.proj = nn.Sequential(
+            Rearrange('b c (h p1) (w p2) (d p3) -> b (h w d) (p1 p2 p3 c)',
+                      p1=patch_size, p2=patch_size, p3=patch_size),
+            nn.Linear(patch_size * patch_size * patch_size * in_chans, embed_dim),
         )
 
     def forward(self, x):
-        B, C, H, W, D = x.shape
-        x = self.proj(x)
+        x = self.proj(x)  # [B, num_patches,
         return x  # [B, emb_dim, px, ph, pd]
 
 
@@ -186,7 +186,7 @@ class VisionTransformer3D(nn.Module):
             img_size,
             patch_size,
             in_chans,
-            embed_dim=768,
+            embed_dim,
             depth=12,
             num_heads=12,
             mlp_ratio=4.0,
@@ -327,12 +327,13 @@ class VisionTransformer3D(nn.Module):
         """
 
         B, _, _, _, _ = _x.shape
-        x = self.patch_embed(_x)  # [B, emb_dim, ph, pw, pd]
-        x = x.flatten(2).transpose(1, 2)  # [B, ph*pw*pd, embed_dim]
+        x = self.patch_embed(_x)  # [B, ph*pw*pd, embed_dim]
+        # x = x.flatten(2).transpose(1, 2)
 
         # mpp
         if mask_it:
-            x, label = self.mask_tokens(_x, x, self.patch_size, self.mpp_ratio)  # [B, ph*pw*pd, emb_dim], [B, ph*pw*pd, C]
+            x, label = self.mask_tokens(_x, x, self.patch_size,
+                                        self.mpp_ratio)  # [B, ph*pw*pd, emb_dim], [B, ph*pw*pd, C]
             label = torch.cat(
                 [torch.full((label.shape[0], 1, self.in_chans), -100).to(label), label], dim=1,
             )  # [B, max_len+1, C]
