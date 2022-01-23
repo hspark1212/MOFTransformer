@@ -173,10 +173,11 @@ class GraphEmbeddings(nn.Module):
     Graph Embedding Layer for MOF Graph Transformer
     """
 
-    def __init__(self, max_nbr_atoms, max_graph_len, hid_dim):
+    def __init__(self, max_nbr_atoms, max_graph_len, hid_dim, nbr_fea_len):
         super().__init__()
         assert hid_dim % max_nbr_atoms == 0
         graph_emb_dim = hid_dim // max_nbr_atoms
+        assert graph_emb_dim == nbr_fea_len
 
         self.node_embedding = nn.Embedding(119, graph_emb_dim)
         self.edge_embedding = nn.Embedding(119, graph_emb_dim)

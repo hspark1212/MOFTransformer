@@ -37,7 +37,8 @@ def config():
 
     # cgcnn
     n_conv = 5  # default of CGCNN=3
-    atom_fea_len = 64 # default : CGCNN = 41
+    atom_fea_len = 64
+    nbr_fea_len = 64 # default : CGCNN = 41
 
     # egcnn
     egcnn_depth = 18  # 10, 18, 34, 50, 101, 152, 200
