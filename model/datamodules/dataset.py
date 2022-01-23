@@ -14,8 +14,10 @@ class Dataset(torch.utils.data.Dataset):
             self,
             data_dir: str,
             split: str,
+            atom_fea_len: int,
             draw_false_grid=True,
             downstream="",
+
     ):
         """
         Dataset for pretrained MOF.
@@ -23,6 +25,7 @@ class Dataset(torch.utils.data.Dataset):
             data_dir (str): where dataset cif files and energy grid file; exist via model.utils.prepare_data.py
             split(str) : train, test, split
             draw_false_grid (int, optional):  how many generating false_grid_data
+            atom_fea_len (int) : atom_fea_len for gaussian expansion
         """
         super().__init__()
         self.data_dir = data_dir
@@ -41,6 +44,8 @@ class Dataset(torch.utils.data.Dataset):
         self.cif_ids, self.targets = zip(*dict_target.items())
 
         self.topology = json.load(open("model/assets/topology.json", "rb"))
+
+        self.atom_fea_len = atom_fea_len
 
     def __len__(self):
         return len(self.cif_ids)
@@ -117,7 +122,7 @@ class Dataset(torch.utils.data.Dataset):
         return ret
 
     @staticmethod
-    def get_gaussian_distance(distances, dmax, dmin=0, num_step=64, var=0.2):
+    def get_gaussian_distance(distances, num_step, dmax, dmin=0, var=0.2):
         """
         Expands the distance by Gaussian basis
         (https://github.com/txie-93/cgcnn.git)
@@ -138,8 +143,8 @@ class Dataset(torch.utils.data.Dataset):
         nbr_idx = torch.LongTensor(graphdata[2].copy()).view(len(atom_num), -1)
         nbr_dist = torch.FloatTensor(graphdata[3].copy()).view(len(atom_num), -1)
 
-        nbr_fea = torch.FloatTensor(self.get_gaussian_distance(nbr_dist, dmax=8))
-
+        nbr_fea = torch.FloatTensor(self.get_gaussian_distance(nbr_dist, num_step=self.atom_fea_len, dmax=8))
+        print(nbr_fea.shape)
         uni_idx = graphdata[4]
         uni_count = graphdata[5]
 
