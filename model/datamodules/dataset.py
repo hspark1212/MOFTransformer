@@ -144,7 +144,7 @@ class Dataset(torch.utils.data.Dataset):
         nbr_dist = torch.FloatTensor(graphdata[3].copy()).view(len(atom_num), -1)
 
         nbr_fea = torch.FloatTensor(self.get_gaussian_distance(nbr_dist, num_step=self.nbr_fea_len, dmax=8))
-        print(nbr_fea.shape)
+        
         uni_idx = graphdata[4]
         uni_count = graphdata[5]
 
