@@ -21,6 +21,8 @@ class Datamodule(LightningDataModule):
         self.img_size = _config["img_size"]
         self.downstream = _config["downstream"]
 
+        self.atom_fea_len = _config["atom_fea_len"]
+
     @property
     def dataset_cls(self):
         return Dataset
@@ -31,6 +33,7 @@ class Datamodule(LightningDataModule):
             split="train",
             draw_false_grid=self.draw_false_grid,
             downstream=self.downstream,
+            atom_fea_len=self.atom_fea_len,
         )
 
     def set_val_dataset(self):
@@ -39,6 +42,7 @@ class Datamodule(LightningDataModule):
             split="val",
             draw_false_grid=self.draw_false_grid,
             downstream=self.downstream,
+            atom_fea_len=self.atom_fea_len,
         )
 
     def set_test_dataset(self):
@@ -47,6 +51,7 @@ class Datamodule(LightningDataModule):
             split="test",
             draw_false_grid=self.draw_false_grid,
             downstream=self.downstream,
+            atom_fea_len=self.atom_fea_len,
         )
 
     def setup(self, stage: Optional[str] = None):
