@@ -226,7 +226,7 @@ def compute_moc(pl_module, batch):
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_moc_loss")(ret["moc_loss"])
     acc = getattr(pl_module, f"{phase}_moc_accuracy")(
-        ret["moc_logits"], ret["moc_labels"].long()
+        nn.Sigmoid()(ret["moc_logits"]), ret["moc_labels"].long()
     )
 
     pl_module.log(f"moc/{phase}/loss", loss)

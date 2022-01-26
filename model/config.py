@@ -238,6 +238,10 @@ def downstream_100_scaled():
     loss_names = _loss_names({"regression": 1})
 
 
+"""
+pretraining with only_mgt (ver 3)
+"""
+
 @ex.named_config
 def mgt_task_moc():
     exp_name = "mgt_task_moc"
