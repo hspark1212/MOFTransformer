@@ -89,11 +89,9 @@ class RegressionHead(nn.Module):
 
     def __init__(self, hid_dim):
         super().__init__()
-        # self.bn = nn.BatchNorm1d(hid_dim)
         self.fc = nn.Linear(hid_dim, 1)
 
     def forward(self, x):
-        # x = self.bn(x)
         x = self.fc(x)
         return x
 
@@ -106,18 +104,25 @@ class ClassificationHead(nn.Module):
     def __init__(self, hid_dim, n_classes):
         super().__init__()
         self.fc = nn.Linear(hid_dim, n_classes)
-        """
-        self.fc1 = nn.Linear(hid_dim, hid_dim)
-        self.ln = nn.LayerNorm(hid_dim)
-        self.gelu = nn.GELU()
-        self.fc2 = nn.Linear(hid_dim, n_classes)
-        """
+
     def forward(self, x):
         x = self.fc(x)
+        return x
+
+class MOCHead(nn.Module):
+    """
+    head for Metal Organic Classification
+    """
+
+    def __init__(self, hid_dim):
+        super().__init__()
+        self.fc = nn.Linear(hid_dim, 1)
+
+    def forward(self, x):
         """
-        x = self.fc1(x)
-        x = self.ln(x)
-        x = self.gelu(x)
-        x = self.fc2(x)
+        :param x: graph_feats [B, graph_len, hid_dim]
+        :return: [B, graph_len]
         """
+        x = self.fc(x) # [B, graph_len, 1]
+        x = x.squeeze(dim=-1) # [B, graph_len]
         return x

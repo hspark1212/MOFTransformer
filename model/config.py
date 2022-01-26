@@ -9,6 +9,7 @@ def _loss_names(d):
         "mpp": 0,  # masked patch prediction
         "mtp": 0,  # mof topology prediction
         "vfp": 0,  # (accessible) void fraction prediction
+        "moc": 0,  # metal organic classification
         "classification": 0,  # classification
         "regression": 0,  # regression
     }
@@ -38,7 +39,7 @@ def config():
     # cgcnn
     n_conv = 5  # default of CGCNN=3
     atom_fea_len = 64
-    nbr_fea_len = 64 # default : CGCNN = 41
+    nbr_fea_len = 64  # default : CGCNN = 41
 
     # egcnn
     egcnn_depth = 18  # 10, 18, 34, 50, 101, 152, 200
@@ -77,7 +78,7 @@ def config():
     decay_power = 1  # or cosine
     max_epochs = 100
     max_steps = -1  # num_data * max_epoch // batch_size (accumulate_grad_batches)
-    warmup_steps = 0.1  # int or float ( max_steps * warmup_steps)
+    warmup_steps = 0.05  # int or float ( max_steps * warmup_steps)
     end_lr = 0
     lr_mult = 1  # multiply lr for downstream heads
 
@@ -123,7 +124,6 @@ def vit_task_mtp():
     max_epochs = 100
     batch_size = 1024
     per_gpu_batchsize = 16
-    warmup_steps = 0.05
 
     # model
     use_only_vit = True
@@ -140,12 +140,10 @@ def vit_task_vfp():
     max_epochs = 100
     batch_size = 1024
     per_gpu_batchsize = 16
-    warmup_steps = 0.05
 
     # model
     use_only_vit = True
     loss_names = _loss_names({"vfp": 1})
-
 
 
 @ex.named_config
@@ -158,12 +156,10 @@ def vit_task_mtp_vfp():
     max_epochs = 100
     batch_size = 1024
     per_gpu_batchsize = 16
-    warmup_steps = 0.05
 
     # model
     use_only_vit = True
     loss_names = _loss_names({"mtp": 1, "vfp": 1})
-
 
 
 @ex.named_config
@@ -176,7 +172,6 @@ def vit_task_mpp():
     max_epochs = 100
     batch_size = 1024
     per_gpu_batchsize = 16
-    warmup_steps = 0.05
 
     # model
     use_only_vit = True
@@ -200,13 +195,11 @@ def downstream_topology():
     max_epochs = 20
     batch_size = 32
     per_gpu_batchsize = 8
-    warmup_steps = 0.05
 
     # model
     use_only_vit = True
     loss_names = _loss_names({"classification": 1})
     n_classes = 1100
-
 
 
 @ex.named_config
@@ -221,7 +214,6 @@ def downstream_5_scaled():
     max_epochs = 20
     batch_size = 32
     per_gpu_batchsize = 8
-    warmup_steps = 0.05
 
     # model
     use_only_vit = True
@@ -240,12 +232,26 @@ def downstream_100_scaled():
     max_epochs = 20
     batch_size = 32
     per_gpu_batchsize = 8
-    warmup_steps = 0.05
 
     # model
     use_only_vit = True
     loss_names = _loss_names({"regression": 1})
 
+
+@ex.named_config
+def mgt_task_moc():
+    exp_name = "mgt_task_moc"
+    data_root = "/home/data/pretrained_mof/ver3/dataset/"
+    log_dir = "result_mgt"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_only_mgt = True
+    loss_names = _loss_names({"moc": 1})
 
 
 """
@@ -263,7 +269,6 @@ def task_ggm():
     max_epochs = 100
     batch_size = 1024
     per_gpu_batchsize = 8
-    warmup_steps = 0.05
 
     # model
     use_transformer = True
@@ -282,11 +287,28 @@ def task_ggm_mtp():
     max_epochs = 100
     batch_size = 1024
     per_gpu_batchsize = 8
-    warmup_steps = 0.05
 
     # model
     use_transformer = True
     loss_names = _loss_names({"ggm": 1, "mtp": 1})
+
+    draw_false_grid = True
+
+
+@ex.named_config
+def task_ggm_mtp_moc():
+    exp_name = "task_ggm_mtp_moc"
+    data_root = "/home/data/pretrained_mof/ver3/dataset/"
+    log_dir = "result_transformer"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"ggm": 1, "mtp": 1, "moc": 1})
 
     draw_false_grid = True
 
@@ -301,7 +323,6 @@ def task_ggm_mtp_vfp():
     max_epochs = 100
     batch_size = 1024
     per_gpu_batchsize = 8
-    warmup_steps = 0.05
 
     # model
     use_transformer = True
@@ -311,92 +332,6 @@ def task_ggm_mtp_vfp():
 
 
 #######################################################
-"""
-pretraining (ver 2)
-"""
-
-
-@ex.named_config
-def task_ggm_mpp():
-    exp_name = "task_ggm_mpp"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/100k/"
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"ggm": 1, "mpp": 1})
-
-
-"""
-finetuning (ver2) - topology
-"""
-
-
-@ex.named_config
-def task_topology_1k():
-    exp_name = "task_topology_1k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/1k/"
-    downstream = "topology"
-    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"classification": 1})
-    n_classes = 300
-    draw_false_grid = False
-
-    # trainer
-    max_epochs = 100
-    batch_size = 32
-
-    # optimizer
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
-
-
-@ex.named_config
-def task_topology_10k():
-    exp_name = "task_topology_10k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/10k/"
-    downstream = "topology"
-    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"classification": 1})
-    n_classes = 300
-    draw_false_grid = False
-
-    # trainer
-    max_epochs = 100
-
-    # optimizer
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
-
-
-@ex.named_config
-def task_topology_15k():
-    exp_name = "task_topology_15k"
-    data_root = "/home/data/pretrained_mof/ver2/dataset/15k/"
-    downstream = "topology"
-    load_path = "result/task_ggm_mpp_seed0_from_/version_0/checkpoints/best.ckpt"
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"classification": 1})
-    n_classes = 300
-    draw_false_grid = False
-
-    # trainer
-    max_epochs = 100
-
-    # optimizer
-    optim_type = "sgd"
-    learning_rate = 1e-2
-    weight_decay = 0.
-
 
 """
 finetuning (ver2) - cgmc
