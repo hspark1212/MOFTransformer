@@ -102,11 +102,16 @@ def config():
     use_only_vit = False
     use_only_mgt = False
 
+    # normalization target
+    mean = None
+    std = None
+
 
 @ex.named_config
 def env_neuron():
     data_root = "/scratch/x2287a03/dataset"
     per_gpu_batchsize = 16
+
 
 """
 pretraining with only_vit (ver 3)
@@ -236,10 +241,30 @@ def downstream_100_scaled():
     use_only_vit = True
     loss_names = _loss_names({"regression": 1})
 
+@ex.named_config
+def downstream_bandgap():
+    exp_name = "downstream_bandgap"
+    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
+    log_dir = "result_qmof"
+    downstream = "bandgap"
+    load_path = "###"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_only_vit = True
+    loss_names = _loss_names({"regression": 1})
+
+    mean = 2.097
+    std = 1.088
 
 """
 pretraining with only_mgt (ver 3)
 """
+
 
 @ex.named_config
 def mgt_task_moc():
@@ -342,7 +367,7 @@ finetuning (ver2) - cgmc
 
 
 @ex.named_config
-def task_gcmc_1k():
+def task_qmof_1k():
     exp_name = "task_gcmc_1k"
     data_root = "/home/data/pretrained_mof/ver2/dataset/1k/"
     downstream = "gcmc_h2_scaled_5bar"
@@ -356,6 +381,9 @@ def task_gcmc_1k():
     # trainer
     max_epochs = 100
     batch_size = 32
+    mean = 0
+    std = 1
+
 
     # optimizer
     optim_type = "sgd"

@@ -7,6 +7,7 @@ from model.modules.cgcnn import GraphEmbeddings, CrystalGraphConvNet
 from model.modules.egcnn import generate_resnet_model
 from model.modules.vision_transformer_3d import VisionTransformer3D
 
+from model.modules.module_utils import Normalizer
 
 class Module(LightningModule):
     def __init__(self, config):
@@ -159,6 +160,10 @@ class Module(LightningModule):
         if self.hparams.config["loss_names"]["regression"] > 0:
             self.regression_head = heads.RegressionHead(hid_dim)
             self.regression_head.apply(objectives.init_weights)
+            # normalization
+            self.mean = config["mean"]
+            self.std = config["std"]
+
 
         if self.hparams.config["loss_names"]["classification"] > 0:
             n_classes = config["n_classes"]
@@ -402,7 +407,8 @@ class Module(LightningModule):
 
         # regression
         if "regression" in self.current_tasks:
-            ret.update(objectives.compute_regression(self, batch))
+            normalizer = Normalizer(self.mean, self.std)
+            ret.update(objectives.compute_regression(self, batch, normalizer))
 
         # classification
         if "classification" in self.current_tasks:

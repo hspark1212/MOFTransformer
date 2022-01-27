@@ -15,13 +15,15 @@ def init_weights(module):
         module.bias.data.zero_()
 
 
-def compute_regression(pl_module, batch):
+def compute_regression(pl_module, batch, normalizer):
     infer = pl_module.infer(batch, mask_grid=False)
 
     logits = pl_module.regression_head(infer["output"]).squeeze(-1)  # [B]
     labels = torch.FloatTensor(batch["target"]).to(logits.device)  # [B]
-
     assert len(labels.shape) == 1
+
+    # normalize encode if config["mean"] and config["std], else pass
+    labels = normalizer.encode(labels)
 
     loss = F.mse_loss(logits, labels)
     ret = {
@@ -34,10 +36,10 @@ def compute_regression(pl_module, batch):
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_regression_loss")(ret["regression_loss"])
     r2 = getattr(pl_module, f"{phase}_regression_r2")(
-        r2_score(ret["regression_logits"], ret["regression_labels"])
+        r2_score(ret["regression_logits"], normalizer.decode(ret["regression_labels"]))
     )
     mae = getattr(pl_module, f"{phase}_regression_mae")(
-        mean_absolute_error(ret["regression_logits"], ret["regression_labels"])
+        mean_absolute_error(ret["regression_logits"], normalizer.decode(ret["regression_labels"]))
     )
 
     pl_module.log(f"regression/{phase}/loss", loss)
@@ -111,10 +113,10 @@ def compute_mpp(pl_module, batch):
 
 def compute_mtp(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
-    mtp_logits = pl_module.mtp_head(infer["output"]) # [B, hid_dim]
-    mtp_labels = torch.LongTensor(batch["mtp"]).to(mtp_logits.device) # [B]
+    mtp_logits = pl_module.mtp_head(infer["output"])  # [B, hid_dim]
+    mtp_labels = torch.LongTensor(batch["mtp"]).to(mtp_logits.device)  # [B]
 
-    mtp_loss = F.cross_entropy(mtp_logits, mtp_labels) # [B]
+    mtp_loss = F.cross_entropy(mtp_logits, mtp_labels)  # [B]
 
     ret = {
         "mtp_loss": mtp_loss,
@@ -208,13 +210,15 @@ def compute_ggm(pl_module, batch):
 
     return ret
 
+
 def compute_moc(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
-    moc_logits = pl_module.moc_head(infer["graph_feats"]).flatten() # [B, max_graph_len] -> [B * max_graph_len]
-    moc_labels = infer["mo_labels"].to(moc_logits).flatten() # [B, max_graph_len] -> [B * max_graph_len]
+    moc_logits = pl_module.moc_head(infer["graph_feats"]).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
+    moc_labels = infer["mo_labels"].to(moc_logits).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
     mask = moc_labels != -100
 
-    moc_loss = F.binary_cross_entropy_with_logits(input=moc_logits[mask], target=moc_labels[mask]) # [B * max_graph_len]
+    moc_loss = F.binary_cross_entropy_with_logits(input=moc_logits[mask],
+                                                  target=moc_labels[mask])  # [B * max_graph_len]
 
     ret = {
         "moc_loss": moc_loss,
@@ -233,4 +237,3 @@ def compute_moc(pl_module, batch):
     pl_module.log(f"moc/{phase}/accuracy", acc)
 
     return ret
-
