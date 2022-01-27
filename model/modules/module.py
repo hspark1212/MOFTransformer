@@ -46,16 +46,6 @@ class Module(LightningModule):
             )
             self.graph_embeddings.apply(objectives.init_weights)
 
-            """ (old version) -> future removed...
-            self.graph_embeddings = GraphEmbeddings(
-                atom_fea_len=config["atom_fea_len"],
-                nbr_fea_len=config["nbr_fea_len"],
-                max_graph_len=config["max_graph_len"],
-                hid_dim=config["hid_dim"],
-            )
-            self.graph_embeddings.apply(objectives.init_weights)
-            """
-
             # token type embeddings
             self.token_type_embeddings = nn.Embedding(2, config["hid_dim"])
             self.token_type_embeddings.apply(objectives.init_weights)

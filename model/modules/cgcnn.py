@@ -254,6 +254,7 @@ class GraphEmbeddings(nn.Module):
 
             final_emb = torch.cat([emb_others, emb_carbon], dim=0)
             graph_emb[bi] = final_emb
+
         mask = (graph_emb.sum(dim=-1) != 0).float()
 
         return graph_emb, mask, mo_label

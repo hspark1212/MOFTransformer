@@ -108,7 +108,6 @@ def env_neuron():
     data_root = "/scratch/x2287a03/dataset"
     per_gpu_batchsize = 16
 
-
 """
 pretraining with only_vit (ver 3)
 """
