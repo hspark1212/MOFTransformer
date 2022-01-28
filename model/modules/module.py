@@ -7,6 +7,7 @@ from model.modules.cgcnn import GraphEmbeddings, CrystalGraphConvNet
 from model.modules.egcnn import generate_resnet_model
 from model.modules.vision_transformer_3d import VisionTransformer3D
 
+from model.modules.module_utils import Normalizer
 
 class Module(LightningModule):
     def __init__(self, config):
@@ -45,16 +46,6 @@ class Module(LightningModule):
                 nbr_fea_len=config["nbr_fea_len"],
             )
             self.graph_embeddings.apply(objectives.init_weights)
-
-            """ (old version) -> future removed...
-            self.graph_embeddings = GraphEmbeddings(
-                atom_fea_len=config["atom_fea_len"],
-                nbr_fea_len=config["nbr_fea_len"],
-                max_graph_len=config["max_graph_len"],
-                hid_dim=config["hid_dim"],
-            )
-            self.graph_embeddings.apply(objectives.init_weights)
-            """
 
             # token type embeddings
             self.token_type_embeddings = nn.Embedding(2, config["hid_dim"])
@@ -112,6 +103,7 @@ class Module(LightningModule):
                 max_nbr_atoms=config["max_nbr_atoms"],
                 max_graph_len=config["max_graph_len"],
                 hid_dim=config["hid_dim"],
+                nbr_fea_len=config["nbr_fea_len"],
             )
             self.graph_embeddings.apply(objectives.init_weights)
 
@@ -126,6 +118,10 @@ class Module(LightningModule):
                 drop_rate=config["drop_rate"],
                 mpp_ratio=config["mpp_ratio"],
             )
+
+            # pooler
+            self.pooler = heads.Pooler(config["hid_dim"])
+            self.pooler.apply(objectives.init_weights)
 
         # ===================== loss =====================
         if config["loss_names"]["ggm"] > 0:
@@ -144,6 +140,10 @@ class Module(LightningModule):
             self.vfp_head = heads.VFPHead(config["hid_dim"])
             self.vfp_head.apply(objectives.init_weights)
 
+        if config["loss_names"]["moc"] > 0:
+            self.moc_head = heads.MOCHead(config["hid_dim"])
+            self.moc_head.apply(objectives.init_weights)
+
         # ===================== Downstream =====================
         if config["load_path"] != "" and not config["test_only"]:
             ckpt = torch.load(self.hparams.config["load_path"], map_location="cpu")
@@ -160,6 +160,10 @@ class Module(LightningModule):
         if self.hparams.config["loss_names"]["regression"] > 0:
             self.regression_head = heads.RegressionHead(hid_dim)
             self.regression_head.apply(objectives.init_weights)
+            # normalization
+            self.mean = config["mean"]
+            self.std = config["std"]
+
 
         if self.hparams.config["loss_names"]["classification"] > 0:
             n_classes = config["n_classes"]
@@ -190,6 +194,8 @@ class Module(LightningModule):
 
         grid = batch["grid"]  # [B, C, H, W, D]
         volume = batch["volume"]  # list [B]
+
+        moc = batch.get("moc") # if moc, [B]
 
         if self.use_cgcnn and self.use_egcnn:
 
@@ -242,11 +248,13 @@ class Module(LightningModule):
 
             (graph_embeds,  # [B, max_graph_len, hid_dim],
              graph_masks,  # [B, max_graph_len],
+             mo_labels, # if moc: [B, max_graph_len], else: None
              ) = self.graph_embeddings(
                 atom_num=atom_num,
                 nbr_idx=nbr_idx,
                 nbr_fea=nbr_fea,
                 crystal_atom_idx=crystal_atom_idx,
+                moc=moc,
             )
 
             (grid_embeds,  # [B, max_grid_len+1, hid_dim]
@@ -295,6 +303,7 @@ class Module(LightningModule):
                 "graph_masks": graph_masks,
                 "grid_masks": grid_masks,
                 "grid_labels": grid_labels,  # if MPP, else None
+                "mo_labels": mo_labels, # if MOC, else None
             }
 
             return ret
@@ -341,11 +350,13 @@ class Module(LightningModule):
 
             (graph_embeds,  # [B, max_graph_len, hid_dim],
              graph_masks,  # [B, max_graph_len],
+             mo_labels, # if moc: [B, max_graph_len], else: None
              ) = self.graph_embeddings(
                 atom_num=atom_num,
                 nbr_idx=nbr_idx,
                 nbr_fea=nbr_fea,
                 crystal_atom_idx=crystal_atom_idx,
+                moc=moc,
             )
 
             x = graph_embeds
@@ -362,6 +373,7 @@ class Module(LightningModule):
                 "graph_feats": graph_feats,
                 "output": cls_feats,
                 "graph_masks": graph_masks,
+                "mo_labels": mo_labels,  # if MOC, else None
             }
 
             return ret
@@ -389,9 +401,14 @@ class Module(LightningModule):
         if "vfp" in self.current_tasks:
             ret.update(objectives.compute_vfp(self, batch))
 
+        # Metal Organic Classification
+        if "moc" in self.current_tasks:
+            ret.update(objectives.compute_moc(self, batch))
+
         # regression
         if "regression" in self.current_tasks:
-            ret.update(objectives.compute_regression(self, batch))
+            normalizer = Normalizer(self.mean, self.std)
+            ret.update(objectives.compute_regression(self, batch, normalizer))
 
         # classification
         if "classification" in self.current_tasks:

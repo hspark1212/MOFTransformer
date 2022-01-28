@@ -17,7 +17,7 @@ class Dataset(torch.utils.data.Dataset):
             nbr_fea_len: int,
             draw_false_grid=True,
             downstream="",
-
+            tasks=[],
     ):
         """
         Dataset for pretrained MOF.
@@ -43,9 +43,20 @@ class Dataset(torch.utils.data.Dataset):
         dict_target = json.load(open(path_file, "r"))
         self.cif_ids, self.targets = zip(*dict_target.items())
 
-        self.topology = json.load(open("model/assets/topology.json", "rb"))
-
         self.nbr_fea_len = nbr_fea_len
+
+        self.tasks = {}
+
+        for task in tasks:
+            if task in ["mtp", "vfp", "moc"]:
+                path_file = os.path.join(data_dir, f"{split}_{task}.json")
+                print(f"read {path_file}...")
+                assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
+
+                dict_task = json.load(open(path_file, "r"))
+                cif_ids, t = zip(*dict_task.items())
+                self.tasks[task] = list(t)
+                assert self.cif_ids == cif_ids, print("order of keys is different in the json file")
 
     def __len__(self):
         return len(self.cif_ids)
@@ -144,7 +155,7 @@ class Dataset(torch.utils.data.Dataset):
         nbr_dist = torch.FloatTensor(graphdata[3].copy()).view(len(atom_num), -1)
 
         nbr_fea = torch.FloatTensor(self.get_gaussian_distance(nbr_dist, num_step=self.nbr_fea_len, dmax=8))
-        
+
         uni_idx = graphdata[4]
         uni_count = graphdata[5]
 
@@ -156,22 +167,33 @@ class Dataset(torch.utils.data.Dataset):
             # "uni_count": uni_count,
         }
 
+    def get_tasks(self, index):
+        ret = dict()
+        for task, value in self.tasks.items():
+            ret.update(
+                {
+                    task: value[index]
+                }
+            )
+
+        return ret
+
     def __getitem__(self, index):
 
         ret = dict()
         cif_id = self.cif_ids[index]
         target = self.targets[index]
-        topology = self.topology[cif_id.split("+")[0]]
 
         ret.update(
             {
                 "cif_id": cif_id,
                 "target": target,
-                "topology": topology,
             }
         )
         ret.update(self.get_grid_data(cif_id, draw_false_grid=self.draw_false_grid))
         ret.update(self.get_graph(cif_id))
+
+        ret.update(self.get_tasks(index))
 
         return ret
 

@@ -186,7 +186,7 @@ class GraphEmbeddings(nn.Module):
         self.max_graph_len = max_graph_len
         self.hid_dim = hid_dim
 
-    def forward(self, atom_num, nbr_idx, nbr_fea, crystal_atom_idx):
+    def forward(self, atom_num, nbr_idx, nbr_fea, crystal_atom_idx, moc=None):
         """
         Args:
             atom_num (tensor): [N']
@@ -197,6 +197,7 @@ class GraphEmbeddings(nn.Module):
             new_atom_fea (tensor): [B, max_graph_len, hid_dim]
             mask (tensor): [B, max_graph_len]
         """
+
         batch_size = len(crystal_atom_idx)
         nbr_atom_num = atom_num[nbr_idx]
 
@@ -209,21 +210,20 @@ class GraphEmbeddings(nn.Module):
 
         graph_emb = torch.zeros([batch_size, self.max_graph_len, self.hid_dim]).to(emb_total)
         # [B, max_graph_len, hid_dim]
+        if moc:
+            metalnode = moc  # [B]
+            mo_label = torch.full([batch_size, self.max_graph_len], fill_value=-100).long()
+        else:
+            mo_label = None
 
         for bi, c_atom_idx in enumerate(crystal_atom_idx):
+            if moc:
+                mo = torch.zeros(len(c_atom_idx)).long()
+                mo[torch.LongTensor(metalnode[bi])] = 1
+
             c_total_emb = emb_total[c_atom_idx]
             c_atom_num = atom_num[c_atom_idx]
-
-            # carbon
             device_ = c_total_emb.device
-            idx_carbon = torch.where(c_atom_num == 6)[0]
-            if len(idx_carbon) > 120:
-                idx = torch.randperm(len(idx_carbon))[:120].long().to(device_)
-                emb_carbon = c_total_emb[idx]
-            else:
-                idx = torch.randperm(len(idx_carbon)).long().to(device_)
-                emb_carbon = torch.cat([c_total_emb[idx], torch.zeros([120 - len(idx), self.hid_dim]).to(device_)],
-                                       dim=0)
 
             # others = non carbon and hydrogen
             mask_others = torch.logical_and(c_atom_num != 6, c_atom_num != 1)
@@ -236,11 +236,28 @@ class GraphEmbeddings(nn.Module):
                 emb_others = torch.cat([c_total_emb[idx], torch.zeros([180 - len(idx), self.hid_dim]).to(device_)],
                                        dim=0)
 
+            if moc:
+                mo_label[bi, :len(idx)] = mo[idx]
+
+            # carbon
+            idx_carbon = torch.where(c_atom_num == 6)[0]
+            if len(idx_carbon) > 120:
+                idx = torch.randperm(len(idx_carbon))[:120].long().to(device_)
+                emb_carbon = c_total_emb[idx]
+            else:
+                idx = torch.randperm(len(idx_carbon)).long().to(device_)
+                emb_carbon = torch.cat([c_total_emb[idx], torch.zeros([120 - len(idx), self.hid_dim]).to(device_)],
+                                       dim=0)
+
+            if moc:
+                mo_label[bi, 180:180 + len(idx)] = mo[idx]
+
             final_emb = torch.cat([emb_others, emb_carbon], dim=0)
             graph_emb[bi] = final_emb
+
         mask = (graph_emb.sum(dim=-1) != 0).float()
 
-        return graph_emb, mask
+        return graph_emb, mask, mo_label
 
 
 class GraphEmbeddings_Uni_Index(nn.Module):

@@ -13,9 +13,17 @@ class Accuracy(Metric):
             logits.detach().to(self.correct.device),
             target.detach().to(self.correct.device),
         )
-        preds = logits.argmax(dim=-1)
+        if len(logits.shape) > 1:
+            preds = logits.argmax(dim=-1)
+        else:
+            # binary accuracy
+            logits[logits >= 0.5] = 1
+            logits[logits < 0.5] = 0
+            preds = logits
+
         preds = preds[target != -100]
         target = target[target != -100]
+
         if target.numel() == 0:
             return 1
 
