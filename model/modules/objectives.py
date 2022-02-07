@@ -36,10 +36,10 @@ def compute_regression(pl_module, batch, normalizer):
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_regression_loss")(ret["regression_loss"])
     r2 = getattr(pl_module, f"{phase}_regression_r2")(
-        r2_score(ret["regression_logits"], normalizer.decode(ret["regression_labels"]))
+        r2_score(normalizer.decode(ret["regression_logits"]), normalizer.decode(ret["regression_labels"]))
     )
     mae = getattr(pl_module, f"{phase}_regression_mae")(
-        mean_absolute_error(ret["regression_logits"], normalizer.decode(ret["regression_labels"]))
+        mean_absolute_error(normalizer.decode(ret["regression_logits"]), normalizer.decode(ret["regression_labels"]))
     )
 
     pl_module.log(f"regression/{phase}/loss", loss)
