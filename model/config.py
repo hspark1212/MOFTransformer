@@ -241,6 +241,7 @@ def downstream_100_scaled():
     use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
+
 @ex.named_config
 def downstream_bandgap():
     exp_name = "downstream_bandgap"
@@ -261,6 +262,25 @@ def downstream_bandgap():
     mean = 2.097
     std = 1.088
 
+
+@ex.named_config
+def downstream_bulkmodulus():
+    exp_name = "downstream_bulkmodulus"
+    data_root = "/home/data/pretrained_mof/ver3/downstream/20k"
+    log_dir = "result_downstream"
+    downstream = "bulkmodulus"
+    load_path = "###"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+
 """
 pretraining with only_mgt (ver 3)
 """
@@ -280,6 +300,27 @@ def mgt_task_moc():
     # model
     use_only_mgt = True
     loss_names = _loss_names({"moc": 1})
+
+
+@ex.named_config
+def mgt_task_moc_downstream_bandgap():
+    exp_name = "downstream_bandgap"
+    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
+    log_dir = "result_mgt_downstream"
+    downstream = "bandgap"
+    load_path = "/home/hspark8/PycharmProjects/pretrained_mof/best_ckpt/best_mgt_task_moc.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 16
+
+    # model
+    use_only_mgt = True
+    loss_names = _loss_names({"regression": 1})
+
+    mean = 2.097
+    std = 1.088
 
 
 """
@@ -357,4 +398,3 @@ def task_ggm_mtp_vfp():
     loss_names = _loss_names({"ggm": 1, "mtp": 1, "vfp": 1})
 
     draw_false_grid = True
-

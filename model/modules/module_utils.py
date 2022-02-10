@@ -17,7 +17,6 @@ def set_metrics(pl_module):
             if v < 1:
                 continue
             if k == "regression" or k == "vfp":
-                setattr(pl_module, f"{split}_{k}_r2", Scalar())
                 setattr(pl_module, f"{split}_{k}_loss", Scalar())
                 setattr(pl_module, f"{split}_{k}_mae", Scalar())
             else:
@@ -42,10 +41,6 @@ def epoch_wrapup(pl_module):
             continue
 
         if loss_name == "regression" or loss_name == "vfp":
-            # r2
-            value = getattr(pl_module, f"{phase}_{loss_name}_r2").compute()
-            pl_module.log(f"{loss_name}/{phase}/r2_epoch", value)
-            getattr(pl_module, f"{phase}_{loss_name}_r2").reset()
             # mse loss
             pl_module.log(
                 f"{loss_name}/{phase}/loss_epoch",
@@ -53,12 +48,14 @@ def epoch_wrapup(pl_module):
             )
             getattr(pl_module, f"{phase}_{loss_name}_loss").reset()
             # mae loss
+            value = getattr(pl_module, f"{phase}_{loss_name}_mae").compute()
             pl_module.log(
                 f"{loss_name}/{phase}/mae_epoch",
-                getattr(pl_module, f"{phase}_{loss_name}_mae").compute(),
+                value,
             )
             getattr(pl_module, f"{phase}_{loss_name}_mae").reset()
 
+            value = -value
         else:
             value = getattr(pl_module, f"{phase}_{loss_name}_accuracy").compute()
             pl_module.log(f"{loss_name}/{phase}/accuracy_epoch", value)

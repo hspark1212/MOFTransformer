@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics.functional import r2_score, mean_absolute_error
+from torchmetrics.functional import mean_absolute_error
 
 
 def init_weights(module):
@@ -28,22 +28,18 @@ def compute_regression(pl_module, batch, normalizer):
     loss = F.mse_loss(logits, labels)
     ret = {
         "regression_loss": loss,
-        "regression_logits": logits,
-        "regression_labels": labels,
+        "regression_logits":  normalizer.decode(logits),
+        "regression_labels":  normalizer.decode(labels),
     }
 
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_regression_loss")(ret["regression_loss"])
-    r2 = getattr(pl_module, f"{phase}_regression_r2")(
-        r2_score(normalizer.decode(ret["regression_logits"]), normalizer.decode(ret["regression_labels"]))
-    )
     mae = getattr(pl_module, f"{phase}_regression_mae")(
-        mean_absolute_error(normalizer.decode(ret["regression_logits"]), normalizer.decode(ret["regression_labels"]))
+        mean_absolute_error(ret["regression_logits"], ret["regression_labels"])
     )
 
     pl_module.log(f"regression/{phase}/loss", loss)
-    pl_module.log(f"regression/{phase}/r2", r2)
     pl_module.log(f"regression/{phase}/mae", mae)
 
     return ret
@@ -155,15 +151,11 @@ def compute_vfp(pl_module, batch):
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_vfp_loss")(ret["vfp_loss"])
-    r2 = getattr(pl_module, f"{phase}_vfp_r2")(
-        r2_score(ret["vfp_logits"], ret["vfp_labels"])
-    )
     mae = getattr(pl_module, f"{phase}_vfp_mae")(
         mean_absolute_error(ret["vfp_logits"], ret["vfp_labels"])
     )
 
     pl_module.log(f"vfp/{phase}/loss", loss)
-    pl_module.log(f"vfp/{phase}/r2", r2)
     pl_module.log(f"vfp/{phase}/mae", mae)
 
     return ret
