@@ -9,6 +9,8 @@ from model.modules.vision_transformer_3d import VisionTransformer3D
 
 from model.modules.module_utils import Normalizer
 
+from torchmetrics.functional import r2_score
+
 class Module(LightningModule):
     def __init__(self, config):
         super().__init__()
@@ -185,6 +187,7 @@ class Module(LightningModule):
               mask_grid=False,
               ):
 
+        cif_id = batch["cif_id"]
         atom_num = batch["atom_num"]  # [N']
         nbr_idx = batch["nbr_idx"]  # [N', M]
         nbr_fea = batch["nbr_fea"]  # [N', M, nbr_fea_len]
@@ -304,6 +307,7 @@ class Module(LightningModule):
                 "grid_masks": grid_masks,
                 "grid_labels": grid_labels,  # if MPP, else None
                 "mo_labels": mo_labels, # if MOC, else None
+                "cif_id": cif_id,
             }
 
             return ret
@@ -423,22 +427,35 @@ class Module(LightningModule):
 
         return total_loss
 
-    def training_epoch_end(self, outs):
+    def training_epoch_end(self, outputs):
         module_utils.epoch_wrapup(self)
 
     def validation_step(self, batch, batch_idx):
         module_utils.set_task(self)
         output = self(batch)
 
-    def validation_epoch_end(self, outs):
+    def validation_epoch_end(self, outputs):
         module_utils.epoch_wrapup(self)
 
     def test_step(self, batch, batch_idx):
         module_utils.set_task(self)
         output = self(batch)
+        return output
 
-    def test_epoch_end(self, outs):
+    def test_epoch_end(self, outputs):
         module_utils.epoch_wrapup(self)
+
+        # calculate r2 score when regression
+        if "regression_logits" in outputs[0].keys():
+            logits = []
+            labels = []
+            for out in outputs:
+                logits += out["regression_logits"].tolist()
+                labels += out["regression_labels"].tolist()
+            r2 = r2_score(torch.FloatTensor(logits), torch.FloatTensor(labels))
+            self.log(f"test/r2_score", r2)
+
+
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)
