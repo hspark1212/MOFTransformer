@@ -243,9 +243,30 @@ def downstream_100_scaled():
 
 
 @ex.named_config
+def downstream_uptake():
+    exp_name = "downstream_uptake"
+    data_root = "/home/data/pretrained_mof/ver3/downstream/20k"
+    log_dir = "result_downstream"
+    downstream = "uptake"
+    load_path = "###"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    mean = 291.453
+    std = 95.503
+
+
+@ex.named_config
 def downstream_bandgap():
     exp_name = "downstream_bandgap"
-    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
+    data_root = "/home/data/pretrained_mof/qmof/dataset/unrelaxed_data2/20k"
     log_dir = "result_downstream"
     downstream = "bandgap"
     load_path = "###"  # should be set
@@ -280,6 +301,9 @@ def downstream_bulkmodulus():
     use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
+    mean = 4.095
+    std = 16.118
+
 
 """
 pretraining with only_mgt (ver 3)
@@ -305,7 +329,7 @@ def mgt_task_moc():
 @ex.named_config
 def mgt_task_moc_downstream_bandgap():
     exp_name = "downstream_bandgap"
-    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
+    data_root = "/home/data/pretrained_mof/qmof/dataset/unrelaxed_data2/20k"
     log_dir = "result_mgt_downstream"
     downstream = "bandgap"
     load_path = "/home/hspark8/PycharmProjects/pretrained_mof/best_ckpt/best_mgt_task_moc.ckpt"  # should be set
@@ -321,6 +345,27 @@ def mgt_task_moc_downstream_bandgap():
 
     mean = 2.097
     std = 1.088
+
+
+@ex.named_config
+def mgt_task_moc_downstream_bulkmodulus():
+    exp_name = "downstream_bulkmodulus"
+    data_root = "/home/data/pretrained_mof/ver3/downstream/20k"
+    log_dir = "result_mgt_downstream"
+    downstream = "bulkmodulus"
+    load_path = "/home/hspark8/PycharmProjects/pretrained_mof/best_ckpt/best_mgt_task_moc.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 16
+
+    # model
+    use_only_mgt = True
+    loss_names = _loss_names({"regression": 1})
+
+    mean = 4.095
+    std = 16.118
 
 
 """
