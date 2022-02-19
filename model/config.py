@@ -109,7 +109,7 @@ def config():
 
 @ex.named_config
 def env_neuron():
-    data_root = "/scratch/x2287a03/dataset"
+    data_root = "/scratch/x2287a03/ver4"
     per_gpu_batchsize = 16
 
 
@@ -376,7 +376,7 @@ pretraining (ver 3)
 @ex.named_config
 def task_ggm():
     exp_name = "task_ggm"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
     log_dir = "result_transformer"
 
     # trainer
@@ -394,7 +394,7 @@ def task_ggm():
 @ex.named_config
 def task_ggm_mtp():
     exp_name = "task_ggm_mtp"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
     log_dir = "result_transformer"
 
     # trainer
@@ -412,7 +412,7 @@ def task_ggm_mtp():
 @ex.named_config
 def task_ggm_mtp_moc():
     exp_name = "task_ggm_mtp_moc"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
     log_dir = "result_transformer"
 
     # trainer
@@ -430,7 +430,7 @@ def task_ggm_mtp_moc():
 @ex.named_config
 def task_ggm_mtp_vfp():
     exp_name = "task_ggm_mtp_vfp"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
     log_dir = "result_transformer"
 
     # trainer
