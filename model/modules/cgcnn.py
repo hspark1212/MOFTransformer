@@ -1,3 +1,5 @@
+import random
+
 import torch
 import torch.nn as nn
 
@@ -60,7 +62,7 @@ class ConvLayer(nn.Module):
         nbr_filter, nbr_core = total_gated_fea.chunk(2, dim=2)  # [N, M, atom_fea_len]
         nbr_filter = self.sigmoid(nbr_filter)
         nbr_core = self.softplus1(nbr_core)
-        nbr_sumed = torch.sum(nbr_filter * nbr_core, dim=1) # [N, atom_fea_len]
+        nbr_sumed = torch.sum(nbr_filter * nbr_core, dim=1)  # [N, atom_fea_len]
         nbr_sumed = self.bn2(nbr_sumed)
         out = self.softplus2(atom_in_fea + nbr_sumed)  # [N, atom_fea_len]
         return out
@@ -303,7 +305,7 @@ class GraphEmbeddings_Uni_Index(nn.Module):
 
         new_atom_fea, mask = self.reconstruct_batch(atom_fea, crystal_atom_idx, uni_idx, uni_count)
         # [B, max_graph_len, hid_dim], [B, max_graph_len]
-        return new_atom_fea, mask
+        return new_atom_fea, mask, None  # None will be replaced with MOC
 
     def reconstruct_batch(self, atom_fea, crystal_atom_idx, uni_idx, uni_count):
         batch_size = len(crystal_atom_idx)
@@ -314,11 +316,17 @@ class GraphEmbeddings_Uni_Index(nn.Module):
         ).to(atom_fea)
 
         for bi, c_atom_idx in enumerate(crystal_atom_idx):
-            # set uni_idx with descending count and cut max_graph_len
-            idx_ = torch.LongTensor(uni_idx[bi])
+            # set uni_idx with (descending count or random) and cut max_graph_len
+
+            idx_ = torch.LongTensor([random.choice(u) for u in uni_idx[bi]])[:self.max_graph_len]
+            rand_idx = idx_[torch.randperm(len(idx_))]
+
+            new_atom_fea[bi][:len(rand_idx)] = atom_fea[c_atom_idx][rand_idx]
+            """
             count_ = torch.LongTensor(uni_count[bi])
             final_idx = idx_[torch.argsort(count_, descending=True)][:self.max_graph_len]
             new_atom_fea[bi][:len(final_idx)] = atom_fea[c_atom_idx][final_idx]
+            """
         mask = (new_atom_fea.sum(dim=-1) != 0).float()
 
         return new_atom_fea, mask

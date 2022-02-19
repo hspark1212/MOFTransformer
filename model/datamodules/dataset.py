@@ -163,8 +163,8 @@ class Dataset(torch.utils.data.Dataset):
             "atom_num": atom_num,
             "nbr_idx": nbr_idx,
             "nbr_fea": nbr_fea,
-            # "uni_idx": uni_idx,
-            # "uni_count": uni_count,
+            "uni_idx": uni_idx,
+            "uni_count": uni_count,
         }
 
     def get_tasks(self, index):

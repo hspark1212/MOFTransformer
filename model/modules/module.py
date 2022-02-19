@@ -3,7 +3,7 @@ import torch.nn as nn
 from pytorch_lightning import LightningModule
 
 from model.modules import objectives, heads, module_utils
-from model.modules.cgcnn import GraphEmbeddings, CrystalGraphConvNet
+from model.modules.cgcnn import GraphEmbeddings, CrystalGraphConvNet, GraphEmbeddings_Uni_Index
 from model.modules.egcnn import generate_resnet_model
 from model.modules.vision_transformer_3d import VisionTransformer3D
 
