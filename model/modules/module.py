@@ -11,7 +11,6 @@ from model.modules.module_utils import Normalizer
 
 from torchmetrics.functional import r2_score
 
-
 class Module(LightningModule):
     def __init__(self, config):
         super().__init__()
@@ -42,15 +41,6 @@ class Module(LightningModule):
             self.egcnn.apply(objectives.init_weights)
 
         if self.use_transformer:
-            self.graph_embeddings = GraphEmbeddings_Uni_Index(
-                atom_fea_len=config["atom_fea_len"],
-                nbr_fea_len=config["nbr_fea_len"],
-                max_graph_len=config["max_graph_len"],
-                hid_dim=config["hid_dim"],
-            )
-            self.graph_embeddings.apply(objectives.init_weights)
-
-            """ # transformer V1
             self.graph_embeddings = GraphEmbeddings(
                 max_nbr_atoms=config["max_nbr_atoms"],
                 max_graph_len=config["max_graph_len"],
@@ -58,7 +48,7 @@ class Module(LightningModule):
                 nbr_fea_len=config["nbr_fea_len"],
             )
             self.graph_embeddings.apply(objectives.init_weights)
-            """
+
             # token type embeddings
             self.token_type_embeddings = nn.Embedding(2, config["hid_dim"])
             self.token_type_embeddings.apply(objectives.init_weights)
@@ -176,6 +166,7 @@ class Module(LightningModule):
             self.mean = config["mean"]
             self.std = config["std"]
 
+
         if self.hparams.config["loss_names"]["classification"] > 0:
             n_classes = config["n_classes"]
             self.classification_head = heads.ClassificationHead(hid_dim, n_classes)
@@ -201,13 +192,13 @@ class Module(LightningModule):
         nbr_idx = batch["nbr_idx"]  # [N', M]
         nbr_fea = batch["nbr_fea"]  # [N', M, nbr_fea_len]
         crystal_atom_idx = batch["crystal_atom_idx"]  # list [B]
-        uni_idx = batch["uni_idx"]  # list [B]
-        uni_count = batch["uni_count"]  # list [B]
+        # uni_idx = batch["uni_idx"]  # list [B]
+        # uni_count = batch["uni_count"]  # list [B]
 
         grid = batch["grid"]  # [B, C, H, W, D]
         volume = batch["volume"]  # list [B]
 
-        moc = batch.get("moc")  # if moc, [B]
+        moc = batch.get("moc") # if moc, [B]
 
         if self.use_cgcnn and self.use_egcnn:
 
@@ -257,30 +248,17 @@ class Module(LightningModule):
             return ret
 
         elif self.use_transformer:
-            # v2
+
             (graph_embeds,  # [B, max_graph_len, hid_dim],
              graph_masks,  # [B, max_graph_len],
-             mo_labels,  # if moc: [B, max_graph_len], else: None
+             mo_labels, # if moc: [B, max_graph_len], else: None
              ) = self.graph_embeddings(
                 atom_num=atom_num,
                 nbr_idx=nbr_idx,
                 nbr_fea=nbr_fea,
                 crystal_atom_idx=crystal_atom_idx,
-                uni_idx=uni_idx,
-                uni_count=uni_count,
                 moc=moc,
             )
-            """# v1
-            (graph_embeds,  # [B, max_graph_len, hid_dim],
-             graph_masks,  # [B, max_graph_len],
-             mo_labels,  # if moc: [B, max_graph_len], else: None
-             ) = self.graph_embeddings(
-                atom_num=atom_num,
-                nbr_idx=nbr_idx,
-                nbr_fea=nbr_fea,
-                crystal_atom_idx=crystal_atom_idx,
-                moc=moc,
-            )"""
 
             (grid_embeds,  # [B, max_grid_len+1, hid_dim]
              grid_masks,  # [B, max_grid_len+1]
@@ -328,7 +306,7 @@ class Module(LightningModule):
                 "graph_masks": graph_masks,
                 "grid_masks": grid_masks,
                 "grid_labels": grid_labels,  # if MPP, else None
-                "mo_labels": mo_labels,  # if MOC, else None
+                "mo_labels": mo_labels, # if MOC, else None
                 "cif_id": cif_id,
             }
 
@@ -376,7 +354,7 @@ class Module(LightningModule):
 
             (graph_embeds,  # [B, max_graph_len, hid_dim],
              graph_masks,  # [B, max_graph_len],
-             mo_labels,  # if moc: [B, max_graph_len], else: None
+             mo_labels, # if moc: [B, max_graph_len], else: None
              ) = self.graph_embeddings(
                 atom_num=atom_num,
                 nbr_idx=nbr_idx,
@@ -476,6 +454,8 @@ class Module(LightningModule):
                 labels += out["regression_labels"].tolist()
             r2 = r2_score(torch.FloatTensor(logits), torch.FloatTensor(labels))
             self.log(f"test/r2_score", r2)
+
+
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)

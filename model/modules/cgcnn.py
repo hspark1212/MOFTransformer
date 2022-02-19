@@ -281,7 +281,7 @@ class GraphEmbeddings_Uni_Index(nn.Module):
         )
         self.fc = nn.Linear(atom_fea_len, hid_dim)
 
-    def forward(self, atom_num, nbr_idx, nbr_fea, crystal_atom_idx, uni_idx, uni_count, moc=None):
+    def forward(self, atom_num, nbr_idx, nbr_fea, crystal_atom_idx, uni_idx, uni_count):
         """
         Args:
             atom_num (tensor): [N', atom_fea_len]
