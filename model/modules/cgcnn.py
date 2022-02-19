@@ -60,7 +60,7 @@ class ConvLayer(nn.Module):
         nbr_filter, nbr_core = total_gated_fea.chunk(2, dim=2)  # [N, M, atom_fea_len]
         nbr_filter = self.sigmoid(nbr_filter)
         nbr_core = self.softplus1(nbr_core)
-        nbr_sumed = torch.sum(nbr_filter * nbr_core, dim=1) # [N, atom_fea_len]
+        nbr_sumed = torch.sum(nbr_filter * nbr_core, dim=1)
         nbr_sumed = self.bn2(nbr_sumed)
         out = self.softplus2(atom_in_fea + nbr_sumed)  # [N, atom_fea_len]
         return out
@@ -138,7 +138,7 @@ class CrystalGraphConvNet(nn.Module):
         """
         atom_fea = self.embedding(atom_num)  # [N, atom_fea_len]
         for conv_func in self.convs:
-            atom_fea = conv_func(atom_fea, nbr_fea, nbr_fea_idx)  # [N, atom_fea_len]
+            atom_fea = conv_func(atom_fea, nbr_fea, nbr_fea_idx)  # [N. atom_fea_len]
         crys_fea = self.pooling(atom_fea, crystal_atom_idx)  # [N0, atom_fea_len]
         crys_fea = self.conv_to_fc(self.conv_to_fc_softplus(crys_fea))  # [N0, h_fea_len]
         crys_fea = self.conv_to_fc_softplus(crys_fea)  # [N0, h_fea_len]
