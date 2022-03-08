@@ -1,5 +1,3 @@
-import json
-
 import torch.nn as nn
 
 from transformers.models.bert.modeling_bert import (
@@ -8,13 +6,14 @@ from transformers.models.bert.modeling_bert import (
 
 
 class Pooler(nn.Module):
-    def __init__(self, hidden_size):
+    def __init__(self, hidden_size, index=0):
         super().__init__()
         self.dense = nn.Linear(hidden_size, hidden_size)
         self.activation = nn.Tanh()
+        self.index = index
 
     def forward(self, hidden_states):
-        first_token_tensor = hidden_states[:, 0]
+        first_token_tensor = hidden_states[:, self.index]
         pooled_output = self.dense(first_token_tensor)
         pooled_output = self.activation(pooled_output)
         return pooled_output
@@ -61,7 +60,7 @@ class MTPHead(nn.Module):
 
     def __init__(self, hid_dim):
         super().__init__()
-        self.fc = nn.Linear(hid_dim, 1100) # num_topology : 1100
+        self.fc = nn.Linear(hid_dim, 1100)  # num_topology : 1100
 
     def forward(self, x):
         x = self.fc(x)
