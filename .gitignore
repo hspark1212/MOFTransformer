@@ -10,7 +10,7 @@ __pycache__/
 # result directory
 result*
 
-libs/GRIDAY/
+# libs/GRIDAY/
 model/config_YH.py
 model/config_HS.py
 
