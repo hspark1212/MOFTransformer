@@ -59,16 +59,23 @@ def get_unique_atoms(atoms):
     list_m = [matrix, matrix_sqr, matrix_cub]
 
     arr = [numbers]
+
     for m in list_m:
         for n in list_n:
             arr.append(m.dot(n))
 
     arr = np.vstack(arr).transpose()
-    u, unique_idx, unique_count = np.unique(arr, axis=0, return_index=True, return_counts=True)
+
+    uni, unique_idx, unique_count = np.unique(arr, axis=0, return_index=True, return_counts=True)
 
     # sort
-    final_unique_idx = unique_idx[np.argsort(-unique_count)].tolist()
+    final_uni = uni[np.argsort(-unique_count)].tolist()
     final_unique_count = unique_count[np.argsort(-unique_count)].tolist()
+
+    arr = arr.tolist()
+    final_unique_idx = []
+    for u in final_uni:
+        final_unique_idx.append([i for i, a in enumerate(arr) if a == u])
 
     return final_unique_idx, final_unique_count
 
@@ -92,8 +99,8 @@ def get_crystal_graph(st, radius=8, max_num_nbr=12):
     # convert to small size
     atom_num = np.array(atom_num, dtype=np.int8)
     nbr_idx = np.array(nbr_idx, dtype=np.int16)
-    nbr_dist = np.array(nbr_dist, dtype=np.float16)
-    uni_idx = np.array(uni_idx, dtype=np.int16)
+    nbr_dist = np.array(nbr_dist, dtype=np.float32)
+    # uni_idx = np.array(uni_idx, dtype=np.int16)
     uni_count = np.array(uni_count, dtype=np.int16)
     return atom_num, nbr_idx, nbr_dist, uni_idx, uni_count
 

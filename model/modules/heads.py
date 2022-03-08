@@ -1,3 +1,5 @@
+import json
+
 import torch.nn as nn
 
 from transformers.models.bert.modeling_bert import (
@@ -59,7 +61,7 @@ class MTPHead(nn.Module):
 
     def __init__(self, hid_dim):
         super().__init__()
-        self.fc = nn.Linear(hid_dim, 1100)
+        self.fc = nn.Linear(hid_dim, 1100) # num_topology : 1100
 
     def forward(self, x):
         x = self.fc(x)
@@ -109,6 +111,7 @@ class ClassificationHead(nn.Module):
         x = self.fc(x)
         return x
 
+
 class MOCHead(nn.Module):
     """
     head for Metal Organic Classification
@@ -123,6 +126,24 @@ class MOCHead(nn.Module):
         :param x: graph_feats [B, graph_len, hid_dim]
         :return: [B, graph_len]
         """
-        x = self.fc(x) # [B, graph_len, 1]
-        x = x.squeeze(dim=-1) # [B, graph_len]
+        x = self.fc(x)  # [B, graph_len, 1]
+        x = x.squeeze(dim=-1)  # [B, graph_len]
+        return x
+
+
+class BBPHead(nn.Module):
+    """
+    head for Building Block Prediction
+    """
+
+    def __init__(self, hid_dim):
+        super().__init__()
+        self.fc = nn.Linear(hid_dim, 862)
+
+    def forward(self, x):
+        """
+        :param x: output [B, hid_dim]
+        :return: [B, num_bbs]
+        """
+        x = self.fc(x)
         return x

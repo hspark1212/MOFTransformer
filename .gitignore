@@ -9,8 +9,10 @@ __pycache__/
 
 # result directory
 result*
-best_ckpt
 
 libs/GRIDAY/
 model/config_YH.py
 model/config_HS.py
+
+best_ckpt/
+

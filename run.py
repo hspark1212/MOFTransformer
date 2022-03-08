@@ -57,7 +57,6 @@ def main(_config):
         gpus=_config["num_gpus"],
         num_nodes=_config["num_nodes"],
         precision=_config["precision"],
-        # strategy=DDPPlugin(find_unused_parameters=False if _config["load_path"] == "" else True),
         strategy=DDPPlugin(find_unused_parameters=True),
         # deterministic=True,
         benchmark=True,

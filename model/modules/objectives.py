@@ -28,8 +28,8 @@ def compute_regression(pl_module, batch, normalizer):
     loss = F.mse_loss(logits, labels)
     ret = {
         "regression_loss": loss,
-        "regression_logits":  normalizer.decode(logits),
-        "regression_labels":  normalizer.decode(labels),
+        "regression_logits": normalizer.decode(logits),
+        "regression_labels": normalizer.decode(labels),
     }
 
     # call update() loss and acc
@@ -227,5 +227,40 @@ def compute_moc(pl_module, batch):
 
     pl_module.log(f"moc/{phase}/loss", loss)
     pl_module.log(f"moc/{phase}/accuracy", acc)
+
+    return ret
+
+
+def compute_bbp(pl_module, batch):
+    infer = pl_module.infer(batch, mask_grid=False)
+    bbp_logits = pl_module.bbp_head(infer["output"])  # [B, num_bbs]
+    # labels
+    batch_size, num_bbs = bbp_logits.shape
+    bbp_labels = torch.zeros([batch_size, num_bbs]).to(bbp_logits.device) # [B, num_bbs]
+    for bi, bb in enumerate(batch["bbp"]):
+        for b in bb:
+            bbp_labels[bi][b] = 1
+    # flatten
+    bbp_logits = bbp_logits.flatten()
+    bbp_labels = bbp_labels.flatten()
+
+    bbp_loss = F.binary_cross_entropy_with_logits(input=bbp_logits,
+                                                  target=bbp_labels)
+
+    ret = {
+        "bbp_loss": bbp_loss,
+        "bbp_logits": bbp_logits,
+        "bbp_labels": bbp_labels,
+    }
+
+    # call update() loss and acc
+    phase = "train" if pl_module.training else "val"
+    loss = getattr(pl_module, f"{phase}_bbp_loss")(ret["bbp_loss"])
+    acc = getattr(pl_module, f"{phase}_bbp_accuracy")(
+        nn.Sigmoid()(ret["bbp_logits"]), ret["bbp_labels"].long()
+    )
+
+    pl_module.log(f"bbp/{phase}/loss", loss)
+    pl_module.log(f"bbp/{phase}/accuracy", acc)
 
     return ret

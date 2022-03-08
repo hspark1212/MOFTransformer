@@ -48,7 +48,7 @@ class Dataset(torch.utils.data.Dataset):
         self.tasks = {}
 
         for task in tasks:
-            if task in ["mtp", "vfp", "moc"]:
+            if task in ["mtp", "vfp", "moc", "bbp"]:
                 path_file = os.path.join(data_dir, f"{split}_{task}.json")
                 print(f"read {path_file}...")
                 assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
@@ -163,8 +163,8 @@ class Dataset(torch.utils.data.Dataset):
             "atom_num": atom_num,
             "nbr_idx": nbr_idx,
             "nbr_fea": nbr_fea,
-            # "uni_idx": uni_idx,
-            # "uni_count": uni_count,
+            "uni_idx": uni_idx,
+            "uni_count": uni_count,
         }
 
     def get_tasks(self, index):
