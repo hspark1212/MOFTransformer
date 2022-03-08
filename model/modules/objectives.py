@@ -18,7 +18,7 @@ def init_weights(module):
 def compute_regression(pl_module, batch, normalizer):
     infer = pl_module.infer(batch, mask_grid=False)
 
-    logits = pl_module.regression_head(infer["output"]).squeeze(-1)  # [B]
+    logits = pl_module.regression_head(infer["cls_feats"]).squeeze(-1)  # [B]
     labels = torch.FloatTensor(batch["target"]).to(logits.device)  # [B]
     assert len(labels.shape) == 1
 
@@ -48,7 +48,7 @@ def compute_regression(pl_module, batch, normalizer):
 def compute_classification(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
 
-    logits = pl_module.classification_head(infer["output"])  # [B, output_dim]
+    logits = pl_module.classification_head(infer["cls_feats"])  # [B, output_dim]
     labels = torch.LongTensor(batch["target"]).to(logits.device)  # [B]
     assert len(labels.shape) == 1
 
@@ -109,7 +109,7 @@ def compute_mpp(pl_module, batch):
 
 def compute_mtp(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
-    mtp_logits = pl_module.mtp_head(infer["output"])  # [B, hid_dim]
+    mtp_logits = pl_module.mtp_head(infer["cls_feats"])  # [B, hid_dim]
     mtp_labels = torch.LongTensor(batch["mtp"]).to(mtp_logits.device)  # [B]
 
     mtp_loss = F.cross_entropy(mtp_logits, mtp_labels)  # [B]
@@ -136,7 +136,7 @@ def compute_mtp(pl_module, batch):
 def compute_vfp(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
 
-    vfp_logits = pl_module.vfp_head(infer["output"]).squeeze(-1)  # [B]
+    vfp_logits = pl_module.vfp_head(infer["cls_feats"]).squeeze(-1)  # [B]
     vfp_labels = torch.FloatTensor(batch["vfp"]).to(vfp_logits.device)
 
     assert len(vfp_labels.shape) == 1
@@ -181,7 +181,7 @@ def compute_ggm(pl_module, batch):
     batch["grid"] = ggm_images
 
     infer = pl_module.infer(batch, mask_grid=False)
-    ggm_logits = pl_module.ggm_head(infer["output"])  # cls_feats
+    ggm_logits = pl_module.ggm_head(infer["cls_feats"])  # cls_feats
     ggm_loss = F.cross_entropy(ggm_logits, ggm_labels.long())
 
     ret = {
@@ -233,7 +233,7 @@ def compute_moc(pl_module, batch):
 
 def compute_bbp(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
-    bbp_logits = pl_module.bbp_head(infer["output"])  # [B, num_bbs]
+    bbp_logits = pl_module.bbp_head(infer["cls_feats"])  # [B, num_bbs]
     # labels
     batch_size, num_bbs = bbp_logits.shape
     bbp_labels = torch.zeros([batch_size, num_bbs]).to(bbp_logits.device) # [B, num_bbs]

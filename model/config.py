@@ -407,78 +407,6 @@ def task_ggm():
 
 
 @ex.named_config
-def task_ggm_mtp():
-    exp_name = "task_ggm_mtp"
-    data_root = "/home/data/pretrained_mof/ver4/dataset/"
-    log_dir = "result_transformer"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"ggm": 1, "mtp": 1})
-
-    draw_false_grid = True
-
-
-@ex.named_config
-def task_ggm_mtp_moc():
-    exp_name = "task_ggm_mtp_moc"
-    data_root = "/home/data/pretrained_mof/ver4/dataset/"
-    log_dir = "result_transformer"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"ggm": 1, "mtp": 1, "moc": 1})
-
-    draw_false_grid = True
-
-
-@ex.named_config
-def task_ggm_mtp_vfp():
-    exp_name = "task_ggm_mtp_vfp"
-    data_root = "/home/data/pretrained_mof/ver4/dataset/"
-    log_dir = "result_transformer"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"ggm": 1, "mtp": 1, "vfp": 1})
-
-    draw_false_grid = True
-
-
-@ex.named_config
-def task_ggm_mtp_bbp():
-    exp_name = "task_ggm_mtp_bbp"
-    data_root = "/home/data/pretrained_mof/ver4/dataset/"
-    log_dir = "result_transformer"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"ggm": 1, "mtp": 1, "bbp": 1})
-
-    draw_false_grid = True
-
-
-@ex.named_config
 def task_mtp():
     exp_name = "task_mtp"
     data_root = "/home/data/pretrained_mof/ver4/dataset/"
@@ -492,6 +420,24 @@ def task_mtp():
     # model
     use_transformer = True
     loss_names = _loss_names({"mtp": 1})
+
+
+@ex.named_config
+def task_mtp_ggm():
+    exp_name = "task_mtp_ggm"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"ggm": 1, "mtp": 1})
+
+    draw_false_grid = True
 
 
 @ex.named_config

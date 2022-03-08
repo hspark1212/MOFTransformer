@@ -42,7 +42,7 @@ class Module(LightningModule):
             self.egcnn.apply(objectives.init_weights)
 
         if self.use_transformer:
-            # transformer V2
+            # graph embedding with_unique_atoms
             self.graph_embeddings = GraphEmbeddings_Uni_Index(
                 atom_fea_len=config["atom_fea_len"],
                 nbr_fea_len=config["nbr_fea_len"],
@@ -50,16 +50,7 @@ class Module(LightningModule):
                 hid_dim=config["hid_dim"],
             )
             self.graph_embeddings.apply(objectives.init_weights)
-            """
-            # transformer V1
-            self.graph_embeddings = GraphEmbeddings(
-                max_nbr_atoms=config["max_nbr_atoms"],
-                max_graph_len=config["max_graph_len"],
-                hid_dim=config["hid_dim"],
-                nbr_fea_len=config["nbr_fea_len"],
-            )
-            self.graph_embeddings.apply(objectives.init_weights)
-            """
+
             # token type embeddings
             self.token_type_embeddings = nn.Embedding(2, config["hid_dim"])
             self.token_type_embeddings.apply(objectives.init_weights)
@@ -76,6 +67,10 @@ class Module(LightningModule):
                 drop_rate=config["drop_rate"],
                 mpp_ratio=config["mpp_ratio"],
             )
+
+            # class token
+            self.cls_embeddings = nn.Linear(1, config["hid_dim"])
+            self.cls_embeddings.apply(objectives.init_weights)
 
             # volume token
             self.volume_embeddings = nn.Linear(1, config["hid_dim"])
@@ -263,7 +258,7 @@ class Module(LightningModule):
 
         elif self.use_transformer:
 
-            # v2
+            # get graph embeds
             (graph_embeds,  # [B, max_graph_len, hid_dim],
              graph_masks,  # [B, max_graph_len],
              mo_labels,  # if moc: [B, max_graph_len], else: None
@@ -276,19 +271,15 @@ class Module(LightningModule):
                 uni_count=uni_count,
                 moc=moc,
             )
-            """
-            # v1
-            (graph_embeds,  # [B, max_graph_len, hid_dim],
-             graph_masks,  # [B, max_graph_len],
-             mo_labels,  # if moc: [B, max_graph_len], else: None
-             ) = self.graph_embeddings(
-                atom_num=atom_num,
-                nbr_idx=nbr_idx,
-                nbr_fea=nbr_fea,
-                crystal_atom_idx=crystal_atom_idx,
-                moc=moc,
-            )
-            """
+            # add class embeds to graph_embeds
+            cls_tokens = torch.zeros(len(crystal_atom_idx)).to(graph_embeds)  # [B]
+            cls_embeds = self.cls_embeddings(cls_tokens[:, None, None])  # [B, 1, hid_dim]
+            cls_mask = torch.ones(len(crystal_atom_idx), 1).to(graph_masks)  # [B, 1]
+
+            graph_embeds = torch.cat([cls_embeds, graph_embeds], dim=1)  # [B, max_graph_len+1, hid_dim]
+            graph_masks = torch.cat([cls_mask, graph_masks], dim=1)  # [B, max_graph_len+1]
+
+            # get grid embeds
             (grid_embeds,  # [B, max_grid_len+1, hid_dim]
              grid_masks,  # [B, max_grid_len+1]
              grid_labels,  # [B, grid+1, C] if mask_image == True
@@ -297,13 +288,14 @@ class Module(LightningModule):
                 max_image_len=self.max_grid_len,
                 mask_it=mask_grid,
             )
+
             # add volume embeds to grid_embeds
             volume = torch.FloatTensor(volume).to(grid_embeds)  # [B]
             volume_embeds = self.volume_embeddings(volume[:, None, None])  # [B, 1, hid_dim]
             volume_mask = torch.ones(volume.shape[0], 1).to(grid_masks)
 
             grid_embeds = torch.cat([grid_embeds, volume_embeds], dim=1)  # [B, max_grid_len+2, hid_dim]
-            grid_masks = torch.cat([grid_masks, volume_mask], dim=1)  # [B, max_grid_len+2, hid_dim]
+            grid_masks = torch.cat([grid_masks, volume_mask], dim=1)  # [B, max_grid_len+2]
 
             # add token_type_embeddings
             graph_embeds = graph_embeds \
@@ -330,7 +322,7 @@ class Module(LightningModule):
             ret = {
                 "graph_feats": graph_feats,
                 "grid_feats": grid_feats,
-                "output": cls_feats,
+                "cls_feats": cls_feats,
                 "raw_cls_feats": x[:, 0],
                 "graph_masks": graph_masks,
                 "grid_masks": grid_masks,
