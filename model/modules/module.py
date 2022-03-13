@@ -230,7 +230,7 @@ class Module(LightningModule):
                     f'Strategy must be concat, element_wise_sum, or element_wise_multiplication, not {self.strategy}')
 
             ret = {
-                "output": out
+                "cls_feats": out
             }
             return ret
 
@@ -244,7 +244,7 @@ class Module(LightningModule):
             )  # [B,hid_dim]
 
             ret = {
-                "output": out_cgcnn,
+                "cls_feats": out_cgcnn,
             }
             return ret
 
@@ -252,7 +252,7 @@ class Module(LightningModule):
 
             out_egcnn = self.egcnn(grid)  # [B, hid_dim]
             ret = {
-                "output": out_egcnn,
+                "cls_feats": out_egcnn,
             }
             return ret
 
