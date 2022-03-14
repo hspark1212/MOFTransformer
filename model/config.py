@@ -91,7 +91,7 @@ def config():
     # below params varies with the environment
     data_root = ""
     log_dir = "result"
-    batch_size = 256  # desired batch size; for gradient accumulation
+    batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
     num_gpus = 2
     num_nodes = 1

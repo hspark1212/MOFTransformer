@@ -205,7 +205,7 @@ def compute_ggm(pl_module, batch):
 
 def compute_moc(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
-    moc_logits = pl_module.moc_head(infer["graph_feats"]).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
+    moc_logits = pl_module.moc_head(infer["graph_feats"][:, 1:, :]).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
     moc_labels = infer["mo_labels"].to(moc_logits).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
     mask = moc_labels != -100
 
