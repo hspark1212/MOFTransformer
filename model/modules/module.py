@@ -24,6 +24,8 @@ class Module(LightningModule):
         self.max_grid_len = config["max_grid_len"]
         self.strategy = config["strategy"]
 
+        self.vis = config["visualize"]
+
         if self.use_cgcnn:
             self.cgcnn = CrystalGraphConvNet(
                 atom_fea_len=config["atom_fea_len"],
@@ -230,7 +232,7 @@ class Module(LightningModule):
                     f'Strategy must be concat, element_wise_sum, or element_wise_multiplication, not {self.strategy}')
 
             ret = {
-                "cls_feats": out
+                "output": out
             }
             return ret
 
@@ -244,7 +246,7 @@ class Module(LightningModule):
             )  # [B,hid_dim]
 
             ret = {
-                "cls_feats": out_cgcnn,
+                "output": out_cgcnn,
             }
             return ret
 
@@ -252,7 +254,7 @@ class Module(LightningModule):
 
             out_egcnn = self.egcnn(grid)  # [B, hid_dim]
             ret = {
-                "cls_feats": out_egcnn,
+                "output": out_egcnn,
             }
             return ret
 
@@ -308,8 +310,11 @@ class Module(LightningModule):
 
             x = co_embeds
 
+            attn_weights = []
             for i, blk in enumerate(self.transformer.blocks):
                 x, _attn = blk(x, mask=co_masks)
+                if self.vis:
+                    attn_weights.append(_attn)
 
             x = self.transformer.norm(x)
             graph_feats, grid_feats = (
@@ -329,6 +334,7 @@ class Module(LightningModule):
                 "grid_labels": grid_labels,  # if MPP, else None
                 "mo_labels": mo_labels,  # if MOC, else None
                 "cif_id": cif_id,
+                "attn_weights": attn_weights,
             }
 
             return ret
