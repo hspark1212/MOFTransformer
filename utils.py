@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ase.io import read
 
+import torch.nn.functional as F
+
 
 def visualize_grid(grid_data, cell=None, zero_index=51, sign=">", path_cif=None):
     """
@@ -65,3 +67,16 @@ def visualize_grid(grid_data, cell=None, zero_index=51, sign=">", path_cif=None)
     ax.view_init(30, 300)
     fig.colorbar(p, ax=ax)
     plt.show()
+
+
+def cost_matrix_cosine(x, y, eps=1e-5):
+    """Compute cosine distnace across every pairs of x, y (batched)
+    [B, L_x, D] [B, L_y, D] -> [B, Lx, Ly]"""
+    assert x.dim() == y.dim()
+    assert x.size(0) == y.size(0)
+    assert x.size(2) == y.size(2)
+    x_norm = F.normalize(x, p=2, dim=-1, eps=eps)
+    y_norm = F.normalize(y, p=2, dim=-1, eps=eps)
+    cosine_sim = x_norm.matmul(y_norm.transpose(1, 2))
+    cosine_dist = 1 - cosine_sim
+    return cosine_dist

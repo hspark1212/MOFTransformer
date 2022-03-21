@@ -107,6 +107,9 @@ def config():
     mean = None
     std = None
 
+    # visualize
+    visualize = False
+
 
 @ex.named_config
 def env_neuron():
@@ -502,3 +505,18 @@ def task_mtp_bbp_vfp():
     # model
     use_transformer = True
     loss_names = _loss_names({"mtp": 1, "bbp": 1, "vfp": 1})
+
+@ex.named_config
+def task_mtp_moc_vfp():
+    exp_name = "task_mtp_moc_vfp"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
