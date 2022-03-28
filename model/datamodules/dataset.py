@@ -18,6 +18,7 @@ class Dataset(torch.utils.data.Dataset):
             draw_false_grid=True,
             downstream="",
             tasks=[],
+            dataset_size=False,
     ):
         """
         Dataset for pretrained MOF.
@@ -37,6 +38,9 @@ class Dataset(torch.utils.data.Dataset):
             path_file = os.path.join(data_dir, f"{split}_{downstream}.json")
         else:
             path_file = os.path.join(data_dir, f"{split}.json")
+            # future removed (only experiments)
+            if dataset_size:
+                path_file = os.path.join(data_dir, f"{dataset_size}k", f"{split}.json")
         print(f"read {path_file}...")
         assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
 
@@ -50,6 +54,9 @@ class Dataset(torch.utils.data.Dataset):
         for task in tasks:
             if task in ["mtp", "vfp", "moc", "bbp"]:
                 path_file = os.path.join(data_dir, f"{split}_{task}.json")
+                # future removed (only experiments)
+                if dataset_size:
+                    path_file = os.path.join(data_dir, f"{dataset_size}k", f"{split}_{task}.json")
                 print(f"read {path_file}...")
                 assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
 
