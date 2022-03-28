@@ -174,14 +174,16 @@ def get_heatmap(out, batch_idx, graph_len=300, grid_len=6 * 6 * 6):
 class Visualize(object):
     def __init__(self, path_cif,
                  interpolate=False,
-                 draw_lattice=False,
+                 show_cell=False,
+                 show_uni_idx=False,
                  show_colorbar=False,
                  atomic_scale=200,
                  ):
         self.path_cif = path_cif
         self.interpolate = interpolate
         self.atomic_scale = atomic_scale
-        self.draw_lattice = draw_lattice
+        self.show_cell = show_cell
+        self.show_uni_idx = show_uni_idx
         self.show_colorbar = show_colorbar
 
         self.fig = plt.figure()
@@ -239,7 +241,7 @@ class Visualize(object):
     def draw_line(self, pos1, pos2, **kwargs):
         self.ax.plot3D(*zip(pos1, pos2), **kwargs)
 
-    def draw_lattices(self, lattice, center=None, **kwargs):
+    def draw_cell(self, lattice, center=None, **kwargs):
         """
         draw cell using matplotlib
         :param cell:  lattice vectors (3 X 3 matrix)
@@ -276,7 +278,7 @@ class Visualize(object):
             linewidths=0.8,
         )
 
-        if uni_idx:
+        if uni_idx and self.show_uni_idx:
             # assert not self.interpolate, print("interpolate should be False to visualize uni_idx")
             for idxes in uni_idx:
                 rand_rgb = np.random.randint(low=0, high=255, size=3) / 255
@@ -290,6 +292,7 @@ class Visualize(object):
                     marker="o",
                     edgecolor="black",
                     linewidths=0.5,
+                    alpha=0.5,
                 )
 
     def draw_heatmap_graph(self, atoms, heatmap_graph, uni_idx):
@@ -326,8 +329,8 @@ class Visualize(object):
 
     def draw(self, atoms, cell, heatmap_graph=False, heatmap_grid=False, uni_idx=False):
         # draw lattice
-        if self.draw_lattice:
-            self.draw_lattices(cell, color="black")
+        if self.show_cell:
+            self.draw_cell(cell, color="black")
             self._ax.set_xlim([0, 30])
             self._ax.set_ylim([0, 30])
             self._ax.set_zlim([0, 30])
