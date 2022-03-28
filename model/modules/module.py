@@ -50,6 +50,7 @@ class Module(LightningModule):
                 nbr_fea_len=config["nbr_fea_len"],
                 max_graph_len=config["max_graph_len"],
                 hid_dim=config["hid_dim"],
+                vis=config["visualize"],
             )
             self.graph_embeddings.apply(objectives.init_weights)
 

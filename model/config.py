@@ -100,6 +100,7 @@ def config():
     precision = 16
 
     # experiments
+    dataset_size = False  # experiments for dataset size with 100 [k] or 500 [k]
     use_only_vit = False
     use_only_mgt = False
 
@@ -108,81 +109,12 @@ def config():
     std = None
 
     # visualize
-    visualize = False
+    visualize = False  # return attention map
 
 
 @ex.named_config
 def env_neuron():
     data_root = "/scratch/x2287a03/ver4"
-
-
-"""
-pretraining with only_vit (ver 3)
-"""
-
-
-@ex.named_config
-def vit_task_mtp():
-    exp_name = "vit_task_mtp"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
-    log_dir = "result_vit"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 16
-
-    # model
-    use_only_vit = True
-    loss_names = _loss_names({"mtp": 1})
-
-
-@ex.named_config
-def vit_task_vfp():
-    exp_name = "vit_task_vfp"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
-    log_dir = "result_vit"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 16
-
-    # model
-    use_only_vit = True
-    loss_names = _loss_names({"vfp": 1})
-
-
-@ex.named_config
-def vit_task_mtp_vfp():
-    exp_name = "vit_task_mtp_vfp"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
-    log_dir = "result_vit"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 16
-
-    # model
-    use_only_vit = True
-    loss_names = _loss_names({"mtp": 1, "vfp": 1})
-
-
-@ex.named_config
-def vit_task_mpp():
-    exp_name = "vit_task_mpp"
-    data_root = "/home/data/pretrained_mof/ver3/dataset/"
-    log_dir = "result_vit"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 16
-
-    # model
-    use_only_vit = True
-    loss_names = _loss_names({"mpp": 1})
 
 
 """
@@ -327,66 +259,6 @@ def downstream_bulkmodulus_scaled():
 
 
 """
-pretraining with only_mgt (ver 3)
-"""
-
-
-@ex.named_config
-def mgt_task_moc():
-    exp_name = "mgt_task_moc"
-    data_root = "/home/data/pretrained_mof/ver4/dataset/"
-    log_dir = "result_mgt"
-
-    # trainer
-    max_epochs = 100
-    batch_size = 1024
-    per_gpu_batchsize = 8
-
-    # model
-    use_only_mgt = True
-    loss_names = _loss_names({"moc": 1})
-
-
-@ex.named_config
-def mgt_task_moc_downstream_bandgap():
-    exp_name = "downstream_bandgap"
-    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
-    log_dir = "result_mgt_downstream"
-    downstream = "bandgap"
-    load_path = "/home/hspark8/PycharmProjects/pretrained_mof/best_ckpt/best_mgt_task_moc.ckpt"  # should be set
-
-    # trainer
-    max_epochs = 20
-    batch_size = 32
-    per_gpu_batchsize = 16
-
-    # model
-    use_only_mgt = True
-    loss_names = _loss_names({"regression": 1})
-
-    mean = 2.097
-    std = 1.088
-
-
-@ex.named_config
-def mgt_task_moc_downstream_bulkmodulus():
-    exp_name = "downstream_bulkmodulus"
-    data_root = "/home/data/pretrained_mof/ver4/downstream/20k"
-    log_dir = "result_mgt_downstream"
-    downstream = "bulkmodulus_scaled"
-    load_path = "/home/hspark8/PycharmProjects/pretrained_mof/best_ckpt/best_mgt_task_moc.ckpt"  # should be set
-
-    # trainer
-    max_epochs = 20
-    batch_size = 32
-    per_gpu_batchsize = 16
-
-    # model
-    use_only_mgt = True
-    loss_names = _loss_names({"regression": 1})
-
-
-"""
 pretraining (ver 3)
 """
 
@@ -423,6 +295,38 @@ def task_mtp():
     # model
     use_transformer = True
     loss_names = _loss_names({"mtp": 1})
+
+
+@ex.named_config
+def task_vfp():
+    exp_name = "task_vfp"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"vfp": 1})
+
+
+@ex.named_config
+def task_moc():
+    exp_name = "task_moc"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"moc": 1})
 
 
 @ex.named_config
@@ -506,6 +410,7 @@ def task_mtp_bbp_vfp():
     use_transformer = True
     loss_names = _loss_names({"mtp": 1, "bbp": 1, "vfp": 1})
 
+
 @ex.named_config
 def task_mtp_moc_vfp():
     exp_name = "task_mtp_moc_vfp"
@@ -518,5 +423,87 @@ def task_mtp_moc_vfp():
     per_gpu_batchsize = 8
 
     # model
+    use_transformer = True
+    loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
+
+
+"""
+pretraining according to dataset size (ver 3)
+"""
+
+
+@ex.named_config
+def task_mtp_moc_vfp_100k():
+    exp_name = "task_mtp_moc_vfp_100k"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer_100k"
+    dataset_size = 100
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
+
+
+@ex.named_config
+def task_mtp_moc_vfp_500k():
+    exp_name = "task_mtp_moc_vfp_500k"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer_500k"
+    dataset_size = 500
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
+
+
+"""
+pretraining according to transformer size (ver 3)
+"""
+
+
+@ex.named_config
+def task_mtp_moc_vfp_small():
+    exp_name = "task_mtp_moc_vfp_small"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer_small"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    hid_dim = 512
+    num_heads = 8
+    num_layers = 4
+    use_transformer = True
+    loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
+
+
+@ex.named_config
+def task_mtp_moc_vfp_medium():
+    exp_name = "task_mtp_moc_vfp_medium"
+    data_root = "/home/data/pretrained_mof/ver4/dataset/"
+    log_dir = "result_transformer_medium"
+
+    # trainer
+    max_epochs = 100
+    batch_size = 1024
+    per_gpu_batchsize = 8
+
+    # model
+    hid_dim = 512
+    num_heads = 8
+    num_layers = 8
     use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})

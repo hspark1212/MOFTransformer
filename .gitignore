@@ -4,6 +4,7 @@ __pycache__/
 *.log
 *.ipynb
 *.sh
+*.npz
 
 .ipynb_checkpoints/
 

@@ -100,7 +100,6 @@ def get_crystal_graph(st, radius=8, max_num_nbr=12):
     atom_num = np.array(atom_num, dtype=np.int8)
     nbr_idx = np.array(nbr_idx, dtype=np.int16)
     nbr_dist = np.array(nbr_dist, dtype=np.float32)
-    # uni_idx = np.array(uni_idx, dtype=np.int16)
     uni_count = np.array(uni_count, dtype=np.int16)
     return atom_num, nbr_idx, nbr_dist, uni_idx, uni_count
 
@@ -206,7 +205,9 @@ def prepare_data(root_cifs, root_dataset,
         assert os.path.exists(json_path)
 
         root_dataset_split = os.path.join(root_dataset, split)
+        # make split directory in root_dataset
         os.makedirs(root_dataset_split, exist_ok=True)
+        # copy target_{split}.json to root_data
         shutil.copy(json_path, root_dataset)
 
         with open(json_path, "r") as f:
@@ -226,6 +227,9 @@ def prepare_data(root_cifs, root_dataset,
             p = os.path.join(root_cifs, f"{cif_id}.cif")
             try:
                 st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
+                # save primitive cif
+                p_primitive_cif = os.path.join(root_dataset_split, f"{cif_id}.cif")
+                st.to(fmt="cif", filename=p_primitive_cif)
             except Exception as e:
                 logger.info(f"{cif_id} failed : {e}")
                 continue
@@ -271,4 +275,6 @@ def prepare_data(root_cifs, root_dataset,
 
 
 if __name__ == "__main__":
-    prepare_data("/home/dudgns1675/data/qmof/cifs", "/home/dudgns1675/data/qmof/dataset")
+    ### example ###
+    # prepare_data(root_cifs, root_dataset)
+    pass

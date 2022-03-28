@@ -268,7 +268,7 @@ class GraphEmbeddings_Uni_Index(nn.Module):
     (https://github.com/txie-93/cgcnn)
     """
 
-    def __init__(self, atom_fea_len, nbr_fea_len, max_graph_len, hid_dim, n_conv=3):
+    def __init__(self, atom_fea_len, nbr_fea_len, max_graph_len, hid_dim, n_conv=3, vis=False):
         super().__init__()
         self.atom_fea_len = atom_fea_len
         self.nbr_fea_len = nbr_fea_len
@@ -282,6 +282,8 @@ class GraphEmbeddings_Uni_Index(nn.Module):
             ]
         )
         self.fc = nn.Linear(atom_fea_len, hid_dim)
+
+        self.vis = vis
 
     def forward(self, atom_num, nbr_idx, nbr_fea, crystal_atom_idx, uni_idx, uni_count, moc=None):
         """
@@ -325,7 +327,8 @@ class GraphEmbeddings_Uni_Index(nn.Module):
 
             idx_ = torch.LongTensor([random.choice(u) for u in uni_idx[bi]])[:self.max_graph_len]
             rand_idx = idx_[torch.randperm(len(idx_))]
-
+            if self.vis:
+                rand_idx = idx_
             new_atom_fea[bi][:len(rand_idx)] = atom_fea[c_atom_idx][rand_idx]
             """
             count_ = torch.LongTensor(uni_count[bi])

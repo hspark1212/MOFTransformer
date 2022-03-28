@@ -41,17 +41,20 @@ Finally, `prepare_data.py` will generate crystal graph and energy grid in `root_
     ├── train
     │   ├── [cif_id].graphdata # graphdata
     │   ├── [cif_id].grid # energy grid information
-    │   ├── [cif_id].grid_data # grid data
+    │   ├── [cif_id].griddata16 # grid data
+    │   ├── [cif_id].cif # primitive cif
     │   └── ...
     ├── val
     │   ├── [cif_id].graphdata # graphdata
     │   ├── [cif_id].grid # energy grid information
-    │   ├── [cif_id].grid_data # grid data
+    │   ├── [cif_id].griddata16 # grid data
+    │   ├── [cif_id].cif # primitive cif
     │   └── ...
     ├── test (optional)      
     │   ├── [cif_id].graphdata # graphdata
     │   ├── [cif_id].grid # energy grid information
-    │   ├── [cif_id].grid_data # grid data
+    │   ├── [cif_id].griddata16 # grid data
+    │   ├── [cif_id].cif # primitive cif
     │   └── ...
     ├── target_train.json
     ├── target_val.json
