@@ -158,7 +158,8 @@ def set_schedule(pl_module):
     if isinstance(pl_module.hparams.config["warmup_steps"], float):
         warmup_steps = int(max_steps * warmup_steps)
 
-    print(f"max_epochs: {pl_module.trainer.max_epochs} | max_steps: {max_steps} | warmup_steps : {warmup_steps}")
+    print(f"max_epochs: {pl_module.trainer.max_epochs} | max_steps: {max_steps} | warmup_steps : {warmup_steps} "
+          f"| weight_decay : {wd} | decay_power : {decay_power}")
 
     if decay_power == "cosine":
         scheduler = get_cosine_schedule_with_warmup(

@@ -48,7 +48,7 @@ def visualize_grid(grid_data, cell=None, zero_index=51, sign=">", path_cif=None)
 
     x, y, z = np.where(mask)
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(projection='3d')
 
     p = ax.scatter(
@@ -127,7 +127,7 @@ def plot_cube_at3(positions, sizes=None, colors=None, **kwargs):
                             **kwargs)
 
 
-def get_heatmap(out, batch_idx, graph_len=300, grid_len=6 * 6 * 6):
+def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
     """
     attention rollout  in "Qunatifying Attention Flow in Transformers" paper.
 
@@ -162,31 +162,51 @@ def get_heatmap(out, batch_idx, graph_len=300, grid_len=6 * 6 * 6):
     v = joint_attentions[-1]  # [max_len, max_len]
 
     # Don't drop class token when normalizing
-    cost_graph = v[0, :graph_len + 1] / v[0].max()
-    cost_grid = v[0, graph_len + 1:] / v[0].max()
+    if skip_cls:
+        v_ = v[0][1:]  # skip cls token
 
-    heatmap_graph = cost_graph[1:].detach().numpy()  # omit cls token
-    heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
+        cost_graph = v_[:graph_len] / v_.max()
+        cost_grid = v_[graph_len:] / v_.max()
+        heatmap_graph = cost_graph.detach().numpy()
+        heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
+    else:
+        v_ = v[0]
+
+        cost_graph = v_[:graph_len + 1] / v_.max()
+        cost_grid = v_[graph_len + 1:] / v_.max()
+        heatmap_graph = cost_graph[1:].detach().numpy()  # omit cls token
+        heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
+
+    # skip class token
+    # cost_graph = v[0, 1:graph_len + 1] / v[1:].max()
+    # cost_grid = v[0, graph_len + 1:] / v[1:].max()
+    # heatmap_graph = cost_graph.detach().numpy()  # omit cls token
+    # heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
 
     return heatmap_graph, heatmap_grid
 
 
 class Visualize(object):
     def __init__(self, path_cif,
-                 interpolate=False,
+                 make_supercell=False,
                  show_cell=False,
                  show_uni_idx=False,
                  show_colorbar=False,
-                 atomic_scale=200,
+                 figsize=(8, 8),
+                 view_init=(0, 0),
+                 show_axis=False,
                  ):
         self.path_cif = path_cif
-        self.interpolate = interpolate
-        self.atomic_scale = atomic_scale
+        self.make_supercell = make_supercell
         self.show_cell = show_cell
         self.show_uni_idx = show_uni_idx
         self.show_colorbar = show_colorbar
+        self.atomic_scale = figsize[0] * figsize[1] * 5
+        self.figsize = figsize
+        self.view_init = view_init
+        self.show_axis = show_axis
 
-        self.fig = plt.figure()
+        self.fig = plt.figure(figsize=figsize)
         self._ax = self.fig.add_subplot(projection='3d')
         self.default_setting()
 
@@ -199,18 +219,23 @@ class Visualize(object):
         self._ax.update(d)
 
     def default_setting(self):
-        self._ax.view_init(0, 0)
+        self._ax.view_init(*self.view_init)
+        self._ax.set_proj_type("ortho")
         self._ax.grid(visible=False)
-        self._ax.set_axis_off()
+
+        if not self.show_axis:
+            self._ax.set_axis_off()
+
         self.color_palatte = sns.color_palette("rocket_r", as_cmap=True)
 
         # colorbar
         if self.show_colorbar:
-            norm = matplotlib.colors.Normalize(0, 1)
+            norm = matplotlib.colors.Normalize(0., 1.)
             smap = plt.cm.ScalarMappable(cmap=self.color_palatte, norm=norm)
-            cbar = self.fig.colorbar(smap, ax=self._ax, fraction=0.1, shrink=0.8)
-            cbar.ax.tick_params(labelsize=11)
-            cbar.ax.set_ylabel('attention score', rotation=270, labelpad=20, fontdict={"size": 20})
+            cbar = self.fig.colorbar(smap, ax=self._ax, fraction=0.1, shrink=0.5)
+            cbar.ax.tick_params(labelsize=self.figsize[0] * 1.5)
+            cbar.ax.set_ylabel('attention score', rotation=270, labelpad=self.figsize[0] * 1.5,
+                               fontdict={"size": self.figsize[0] * 1.5})
 
     @staticmethod
     def get_primitive_structure(path_cif):
@@ -218,7 +243,7 @@ class Visualize(object):
         return st
 
     @staticmethod
-    def get_interpolate_structure(st, max_length=60, min_length=30):
+    def get_supercell(st, max_length=60, min_length=30):
         # make super-cell
         scale_abc = []
         for l in st.lattice.abc:
@@ -234,7 +259,7 @@ class Visualize(object):
         atoms = AseAtomsAdaptor().get_atoms(st)
 
         # interpolate min_length and orthogonal
-        atoms.set_cell(np.identity(3) * min_length, scale_atoms=True)
+        # atoms.set_cell(np.identity(3) * min_length, scale_atoms=True)
 
         return atoms
 
@@ -266,7 +291,6 @@ class Visualize(object):
         atomic_numbers = atoms.get_atomic_numbers()
         atomic_sizes = np.array([covalent_radii[i] for i in atomic_numbers])
         atomic_colors = np.array([cpk_colors[i] for i in atomic_numbers])
-
         self._ax.scatter(
             xs=coords[:, 0],
             ys=coords[:, 1],
@@ -276,43 +300,55 @@ class Visualize(object):
             marker="o",
             edgecolor="black",
             linewidths=0.8,
+            alpha=1.0,
         )
 
+        # view with same axis
+        self._ax.set_box_aspect((np.ptp(coords[:, 0]), np.ptp(coords[:, 1]), np.ptp(coords[:, 2])))
+
         if uni_idx and self.show_uni_idx:
-            # assert not self.interpolate, print("interpolate should be False to visualize uni_idx")
-            for idxes in uni_idx:
-                rand_rgb = np.random.randint(low=0, high=255, size=3) / 255
+            for i, idxes in enumerate(uni_idx):
                 uni_coords = coords[idxes]
                 self._ax.scatter(
                     xs=uni_coords[:, 0],
                     ys=uni_coords[:, 1],
                     zs=uni_coords[:, 2],
-                    c=[list(rand_rgb)] * len(uni_coords),
-                    s=500,
+                    # c=[list(rand_rgb)] * len(uni_coords),
+                    color=matplotlib.cm.tab10(i),
+                    s=1000,
                     marker="o",
                     edgecolor="black",
                     linewidths=0.5,
-                    alpha=0.5,
+                    alpha=0.7,
                 )
+
+                for coord in uni_coords:
+                    self._ax.text(coord[0], coord[1], coord[2], i, fontsize=30)
 
     def draw_heatmap_graph(self, atoms, heatmap_graph, uni_idx):
         assert uni_idx, print("uni_idx doesn't exist")
 
         coords = atoms.get_positions()
+        heatmap_graph = heatmap_graph[heatmap_graph > 0]
+        assert len(uni_idx) == len(heatmap_graph)
         cm_heatmap = self.color_palatte(heatmap_graph)
 
         for i, idxes in enumerate(uni_idx):
             uni_coords = coords[idxes]
             c = cm_heatmap[i]
+            if heatmap_graph[i] == 0:
+                alpha = 0.
+            else:
+                alpha = 0.7
             self._ax.scatter(
                 xs=uni_coords[:, 0],
                 ys=uni_coords[:, 1],
                 zs=uni_coords[:, 2],
                 color=c,
-                s=1000,
+                s=self.atomic_scale * 2,
                 marker="o",
-                linewidths=0.5,
-                alpha=0.7,
+                linewidths=0,
+                alpha=alpha,
             )
 
     def draw_heatmap_grid(self, heatmap_grid):
@@ -331,9 +367,6 @@ class Visualize(object):
         # draw lattice
         if self.show_cell:
             self.draw_cell(cell, color="black")
-            self._ax.set_xlim([0, 30])
-            self._ax.set_ylim([0, 30])
-            self._ax.set_zlim([0, 30])
 
         # draw atoms
         self.draw_atoms(atoms, uni_idx)
@@ -350,8 +383,10 @@ class Visualize(object):
         atoms = AseAtomsAdaptor().get_atoms(st)
 
         # interpolate
-        if self.interpolate:
-            atoms = self.get_interpolate_structure(st)
+        if self.make_supercell:
+            atoms = self.get_supercell(st)
 
         lattice = atoms.cell.array
+
         self.draw(atoms, lattice, heatmap_graph, heatmap_grid, uni_idx)
+        # return atoms

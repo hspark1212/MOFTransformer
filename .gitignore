@@ -11,9 +11,13 @@ __pycache__/
 # result directory
 result*
 
-# libs/GRIDAY/
+# ckpt directory
+best_ckpt/
+
+# file
+demo.py
 model/config_YH.py
 model/config_HS.py
-
-best_ckpt/
+dft/
+figure/
 
