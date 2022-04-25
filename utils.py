@@ -1,5 +1,6 @@
+import copy
 import math
-from itertools import combinations
+from itertools import combinations, product
 
 import torch
 
@@ -103,6 +104,30 @@ def cuboid_data2(o, size=(1, 1, 1)):
     return X
 
 
+def cuboid_data3(o, size=(1,1,1), color=None, lim=(30, 30, 30), cell=None,):
+    bound = np.array([[0, size[i]] for i in range(3)]) + np.array(o)[:,np.newaxis]
+    lim = np.array(lim)
+    
+    plain_ls = []
+
+    vertax = np.array(list(product(*bound)))
+        
+    for i, (dn, up) in enumerate(bound):
+        plain1 = np.matmul(vertax[vertax[:, i] == dn], cell/lim)
+        plain2 = np.matmul(vertax[vertax[:, i] == up], cell/lim)
+       
+        plain_ls.append(plain1)
+        plain_ls.append(plain2)
+            
+        
+    plain_ls = np.array(plain_ls).astype('float')
+    plain_ls[:, [0,1], :] = plain_ls[:, [1,0], :]
+    
+    color_ls = np.repeat(color[np.newaxis, :], 6, axis=0)
+    
+    return plain_ls, color_ls
+
+
 def plot_cube_at2(positions, sizes=None, colors=None, **kwargs):
     """
     help function for 3d plot
@@ -114,16 +139,16 @@ def plot_cube_at2(positions, sizes=None, colors=None, **kwargs):
                             facecolors=np.repeat(colors, 6), **kwargs)
 
 
-def plot_cube_at3(positions, sizes=None, colors=None, **kwargs):
+def plot_cube_at3(positions, cell, sizes=None, colors=None, **kwargs):
     """
     help function for 3d plot
     """
-    g = []
-    for p, s, c in zip(positions, sizes, colors):
-        g.append(cuboid_data2(p, size=s))
+    lim = (30, 30, 30)
+    data = [cuboid_data3(*d, lim=lim, cell=cell) for d in zip(positions, sizes, colors)]
+    g, cs = zip(*data)
 
     return Poly3DCollection(np.concatenate(g),
-                            facecolors=colors,
+                            facecolors=np.concatenate(cs),
                             **kwargs)
 
 
@@ -351,16 +376,16 @@ class Visualize(object):
                 alpha=alpha,
             )
 
-    def draw_heatmap_grid(self, heatmap_grid):
+    def draw_heatmap_grid(self, heatmap_grid, cell):
         # set colors
         cm_heatmap = self.color_palatte(heatmap_grid.flatten())
-        colors = np.repeat(cm_heatmap[:, None, :], 6, axis=1).reshape(-1, 4)
+        #colors = np.repeat(cm_heatmap[:, None, :], 6, axis=1).reshape(-1, 4)
 
         # set positions and size
         positions = [(5 * i, 5 * j, 5 * k) for i in range(6) for j in range(6) for k in range(6)]
         sizes = [[5, 5, 5]] * 6 * 6 * 6
 
-        pc = plot_cube_at3(positions, sizes, colors=colors, edgecolor=None, alpha=0.1)
+        pc = plot_cube_at3(positions, cell, sizes, colors=cm_heatmap, edgecolor=None, alpha=0.1)
         self._ax.add_collection3d(pc)
 
     def draw(self, atoms, cell, heatmap_graph=False, heatmap_grid=False, uni_idx=False):
@@ -374,7 +399,7 @@ class Visualize(object):
             self.draw_heatmap_graph(atoms, heatmap_graph, uni_idx)
 
         if heatmap_grid is not False:
-            self.draw_heatmap_grid(heatmap_grid)
+            self.draw_heatmap_grid(heatmap_grid, cell=cell)
         # draw uni_idx
 
     def view(self, heatmap_graph=False, heatmap_grid=False, uni_idx=False):
