@@ -3,8 +3,7 @@ import torch.nn as nn
 from pytorch_lightning import LightningModule
 
 from model.modules import objectives, heads, module_utils
-from model.modules.cgcnn import GraphEmbeddings, CrystalGraphConvNet, GraphEmbeddings_Uni_Index
-from model.modules.egcnn import generate_resnet_model
+from model.modules.cgcnn import GraphEmbeddings
 from model.modules.vision_transformer_3d import VisionTransformer3D
 
 from model.modules.module_utils import Normalizer
@@ -17,122 +16,48 @@ class Module(LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        self.use_cgcnn = config["use_cgcnn"]
-        self.use_egcnn = config["use_egcnn"]
         self.use_transformer = config["use_transformer"]
-
         self.max_grid_len = config["max_grid_len"]
-        self.strategy = config["strategy"]
-
         self.vis = config["visualize"]
 
-        if self.use_cgcnn:
-            self.cgcnn = CrystalGraphConvNet(
-                atom_fea_len=config["atom_fea_len"],
-                nbr_fea_len=config["nbr_fea_len"],
-                n_conv=config["n_conv"],
-                hid_dim=config["hid_dim"],
-            )
-            self.cgcnn.apply(objectives.init_weights)
+        # graph embedding with_unique_atoms
+        self.graph_embeddings = GraphEmbeddings(
+            atom_fea_len=config["atom_fea_len"],
+            nbr_fea_len=config["nbr_fea_len"],
+            max_graph_len=config["max_graph_len"],
+            hid_dim=config["hid_dim"],
+            vis=config["visualize"],
+        )
+        self.graph_embeddings.apply(objectives.init_weights)
 
-        if self.use_egcnn:
-            self.egcnn = generate_resnet_model(
-                model_depth=config["egcnn_depth"],
-                n_input_channels=1,
-                n_classes=config["hid_dim"],
-            )
-            self.egcnn.apply(objectives.init_weights)
+        # token type embeddings
+        self.token_type_embeddings = nn.Embedding(2, config["hid_dim"])
+        self.token_type_embeddings.apply(objectives.init_weights)
 
-        if self.use_transformer:
-            # graph embedding with_unique_atoms
-            self.graph_embeddings = GraphEmbeddings_Uni_Index(
-                atom_fea_len=config["atom_fea_len"],
-                nbr_fea_len=config["nbr_fea_len"],
-                max_graph_len=config["max_graph_len"],
-                hid_dim=config["hid_dim"],
-                vis=config["visualize"],
-            )
-            self.graph_embeddings.apply(objectives.init_weights)
+        # set transformer
+        self.transformer = VisionTransformer3D(
+            img_size=config["img_size"],
+            patch_size=config["patch_size"],
+            in_chans=config["in_chans"],
+            embed_dim=config["hid_dim"],
+            depth=config["num_layers"],
+            num_heads=config["num_heads"],
+            mlp_ratio=config["mlp_ratio"],
+            drop_rate=config["drop_rate"],
+            mpp_ratio=config["mpp_ratio"],
+        )
 
-            # token type embeddings
-            self.token_type_embeddings = nn.Embedding(2, config["hid_dim"])
-            self.token_type_embeddings.apply(objectives.init_weights)
+        # class token
+        self.cls_embeddings = nn.Linear(1, config["hid_dim"])
+        self.cls_embeddings.apply(objectives.init_weights)
 
-            # set transformer
-            self.transformer = VisionTransformer3D(
-                img_size=config["img_size"],
-                patch_size=config["patch_size"],
-                in_chans=config["in_chans"],
-                embed_dim=config["hid_dim"],
-                depth=config["num_layers"],
-                num_heads=config["num_heads"],
-                mlp_ratio=config["mlp_ratio"],
-                drop_rate=config["drop_rate"],
-                mpp_ratio=config["mpp_ratio"],
-            )
+        # volume token
+        self.volume_embeddings = nn.Linear(1, config["hid_dim"])
+        self.volume_embeddings.apply(objectives.init_weights)
 
-            # class token
-            self.cls_embeddings = nn.Linear(1, config["hid_dim"])
-            self.cls_embeddings.apply(objectives.init_weights)
-
-            # volume token
-            self.volume_embeddings = nn.Linear(1, config["hid_dim"])
-            self.volume_embeddings.apply(objectives.init_weights)
-
-            # pooler
-            self.pooler = heads.Pooler(config["hid_dim"])
-            self.pooler.apply(objectives.init_weights)
-
-        self.use_only_vit = config["use_only_vit"]
-        if self.use_only_vit:
-            """future removed..."""
-            # set vision transformer
-            self.transformer = VisionTransformer3D(
-                img_size=config["img_size"],
-                patch_size=config["patch_size"],
-                in_chans=config["in_chans"],
-                embed_dim=config["hid_dim"],
-                depth=config["num_layers"],
-                num_heads=config["num_heads"],
-                mlp_ratio=config["mlp_ratio"],
-                drop_rate=config["drop_rate"],
-                mpp_ratio=config["mpp_ratio"],
-            )
-
-            # volume token
-            self.volume_embeddings = nn.Linear(1, config["hid_dim"])
-            self.volume_embeddings.apply(objectives.init_weights)
-
-            # pooler
-            self.pooler = heads.Pooler(config["hid_dim"])
-            self.pooler.apply(objectives.init_weights)
-
-        self.use_only_mgt = config["use_only_mgt"]
-        if self.use_only_mgt:
-            """future removed..."""
-            self.graph_embeddings = GraphEmbeddings(
-                max_nbr_atoms=config["max_nbr_atoms"],
-                max_graph_len=config["max_graph_len"],
-                hid_dim=config["hid_dim"],
-                nbr_fea_len=config["nbr_fea_len"],
-            )
-            self.graph_embeddings.apply(objectives.init_weights)
-
-            self.transformer = VisionTransformer3D(
-                img_size=config["img_size"],
-                patch_size=config["patch_size"],
-                in_chans=config["in_chans"],
-                embed_dim=config["hid_dim"],
-                depth=config["num_layers"],
-                num_heads=config["num_heads"],
-                mlp_ratio=config["mlp_ratio"],
-                drop_rate=config["drop_rate"],
-                mpp_ratio=config["mpp_ratio"],
-            )
-
-            # pooler
-            self.pooler = heads.Pooler(config["hid_dim"])
-            self.pooler.apply(objectives.init_weights)
+        # pooler
+        self.pooler = heads.Pooler(config["hid_dim"])
+        self.pooler.apply(objectives.init_weights)
 
         # ===================== loss =====================
         if config["loss_names"]["ggm"] > 0:
@@ -166,10 +91,6 @@ class Module(LightningModule):
             self.load_state_dict(state_dict, strict=False)
             print(f"load model : {config['load_path']}")
 
-        if self.use_cgcnn and self.use_egcnn and self.strategy == 'concat':
-            # concat
-            hid_dim = config["hid_dim"] * 2
-        else:
             hid_dim = config["hid_dim"]
 
         if self.hparams.config["loss_names"]["regression"] > 0:
@@ -212,203 +133,85 @@ class Module(LightningModule):
 
         moc = batch.get("moc")  # if moc, [B]
 
-        if self.use_cgcnn and self.use_egcnn:
+        # get graph embeds
+        (graph_embeds,  # [B, max_graph_len, hid_dim],
+         graph_masks,  # [B, max_graph_len],
+         mo_labels,  # if moc: [B, max_graph_len], else: None
+         ) = self.graph_embeddings(
+            atom_num=atom_num,
+            nbr_idx=nbr_idx,
+            nbr_fea=nbr_fea,
+            crystal_atom_idx=crystal_atom_idx,
+            uni_idx=uni_idx,
+            uni_count=uni_count,
+            moc=moc,
+        )
+        # add class embeds to graph_embeds
+        cls_tokens = torch.zeros(len(crystal_atom_idx)).to(graph_embeds)  # [B]
+        cls_embeds = self.cls_embeddings(cls_tokens[:, None, None])  # [B, 1, hid_dim]
+        cls_mask = torch.ones(len(crystal_atom_idx), 1).to(graph_masks)  # [B, 1]
 
-            out_cgcnn = self.cgcnn(
-                atom_num=atom_num,
-                nbr_fea=nbr_fea,
-                nbr_fea_idx=nbr_idx,
-                crystal_atom_idx=crystal_atom_idx,
-            )  # [B,hid_dim]
-            out_egcnn = self.egcnn(grid)  # [B, hid_dim]
+        graph_embeds = torch.cat([cls_embeds, graph_embeds], dim=1)  # [B, max_graph_len+1, hid_dim]
+        graph_masks = torch.cat([cls_mask, graph_masks], dim=1)  # [B, max_graph_len+1]
 
-            if self.strategy == 'concat':
-                out = torch.cat([out_cgcnn, out_egcnn], dim=-1)  # [B, hid_dim*2]
-            elif self.strategy == 'element_wise_sum':
-                out = out_cgcnn + out_egcnn
-            elif self.strategy == 'element_wise_multiplication':
-                out = torch.mul(out_cgcnn, out_egcnn)
-            else:
-                raise ValueError(
-                    f'Strategy must be concat, element_wise_sum, or element_wise_multiplication, not {self.strategy}')
+        # get grid embeds
+        (grid_embeds,  # [B, max_grid_len+1, hid_dim]
+         grid_masks,  # [B, max_grid_len+1]
+         grid_labels,  # [B, grid+1, C] if mask_image == True
+         ) = self.transformer.visual_embed(
+            grid,
+            max_image_len=self.max_grid_len,
+            mask_it=mask_grid,
+        )
 
-            ret = {
-                "output": out
-            }
-            return ret
+        # add volume embeds to grid_embeds
+        volume = torch.FloatTensor(volume).to(grid_embeds)  # [B]
+        volume_embeds = self.volume_embeddings(volume[:, None, None])  # [B, 1, hid_dim]
+        volume_mask = torch.ones(volume.shape[0], 1).to(grid_masks)
 
-        elif self.use_cgcnn and not self.use_egcnn:
+        grid_embeds = torch.cat([grid_embeds, volume_embeds], dim=1)  # [B, max_grid_len+2, hid_dim]
+        grid_masks = torch.cat([grid_masks, volume_mask], dim=1)  # [B, max_grid_len+2]
 
-            out_cgcnn = self.cgcnn(
-                atom_num=atom_num,
-                nbr_fea=nbr_fea,
-                nbr_fea_idx=nbr_idx,
-                crystal_atom_idx=crystal_atom_idx,
-            )  # [B,hid_dim]
+        # add token_type_embeddings
+        graph_embeds = graph_embeds \
+                       + self.token_type_embeddings(torch.zeros_like(graph_masks, device=self.device).long())
+        grid_embeds = grid_embeds \
+                      + self.token_type_embeddings(torch.ones_like(grid_masks, device=self.device).long())
 
-            ret = {
-                "output": out_cgcnn,
-            }
-            return ret
+        co_embeds = torch.cat([graph_embeds, grid_embeds], dim=1)  # [B, final_max_len, hid_dim]
+        co_masks = torch.cat([graph_masks, grid_masks], dim=1)  # [B, final_max_len, hid_dim]
 
-        elif not self.use_cgcnn and self.use_egcnn:
+        x = co_embeds
 
-            out_egcnn = self.egcnn(grid)  # [B, hid_dim]
-            ret = {
-                "output": out_egcnn,
-            }
-            return ret
+        attn_weights = []
+        for i, blk in enumerate(self.transformer.blocks):
+            x, _attn = blk(x, mask=co_masks)
 
-        elif self.use_transformer:
+            if self.vis:
+                attn_weights.append(_attn)
 
-            # get graph embeds
-            (graph_embeds,  # [B, max_graph_len, hid_dim],
-             graph_masks,  # [B, max_graph_len],
-             mo_labels,  # if moc: [B, max_graph_len], else: None
-             ) = self.graph_embeddings(
-                atom_num=atom_num,
-                nbr_idx=nbr_idx,
-                nbr_fea=nbr_fea,
-                crystal_atom_idx=crystal_atom_idx,
-                uni_idx=uni_idx,
-                uni_count=uni_count,
-                moc=moc,
-            )
-            # add class embeds to graph_embeds
-            cls_tokens = torch.zeros(len(crystal_atom_idx)).to(graph_embeds)  # [B]
-            cls_embeds = self.cls_embeddings(cls_tokens[:, None, None])  # [B, 1, hid_dim]
-            cls_mask = torch.ones(len(crystal_atom_idx), 1).to(graph_masks)  # [B, 1]
+        x = self.transformer.norm(x)
+        graph_feats, grid_feats = (
+            x[:, :graph_embeds.shape[1]],
+            x[:, graph_embeds.shape[1]:],
+        )  # [B, max_graph_len, hid_dim], [B, max_grid_len+2, hid_dim]
 
-            graph_embeds = torch.cat([cls_embeds, graph_embeds], dim=1)  # [B, max_graph_len+1, hid_dim]
-            graph_masks = torch.cat([cls_mask, graph_masks], dim=1)  # [B, max_graph_len+1]
+        cls_feats = self.pooler(x)  # [B, hid_dim]
 
-            # get grid embeds
-            (grid_embeds,  # [B, max_grid_len+1, hid_dim]
-             grid_masks,  # [B, max_grid_len+1]
-             grid_labels,  # [B, grid+1, C] if mask_image == True
-             ) = self.transformer.visual_embed(
-                grid,
-                max_image_len=self.max_grid_len,
-                mask_it=mask_grid,
-            )
+        ret = {
+            "graph_feats": graph_feats,
+            "grid_feats": grid_feats,
+            "cls_feats": cls_feats,
+            "raw_cls_feats": x[:, 0],
+            "graph_masks": graph_masks,
+            "grid_masks": grid_masks,
+            "grid_labels": grid_labels,  # if MPP, else None
+            "mo_labels": mo_labels,  # if MOC, else None
+            "cif_id": cif_id,
+            "attn_weights": attn_weights,
+        }
 
-            # add volume embeds to grid_embeds
-            volume = torch.FloatTensor(volume).to(grid_embeds)  # [B]
-            volume_embeds = self.volume_embeddings(volume[:, None, None])  # [B, 1, hid_dim]
-            volume_mask = torch.ones(volume.shape[0], 1).to(grid_masks)
-
-            grid_embeds = torch.cat([grid_embeds, volume_embeds], dim=1)  # [B, max_grid_len+2, hid_dim]
-            grid_masks = torch.cat([grid_masks, volume_mask], dim=1)  # [B, max_grid_len+2]
-
-            # add token_type_embeddings
-            graph_embeds = graph_embeds \
-                           + self.token_type_embeddings(torch.zeros_like(graph_masks, device=self.device).long())
-            grid_embeds = grid_embeds \
-                          + self.token_type_embeddings(torch.ones_like(grid_masks, device=self.device).long())
-
-            co_embeds = torch.cat([graph_embeds, grid_embeds], dim=1)  # [B, final_max_len, hid_dim]
-            co_masks = torch.cat([graph_masks, grid_masks], dim=1)  # [B, final_max_len, hid_dim]
-
-            x = co_embeds
-
-            attn_weights = []
-            for i, blk in enumerate(self.transformer.blocks):
-                x, _attn = blk(x, mask=co_masks)
-                if self.vis:
-                    attn_weights.append(_attn)
-
-            x = self.transformer.norm(x)
-            graph_feats, grid_feats = (
-                x[:, :graph_embeds.shape[1]],
-                x[:, graph_embeds.shape[1]:],
-            )  # [B, max_graph_len, hid_dim], [B, max_grid_len+2, hid_dim]
-
-            cls_feats = self.pooler(x)  # [B, hid_dim]
-
-            ret = {
-                "graph_feats": graph_feats,
-                "grid_feats": grid_feats,
-                "cls_feats": cls_feats,
-                "raw_cls_feats": x[:, 0],
-                "graph_masks": graph_masks,
-                "grid_masks": grid_masks,
-                "grid_labels": grid_labels,  # if MPP, else None
-                "mo_labels": mo_labels,  # if MOC, else None
-                "cif_id": cif_id,
-                "attn_weights": attn_weights,
-            }
-
-            return ret
-
-        elif self.use_only_vit:
-            """future removed..."""
-            (grid_embeds,  # [B, max_grid_len+1, hid_dim]
-             grid_masks,  # [B, max_grid_len+1]
-             grid_labels,  # [B, grid+1, C] if mask_image == True
-             ) = self.transformer.visual_embed(
-                grid,
-                max_image_len=self.max_grid_len,
-                mask_it=mask_grid,
-            )
-
-            # volume embeds
-            volume = torch.FloatTensor(volume).to(grid_embeds)  # [B]
-            volume_embeds = self.volume_embeddings(volume[:, None, None])  # [B, 1, hid_dim]
-            volume_mask = torch.ones(volume.shape[0], 1).to(grid_masks)
-
-            grid_embeds = torch.cat([grid_embeds, volume_embeds], dim=1)
-            grid_masks = torch.cat([grid_masks, volume_mask], dim=1)
-
-            x = grid_embeds
-            for i, blk in enumerate(self.transformer.blocks):
-                x, _attn = blk(x, mask=grid_masks)
-
-            x = self.transformer.norm(x)
-            grid_feats = x
-
-            cls_feats = self.pooler(x)  # [B, hid_dim]
-
-            ret = {
-                "grid_feats": grid_feats,
-                "output": cls_feats,
-                "raw_cls_feats": x[:, 0],
-                "grid_masks": grid_masks,
-                "grid_labels": grid_labels,  # if MPP, else None
-            }
-
-            return ret
-
-        elif self.use_only_mgt:
-
-            (graph_embeds,  # [B, max_graph_len, hid_dim],
-             graph_masks,  # [B, max_graph_len],
-             mo_labels,  # if moc: [B, max_graph_len], else: None
-             ) = self.graph_embeddings(
-                atom_num=atom_num,
-                nbr_idx=nbr_idx,
-                nbr_fea=nbr_fea,
-                crystal_atom_idx=crystal_atom_idx,
-                moc=moc,
-            )
-
-            x = graph_embeds
-
-            for i, blk in enumerate(self.transformer.blocks):
-                x, _attn = blk(x, mask=graph_masks)
-
-            x = self.transformer.norm(x)
-            graph_feats = x
-
-            cls_feats = self.pooler(x)  # [B, hid_dim]
-
-            ret = {
-                "graph_feats": graph_feats,
-                "output": cls_feats,
-                "graph_masks": graph_masks,
-                "mo_labels": mo_labels,  # if MOC, else None
-            }
-
-            return ret
+        return ret
 
     def forward(self, batch):
         ret = dict()

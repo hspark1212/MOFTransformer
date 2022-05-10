@@ -172,98 +172,6 @@ class CrystalGraphConvNet(nn.Module):
 
 class GraphEmbeddings(nn.Module):
     """
-    Graph Embedding Layer for MOF Graph Transformer
-    """
-
-    def __init__(self, max_nbr_atoms, max_graph_len, hid_dim, nbr_fea_len):
-        super().__init__()
-        assert hid_dim % max_nbr_atoms == 0
-        graph_emb_dim = hid_dim // max_nbr_atoms
-        assert graph_emb_dim == nbr_fea_len
-
-        self.node_embedding = nn.Embedding(119, graph_emb_dim)
-        self.edge_embedding = nn.Embedding(119, graph_emb_dim)
-
-        self.max_nbr_atoms = max_nbr_atoms
-        self.max_graph_len = max_graph_len
-        self.hid_dim = hid_dim
-
-    def forward(self, atom_num, nbr_idx, nbr_fea, crystal_atom_idx, moc=None):
-        """
-        Args:
-            atom_num (tensor): [N']
-            nbr_idx (tensor): [N', M]
-            nbr_fea (tensor): [N', M, nbr_fea_len]
-            crystal_atom_idx (list): [B]
-        Returns:
-            new_atom_fea (tensor): [B, max_graph_len, hid_dim]
-            mask (tensor): [B, max_graph_len]
-        """
-
-        batch_size = len(crystal_atom_idx)
-        nbr_atom_num = atom_num[nbr_idx]
-
-        emb_node = self.node_embedding(atom_num)[:, None, :].repeat(1, self.max_nbr_atoms, 1)  # [N', 64], [N', 12, 64]
-        emb_edge = self.edge_embedding(nbr_atom_num)  # [N', 12, 64]
-        emb_dist = nbr_fea  # [N', 12, 64]
-
-        emb_total = emb_node + emb_edge + emb_dist  # [N', 12, 64]
-        emb_total = emb_total.reshape([len(atom_num), -1])  # [N', 768]
-
-        graph_emb = torch.zeros([batch_size, self.max_graph_len, self.hid_dim]).to(emb_total)
-        # [B, max_graph_len, hid_dim]
-        if moc:
-            metalnode = moc  # [B]
-            mo_label = torch.full([batch_size, self.max_graph_len], fill_value=-100).long()
-        else:
-            mo_label = None
-
-        for bi, c_atom_idx in enumerate(crystal_atom_idx):
-            if moc:
-                mo = torch.zeros(len(c_atom_idx)).long()
-                mo[torch.LongTensor(metalnode[bi])] = 1
-
-            c_total_emb = emb_total[c_atom_idx]
-            c_atom_num = atom_num[c_atom_idx]
-            device_ = c_total_emb.device
-
-            # others = non carbon and hydrogen
-            mask_others = torch.logical_and(c_atom_num != 6, c_atom_num != 1)
-            idx_others = torch.where(mask_others)[0]
-            if len(idx_others) > 180:
-                idx = torch.randperm(len(idx_others))[:180].long().to(device_)
-                emb_others = c_total_emb[idx]
-            else:
-                idx = torch.randperm(len(idx_others)).long().to(device_)
-                emb_others = torch.cat([c_total_emb[idx], torch.zeros([180 - len(idx), self.hid_dim]).to(device_)],
-                                       dim=0)
-
-            if moc:
-                mo_label[bi, :len(idx)] = mo[idx]
-
-            # carbon
-            idx_carbon = torch.where(c_atom_num == 6)[0]
-            if len(idx_carbon) > 120:
-                idx = torch.randperm(len(idx_carbon))[:120].long().to(device_)
-                emb_carbon = c_total_emb[idx]
-            else:
-                idx = torch.randperm(len(idx_carbon)).long().to(device_)
-                emb_carbon = torch.cat([c_total_emb[idx], torch.zeros([120 - len(idx), self.hid_dim]).to(device_)],
-                                       dim=0)
-
-            if moc:
-                mo_label[bi, 180:180 + len(idx)] = mo[idx]
-
-            final_emb = torch.cat([emb_others, emb_carbon], dim=0)
-            graph_emb[bi] = final_emb
-
-        mask = (graph_emb.sum(dim=-1) != 0).float()
-
-        return graph_emb, mask, mo_label
-
-
-class GraphEmbeddings_Uni_Index(nn.Module):
-    """
     Generate Embedding layers made by only convolution layers of CGCNN (not pooling)
     (https://github.com/txie-93/cgcnn)
     """
@@ -324,17 +232,12 @@ class GraphEmbeddings_Uni_Index(nn.Module):
 
         for bi, c_atom_idx in enumerate(crystal_atom_idx):
             # set uni_idx with (descending count or random) and cut max_graph_len
-
             idx_ = torch.LongTensor([random.choice(u) for u in uni_idx[bi]])[:self.max_graph_len]
             rand_idx = idx_[torch.randperm(len(idx_))]
             if self.vis:
                 rand_idx = idx_
             new_atom_fea[bi][:len(rand_idx)] = atom_fea[c_atom_idx][rand_idx]
-            """
-            count_ = torch.LongTensor(uni_count[bi])
-            final_idx = idx_[torch.argsort(count_, descending=True)][:self.max_graph_len]
-            new_atom_fea[bi][:len(final_idx)] = atom_fea[c_atom_idx][final_idx]
-            """
+
             if moc:
                 mo = torch.zeros(len(c_atom_idx))
                 metal_idx = moc[bi]

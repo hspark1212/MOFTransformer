@@ -32,24 +32,13 @@ def config():
     # model
     exp_name = "pretrained_mof"
     seed = 0
-    use_cgcnn = False  # use CGCNN (crystal graph CNN)
-    use_egcnn = False  # use EGCNN (energy grid CNN)
     use_transformer = False  # use graph embedding + vision transformer 3D
     loss_names = _loss_names({})
 
-    # cgcnn
-    n_conv = 5  # default of CGCNN=3
-    atom_fea_len = 64
-    nbr_fea_len = 64  # default : CGCNN = 41
-
-    # egcnn
-    egcnn_depth = 18  # 10, 18, 34, 50, 101, 152, 200
-
-    # cgcnn + egcnn
-    strategy = 'concat'
-
     # graph seeting
     # max_atom_len = 1000  # number of maximum atoms in primitive cell
+    atom_fea_len = 64
+    nbr_fea_len = 64
     max_graph_len = 300  # number of maximum nodes in graph
     max_nbr_atoms = 12
 
@@ -101,8 +90,6 @@ def config():
 
     # experiments
     dataset_size = False  # experiments for dataset size with 100 [k] or 500 [k]
-    use_only_vit = False
-    use_only_mgt = False
 
     # normalization target
     mean = None
@@ -323,6 +310,137 @@ def downstream_bulkmodulus_scaled():
     # model
     use_transformer = True
     loss_names = _loss_names({"regression": 1})
+
+
+@ex.named_config
+def downstream_N2diffusivity_dilute():
+    exp_name = "downstream_N2diffusivity_dilute"
+    data_root = "/home/data/pretrained_mof/coremof/0_diffusivity"
+    log_dir = "result_coremof"
+    downstream = "N2diffusivity_dilute"
+    load_path = "best_ckpt/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = 0.000160
+    std = 0.000112
+
+
+@ex.named_config
+def downstream_O2diffusivity_dilute():
+    exp_name = "downstream_O2diffusivity_dilute"
+    data_root = "/home/data/pretrained_mof/coremof/0_diffusivity"
+    log_dir = "result_coremof"
+    downstream = "O2diffusivity_dilute"
+    load_path = "best_ckpt/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = 0.000165
+    std = 0.000107
+
+
+@ex.named_config
+def downstream_N2uptake():
+    exp_name = "downstream_N2uptake"
+    data_root = "/home/data/pretrained_mof/coremof/0_diffusivity"
+    log_dir = "result_coremof"
+    downstream = "N2uptake"
+    load_path = "best_ckpt/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = 0.358
+    std = 0.185
+
+
+@ex.named_config
+def downstream_O2uptake():
+    exp_name = "downstream_O2uptake"
+    data_root = "/home/data/pretrained_mof/coremof/0_diffusivity"
+    log_dir = "result_coremof"
+    downstream = "O2uptake"
+    load_path = "best_ckpt/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = 0.376
+    std = 0.203
+
+
+# solvent removal stability classification
+@ex.named_config
+def downstream_ssc():
+    exp_name = "downstream_ssc"
+    data_root = "/home/data/pretrained_mof/coremof/1_stability/ssc"
+    log_dir = "result_coremof"
+    downstream = "ssc"
+    load_path = "best_ckpt/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 2
+
+
+# thermal stability regression
+@ex.named_config
+def downstream_tsr():
+    exp_name = "downstream_tsr"
+    data_root = "/home/data/pretrained_mof/coremof/1_stability/tsr"
+    log_dir = "result_coremof"
+    downstream = "tsr"
+    load_path = "best_ckpt/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = 361.322
+    std = 88.122
 
 
 """

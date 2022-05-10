@@ -1,25 +1,16 @@
-import copy
 import math
-from itertools import combinations, product
-
 import torch
-
 import numpy as np
-
 import matplotlib
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 from ase.io import read
 from ase.data import covalent_radii
-
 from pymatgen.io.cif import CifParser
 from pymatgen.io.ase import AseAtomsAdaptor
-
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-import seaborn as sns
-
 from model.assets.colors import cpk_colors
+from itertools import combinations, product
 
 
 def visualize_grid(grid_data, cell=None, zero_index=51, sign=">", path_cif=None):
@@ -201,12 +192,6 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
         cost_grid = v_[graph_len + 1:] / v_.max()
         heatmap_graph = cost_graph[1:].detach().numpy()  # omit cls token
         heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
-
-    # skip class token
-    # cost_graph = v[0, 1:graph_len + 1] / v[1:].max()
-    # cost_grid = v[0, graph_len + 1:] / v[1:].max()
-    # heatmap_graph = cost_graph.detach().numpy()  # omit cls token
-    # heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
 
     return heatmap_graph, heatmap_grid
 

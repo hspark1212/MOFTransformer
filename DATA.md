@@ -1,14 +1,21 @@
 # Dataset Preparation
 ## 1. Introdction
-crystal graph and energy grid are uesd for dataset of `pretrained_mof`.
 
-(1) crystal graphs include information of neighbors (nbr) such as distance, atomic numbers, unique atoms.
+`MOFformer` takes both CGCNN w/o pooling layer and 1D flatten patches of 3D energy grid as inputs.
+
+(1) CGCNN W/O pooling layer
+
+We modified CGCNN code (https://github.com/txie-93/cgcnn.git) by removing pooling layer and adding topologically unique atom selection. .
 (unique atoms are topologically same atoms, meaning they are same to 3th edges in graph)
 
-(2) energy grid are calculated by GRIDDAY (Energy shape calculator for the porous materials, https://github.com/Sangwon91/GRIDAY.git )
+(2) 1D flatten patches of 3D energy grid
+
+The 3D energy grid are calculated by GRIDDAY (https://github.com/Sangwon91/GRIDAY.git) with unique atom model of methane molecule using UFF.
+
  
 ## 2.Generate dataset
-So, it is required that `cif files (structures)` and `json files (targets ex. property, class)]` are placed in `root_cifs` directory, which were splited into `train`,`val` and `test`(optional). 
+It is required that `cif files (structures)` and `json files (targets ex. property, class)]` are placed in `root_cifs` directory,
+which were splited into `train`,`val` and `test`(optional). 
 
 The example  of json files is as follows.
 ```
