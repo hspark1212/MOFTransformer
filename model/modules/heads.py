@@ -104,11 +104,18 @@ class ClassificationHead(nn.Module):
 
     def __init__(self, hid_dim, n_classes):
         super().__init__()
-        self.fc = nn.Linear(hid_dim, n_classes)
+
+        if n_classes == 2:
+            self.fc = nn.Linear(hid_dim, 1)
+            self.binary = True
+        else:
+            self.fc = nn.Linear(hid_dim, n_classes)
+            self.binary = False
 
     def forward(self, x):
         x = self.fc(x)
-        return x
+
+        return x, self.binary
 
 
 class MOCHead(nn.Module):

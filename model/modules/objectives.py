@@ -48,11 +48,14 @@ def compute_regression(pl_module, batch, normalizer):
 def compute_classification(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
 
-    logits = pl_module.classification_head(infer["cls_feats"])  # [B, output_dim]
+    logits, binary = pl_module.classification_head(infer["cls_feats"])  # [B, output_dim]
     labels = torch.LongTensor(batch["target"]).to(logits.device)  # [B]
     assert len(labels.shape) == 1
-
-    loss = F.cross_entropy(logits, labels)
+    if binary:
+        logits = logits.squeeze(dim=-1)
+        loss = F.binary_cross_entropy_with_logits(input=logits, target=labels.float())
+    else:
+        loss = F.cross_entropy(logits, labels)
 
     ret = {
         "classification_loss": loss,
