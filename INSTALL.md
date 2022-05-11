@@ -1,13 +1,10 @@
 #  Installation
 
-## 1. Install pretrain_mof
-- 나중에 추가
-- requirements.txt
-- setup.py
+## 1. Install
+`pip install -r requirement.txt`
 
-
-## 2. install griday
-A **griday** is a tool for obtaining an energy grid of a material.
+## 2. Install griday
+A [**griday**](https://github.com/Sangwon91/GRIDAY) is a tool for generating energy grids of a material.
 
 The c++14 version is required to use the griday.
 
