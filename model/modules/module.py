@@ -85,13 +85,13 @@ class Module(LightningModule):
             self.bbp_head.apply(objectives.init_weights)
 
         # ===================== Downstream =====================
+        hid_dim = config["hid_dim"]
+
         if config["load_path"] != "" and not config["test_only"]:
             ckpt = torch.load(self.hparams.config["load_path"], map_location="cpu")
             state_dict = ckpt["state_dict"]
             self.load_state_dict(state_dict, strict=False)
             print(f"load model : {config['load_path']}")
-
-            hid_dim = config["hid_dim"]
 
         if self.hparams.config["loss_names"]["regression"] > 0:
             self.regression_head = heads.RegressionHead(hid_dim)
