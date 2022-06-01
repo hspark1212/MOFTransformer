@@ -1,5 +1,9 @@
 # MOFformer
+## [Install](https://github.com/hspark92/MOFformer/blob/master/INSTALL.md) ![link_icon_142996](https://user-images.githubusercontent.com/64190846/171343885-fe93e6c7-7e7d-4774-9c72-0a61533aee32.png)
 
+## [prepare data](https://github.com/hspark92/MOFformer/blob/master/DATA.md) 
+## [Training](https://github.com/hspark92/MOFformer/blob/master/TRAIN.md) 
+## Visualize
 ![fig1](https://user-images.githubusercontent.com/64190846/167797065-1a104b35-a949-4775-93d4-c7310d90afbb.jpg)
 
 - `MOfformer` is a multi-modal pretraining Transformer that is designed to enable universal transfer learning (UTL) in Metal-Organic Frameworks (MOFs).
@@ -14,6 +18,7 @@
 2) MOC (Metal node/Organic linker Classification)
 3) VFP (accessible Void Fraction Prediction)
 
+
 ## Architectures
 ![fig2](https://user-images.githubusercontent.com/64190846/167792454-32ea32ad-29ba-4230-a15d-7e51c3ce8412.jpg)
 
@@ -22,10 +27,7 @@
 2) 3D Structural Image Representation : 1D flatten patches of 3D energy grid -> global features
 
 
-## [Install](https://github.com/hspark92/MOFformer/blob/master/INSTALL.md) ![image](https://user-images.githubusercontent.com/64190846/171343542-fb162c6c-6ccf-43e2-9fc2-7dc9d5f8da15.png)
-## [prepare data](https://github.com/hspark92/MOFformer/blob/master/DATA.md) ![image](https://user-images.githubusercontent.com/64190846/171343567-02f26be4-f067-438d-b2a6-fddbc4d317cd.png)
 
-## [Training](https://github.com/hspark92/MOFformer/blob/master/TRAIN.md) ![image](https://user-images.githubusercontent.com/64190846/171343570-599c4e4a-b4cb-4be7-ab52-d4ae7df14ac7.png)
 
 
 ## Finetuning Results
