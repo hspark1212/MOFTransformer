@@ -22,9 +22,11 @@
 2) 3D Structural Image Representation : 1D flatten patches of 3D energy grid -> global features
 
 
-## [Install](https://github.com/hspark92/MOFformer/blob/master/INSTALL.md)
-## [prepare data](https://github.com/hspark92/MOFformer/blob/master/DATA.md)
-## [Training](https://github.com/hspark92/MOFformer/blob/master/TRAIN.md)
+## [Install](https://github.com/hspark92/MOFformer/blob/master/INSTALL.md) ![image](https://user-images.githubusercontent.com/64190846/171343542-fb162c6c-6ccf-43e2-9fc2-7dc9d5f8da15.png)
+## [prepare data](https://github.com/hspark92/MOFformer/blob/master/DATA.md) ![image](https://user-images.githubusercontent.com/64190846/171343567-02f26be4-f067-438d-b2a6-fddbc4d317cd.png)
+
+## [Training](https://github.com/hspark92/MOFformer/blob/master/TRAIN.md) ![image](https://user-images.githubusercontent.com/64190846/171343570-599c4e4a-b4cb-4be7-ab52-d4ae7df14ac7.png)
+
 
 ## Finetuning Results
 ### 1. Finetuning to predict GCMC, MD, DFT properties when the number of data is from 1k to 20k
