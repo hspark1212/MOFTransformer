@@ -26,10 +26,6 @@
 1) Atom-based Graph Representation : CGCNN w/o pooling layer -> local features
 2) 3D Structural Image Representation : 1D flatten patches of 3D energy grid -> global features
 
-
-
-
-
 ## Finetuning Results
 ### 1. Finetuning to predict GCMC, MD, DFT properties when the number of data is from 1k to 20k
 ![0_best_mae](https://user-images.githubusercontent.com/64190846/167793802-2e18a15a-24f5-4cc9-88e2-9254f4fb20d0.jpg)
@@ -38,7 +34,7 @@ reference
 2. `Descriptor-based ML model` [Prediction of O2/N2 Selectivity in Metal−Organic Frameworks via High-Throughput Computational Screening and Machine Learning](https://pubs.acs.org/doi/abs/10.1021/acsami.1c18521)
 3. `Crystal Graph Convolutional Neural Networks` [Crystal Graph Convolutional Neural Networks for an Accurate and Interpretable Prediction of Material Properties](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.120.145301)
 ### 2. UTL (in progress)
-![그림1](https://user-images.githubusercontent.com/64190846/167795007-add29f6a-d77b-4f0d-bbc9-ff1b3411faeb.png) 
-reference
+![image](https://user-images.githubusercontent.com/64190846/171344412-c43cbf12-adc3-41ab-86ef-f4d65ea35765.png)
+
 1. [Prediction of O2/N2 Selectivity in Metal−Organic Frameworks via High-Throughput Computational Screening and Machine Learning](https://pubs.acs.org/doi/abs/10.1021/acsami.1c18521)
 2. [Using Machine Learning and Data Mining to Leverage Community Knowledge for the Engineering of Stable Metal–Organic Frameworks](https://pubs.acs.org/doi/10.1021/jacs.1c07217)
