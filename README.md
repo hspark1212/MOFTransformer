@@ -1,7 +1,8 @@
 # MOFformer
 - `MOfformer` is a multi-modal pretraining Transformer that is designed to enable universal transfer learning (UTL) in Metal-Organic Frameworks (MOFs).
 ## [Install](https://github.com/hspark92/MOFformer/blob/master/INSTALL.md) 
-## [prepare data](https://github.com/hspark92/MOFformer/blob/master/DATA.md) 
+## [prepare data](https://github.com/hspark92/MOFformer/blob/master/DATA.md)
+## Database (CoRE MOF and QMOF)
 ## [Training](https://github.com/hspark92/MOFformer/blob/master/TRAIN.md) 
 ## Visualize
 ## Introduction
@@ -38,3 +39,4 @@ reference
 
 1. [Prediction of O2/N2 Selectivity in Metal−Organic Frameworks via High-Throughput Computational Screening and Machine Learning](https://pubs.acs.org/doi/abs/10.1021/acsami.1c18521)
 2. [Using Machine Learning and Data Mining to Leverage Community Knowledge for the Engineering of Stable Metal–Organic Frameworks](https://pubs.acs.org/doi/10.1021/jacs.1c07217)
+3. [Understanding the diversity of the metal-organic framework ecosystem](https://www.nature.com/articles/s41467-020-17755-8)
