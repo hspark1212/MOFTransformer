@@ -442,7 +442,26 @@ def downstream_tsr():
     mean = 361.322
     std = 88.122
 
+@ex.named_config
+def downstream_henry_co2():
+    exp_name = "downstream_henry_co2"
+    data_root = "/home/data/pretrained_mof/coremof/2_henry_co2"
+    log_dir = "result_coremof"
+    downstream = "henry_co2"
+    load_path = "best_ckpt/best_mtp_moc_vfp.ckpt"  # should be set
 
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = -3.554
+    std = 1.120
 """
 pretraining (ver 3)
 """

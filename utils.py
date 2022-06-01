@@ -143,7 +143,7 @@ def plot_cube_at3(positions, cell, sizes=None, colors=None, **kwargs):
                             **kwargs)
 
 
-def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
+def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     """
     attention rollout  in "Qunatifying Attention Flow in Transformers" paper.
 
@@ -153,8 +153,6 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
     :param grid_len: the length of grid embedding
     :return: heatmap_graph, heatmap_grid
     """
-    # out = model.infer(batch)
-
     attn_weights = torch.stack(out["attn_weights"])  # [num_layers, B, num_heads, max_len, max_len]
     att_mat = attn_weights[:, batch_idx]  # [num_layers, num_heads, max_len, max_len]
 
@@ -168,12 +166,14 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
 
     aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)  # [num_layers, max_len, max_len]
 
+    aug_att_mat = aug_att_mat.detach().numpy()  # prevent from momory leakage
+
     # Recursively multiply the weight matrices
-    joint_attentions = torch.zeros(aug_att_mat.size())  # [num_layers, max_len, max_len]
+    joint_attentions = np.zeros(aug_att_mat.shape)  # [num_layers, max_len, max_len]
     joint_attentions[0] = aug_att_mat[0]
 
-    for n in range(1, aug_att_mat.size(0)):
-        joint_attentions[n] = torch.matmul(aug_att_mat[n], joint_attentions[n - 1])
+    for n in range(1, aug_att_mat.shape[0]):
+        joint_attentions[n] = np.matmul(aug_att_mat[n], joint_attentions[n - 1])
 
     v = joint_attentions[-1]  # [max_len, max_len]
 
@@ -181,17 +181,17 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
     if skip_cls:
         v_ = v[0][1:]  # skip cls token
 
-        cost_graph = v_[:graph_len] / v_.max()
-        cost_grid = v_[graph_len:] / v_.max()
-        heatmap_graph = cost_graph.detach().numpy()
-        heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
+        cost_graph = v_[:graph_len] #/ v_.max()
+        cost_grid = v_[graph_len:] #/ v_.max()
+        heatmap_graph = cost_graph
+        heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
     else:
         v_ = v[0]
 
-        cost_graph = v_[:graph_len + 1] / v_.max()
-        cost_grid = v_[graph_len + 1:] / v_.max()
-        heatmap_graph = cost_graph[1:].detach().numpy()  # omit cls token
-        heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6).detach().numpy()  # omit cls + volume tokens
+        cost_graph = v_[:graph_len + 1] #/ v_.max()
+        cost_grid = v_[graph_len + 1:] #/ v_.max()
+        heatmap_graph = cost_graph[1:]  # omit cls token
+        heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
 
     return heatmap_graph, heatmap_grid
 
@@ -363,9 +363,14 @@ class Visualize(object):
 
     def draw_heatmap_grid(self, heatmap_grid, cell):
         # set colors
-        cm_heatmap = self.color_palatte(heatmap_grid.flatten())
-        #colors = np.repeat(cm_heatmap[:, None, :], 6, axis=1).reshape(-1, 4)
 
+        cm_heatmap = self.color_palatte(heatmap_grid.flatten())
+        """
+        # set alpha
+        high_idx = np.argsort(heatmap_grid.flatten())[-10:]
+        cm_heatmap[:,-1] = 0.
+        cm_heatmap[:,-1][high_idx] = 0.5
+        """
         # set positions and size
         positions = [(5 * i, 5 * j, 5 * k) for i in range(6) for j in range(6) for k in range(6)]
         sizes = [[5, 5, 5]] * 6 * 6 * 6
