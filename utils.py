@@ -167,8 +167,6 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)  # [num_layers, max_len, max_len]
     aug_att_mat = aug_att_mat.detach().numpy() # prevent from momory leakage
 
-    aug_att_mat = aug_att_mat.detach().numpy()  # prevent from momory leakage
-
     # Recursively multiply the weight matrices
     joint_attentions = np.zeros(aug_att_mat.shape)  # [num_layers, max_len, max_len]
     joint_attentions[0] = aug_att_mat[0]
