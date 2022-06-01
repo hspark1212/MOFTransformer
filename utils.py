@@ -134,7 +134,7 @@ def plot_cube_at3(positions, cell, sizes=None, colors=None, **kwargs):
     """
     help function for 3d plot
     """
-    lim = (30, 30, 30)
+    lim = (6, 6, 6)
     data = [cuboid_data3(*d, lim=lim, cell=cell) for d in zip(positions, sizes, colors)]
     g, cs = zip(*data)
 
@@ -165,6 +165,7 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     aug_att_mat = att_mat + residual_att
 
     aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)  # [num_layers, max_len, max_len]
+    aug_att_mat = aug_att_mat.detach().numpy() # prevent from momory leakage
 
     aug_att_mat = aug_att_mat.detach().numpy()  # prevent from momory leakage
 
@@ -180,7 +181,6 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     # Don't drop class token when normalizing
     if skip_cls:
         v_ = v[0][1:]  # skip cls token
-
         cost_graph = v_[:graph_len] #/ v_.max()
         cost_grid = v_[graph_len:] #/ v_.max()
         heatmap_graph = cost_graph
@@ -289,11 +289,11 @@ class Visualize(object):
         opp_vec = vec1 + vec2 + vec3 + center
 
         for vec1, vec2 in combinations([vec1, vec2, vec3], 2):
-            self.draw_line(center, vec1, **kwargs)
-            self.draw_line(center, vec2, **kwargs)
-            self.draw_line(vec1, vec1 + vec2, **kwargs)
-            self.draw_line(vec2, vec1 + vec2, **kwargs)
-            self.draw_line(vec1 + vec2, opp_vec, **kwargs)
+            self.draw_line(center, center+vec1, **kwargs)
+            self.draw_line(center, center+vec2, **kwargs)
+            self.draw_line(center+vec1, center+vec1 + vec2, **kwargs)
+            self.draw_line(center+vec2, center+vec1 + vec2, **kwargs)
+            self.draw_line(center+vec1+vec2, opp_vec, **kwargs)
 
     def draw_atoms(self, atoms, uni_idx):
         # draw atoms
@@ -329,7 +329,7 @@ class Visualize(object):
                     marker="o",
                     edgecolor="black",
                     linewidths=0.5,
-                    alpha=0.7,
+                    alpha=0.8,
                 )
 
                 for coord in uni_coords:
@@ -363,17 +363,10 @@ class Visualize(object):
 
     def draw_heatmap_grid(self, heatmap_grid, cell):
         # set colors
-
         cm_heatmap = self.color_palatte(heatmap_grid.flatten())
-        """
-        # set alpha
-        high_idx = np.argsort(heatmap_grid.flatten())[-10:]
-        cm_heatmap[:,-1] = 0.
-        cm_heatmap[:,-1][high_idx] = 0.5
-        """
-        # set positions and size
-        positions = [(5 * i, 5 * j, 5 * k) for i in range(6) for j in range(6) for k in range(6)]
-        sizes = [[5, 5, 5]] * 6 * 6 * 6
+
+        positions = [(1 * i, 1 * j, 1 * k) for i in range(6) for j in range(6) for k in range(6)]
+        sizes = [[1, 1, 1]] * 6 * 6 * 6
 
         pc = plot_cube_at3(positions, cell, sizes, colors=cm_heatmap, edgecolor=None, alpha=0.1)
         self._ax.add_collection3d(pc)
@@ -405,3 +398,8 @@ class Visualize(object):
 
         self.draw(atoms, lattice, heatmap_graph, heatmap_grid, uni_idx)
         # return atoms
+
+
+class PatchVisualize(Visualize):
+    pass
+
