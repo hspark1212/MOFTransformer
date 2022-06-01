@@ -143,7 +143,7 @@ def plot_cube_at3(positions, cell, sizes=None, colors=None, **kwargs):
                             **kwargs)
 
 
-def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
+def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     """
     attention rollout  in "Qunatifying Attention Flow in Transformers" paper.
 
@@ -153,8 +153,6 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
     :param grid_len: the length of grid embedding
     :return: heatmap_graph, heatmap_grid
     """
-    # out = model.infer(batch)
-
     attn_weights = torch.stack(out["attn_weights"])  # [num_layers, B, num_heads, max_len, max_len]
     att_mat = attn_weights[:, batch_idx]  # [num_layers, num_heads, max_len, max_len]
 
@@ -168,6 +166,8 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=False):
 
     aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)  # [num_layers, max_len, max_len]
     aug_att_mat = aug_att_mat.detach().numpy() # prevent from momory leakage
+
+    aug_att_mat = aug_att_mat.detach().numpy()  # prevent from momory leakage
 
     # Recursively multiply the weight matrices
     joint_attentions = np.zeros(aug_att_mat.shape)  # [num_layers, max_len, max_len]
