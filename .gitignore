@@ -21,3 +21,8 @@ model/config_HS.py
 dft/
 figure/
 case_study/
+
+# baseline_model
+baseline_model/*/*.csv
+baseline_model/*/*.txt
+baseline_model/*/output
