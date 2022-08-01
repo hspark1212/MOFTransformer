@@ -150,7 +150,7 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     :param out: output of model.infer(batch)
     :param batch_idx: batch index
     :param graph_len: the length of graph embedding
-    :param grid_len: the length of grid embedding
+    :param skip_cls: normalize attention scores if skipping cls_token or not.
     :return: heatmap_graph, heatmap_grid
     """
     attn_weights = torch.stack(out["attn_weights"])  # [num_layers, B, num_heads, max_len, max_len]
@@ -344,7 +344,7 @@ class Visualize(object):
         for i, idxes in enumerate(uni_idx):
             uni_coords = coords[idxes]
             c = cm_heatmap[i]
-            if heatmap_graph[i] == 0:
+            if heatmap_graph[i] < 0.5:
                 alpha = 0.
             else:
                 alpha = 0.7
@@ -353,7 +353,7 @@ class Visualize(object):
                 ys=uni_coords[:, 1],
                 zs=uni_coords[:, 2],
                 color=c,
-                s=self.atomic_scale * 2,
+                s=self.atomic_scale * 3,
                 marker="o",
                 linewidths=0,
                 alpha=alpha,

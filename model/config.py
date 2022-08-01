@@ -194,6 +194,27 @@ def downstream_100bar():
     mean = 447.920
     std = 68.100
 
+@ex.named_config
+def downstream_raspa_100bar():
+    exp_name = "downstream_raspa_100bar_20k"
+    data_root = "/home/data/pretrained_mof/ver4/downstream/20k"
+    log_dir = "result_downstream"
+    downstream = "raspa_100bar"
+    load_path = "###"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = 487.841
+    std = 63.088
+
 
 @ex.named_config
 def downstream_5_scaled():
@@ -271,6 +292,49 @@ def downstream_bandgap():
 
     mean = 2.097
     std = 1.088
+
+@ex.named_config
+def downstream_diffusivity():
+    exp_name = "downstream_diffusivity"
+    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
+    log_dir = "result_downstream"
+    downstream = "diffusivity"
+    load_path = "###"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    mean = 0.000506
+    std = 0.000711
+
+
+@ex.named_config
+def downstream_diffusivity_log():
+    exp_name = "downstream_diffusivity_log"
+    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
+    log_dir = "result_downstream"
+    downstream = "diffusivity_log"
+    load_path = "###"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    use_transformer = True
+    loss_names = _loss_names({"regression": 1})
+
+    mean = -8.300
+    std = 1.484
+
+
 
 
 @ex.named_config
