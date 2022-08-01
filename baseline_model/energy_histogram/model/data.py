@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 import json
 
-from utils import get_grid, get_griddata, get_energy_histogram
+from model.utils import get_grid, get_griddata, get_energy_histogram
 
 
 class Dataset(object):
