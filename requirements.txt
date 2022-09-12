@@ -11,3 +11,9 @@ matplotlib~=3.5.0
 sacred~=0.8.2
 pytorch-lightning==1.5.4
 einops~=0.4.1
+
+# for developer
+## docs
+sphinx
+livereload
+myst-parser
