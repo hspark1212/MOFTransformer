@@ -21,6 +21,6 @@ Once the correct installation of g++ is completed, the grid may be installed in 
 ```bash
 $ cd [PATH_MOFTransformer]/libs/GRIDAY  # move to path of griday-file
 $ make              # make Makefile
-$ cd script
+$ cd scripts
 $ make              # make Makefile
 ```
