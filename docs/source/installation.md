@@ -19,9 +19,8 @@ conda install -c anaconda make
 Once the correct installation of g++ is completed, the gridday could be installed in the following way.
 
 ```bash
-cd [griday-path]  # move to path of griday-file
-make              # make Makefile
-cd scripts
-make              # make Makefile
-
+$ cd [PATH_MOFTransformer]/libs/GRIDAY  # move to path of griday-file
+$ make              # make Makefile
+$ cd scripts
+$ make              # make Makefile
 ```
