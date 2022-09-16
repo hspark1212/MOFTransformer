@@ -176,7 +176,9 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
         eg_logger.info(f"{cif_id} energy grid failed to change to np16")
 
 
-def prepare_data(root_cifs, root_dataset,
+def prepare_data(root_cifs,
+                 root_dataset,
+                 task,
                  max_num_atoms=1000,
                  max_length=60.,
                  min_length=30.,
@@ -188,6 +190,7 @@ def prepare_data(root_cifs, root_dataset,
                         it should contains "train" and "test" directory in root_cifs
                         ("val" directory is optional)
         root_dataset (str): root for generated datasets
+        task (str) : name of downstream tasks
         max_num_atoms (int): max number atoms in primitive cell
         max_length (float) : maximum length of supercell
         min_length (float) : minimum length of supercell
@@ -200,7 +203,7 @@ def prepare_data(root_cifs, root_dataset,
 
     for split in ["test", "val", "train"]:
         # check target json and make root_dataset
-        json_path = os.path.join(root_cifs, f"target_{split}.json")
+        json_path = os.path.join(root_cifs, f"{split}_{task}.json")
 
         assert os.path.exists(json_path)
 
