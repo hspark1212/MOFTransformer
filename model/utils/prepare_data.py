@@ -272,9 +272,3 @@ def prepare_data(root_cifs, root_dataset,
             p = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
             with open(p, "wb") as f:
                 pickle.dump(data, f)
-
-
-if __name__ == "__main__":
-    ### example ###
-    # prepare_data(root_cifs, root_dataset)
-    pass

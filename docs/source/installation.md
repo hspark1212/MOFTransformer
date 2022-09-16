@@ -11,12 +11,12 @@ The c++14 version is required to use the griday.
 In anaconda virtual environment, the corresponding version can be installed as follows.
 
 ```bash
-$ conda install -c conda-forge gcc=11.2.0
-$ conda install -c conda-forge gxx=11.2.0
-$ conda install -c anaconda make
+conda install -c conda-forge gcc=11.2.0
+conda install -c conda-forge gxx=11.2.0
+conda install -c anaconda make
 ```
 
-Once the correct installation of g++ is completed, the grid may be installed in the following way.
+Once the correct installation of g++ is completed, the gridday could be installed in the following way.
 
 ```bash
 $ cd [PATH_MOFTransformer]/libs/GRIDAY  # move to path of griday-file
