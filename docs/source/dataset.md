@@ -14,11 +14,15 @@ The 3D energy grid are calculated by GRIDDAY (https://github.com/Sangwon91/GRIDA
 
  
 ## 2.Generate custom dataset
- From cif files, the atom-wise graph embeddings and enery-grid embeddings will be generated to use as inputs of `MOFTransformer`.
-In order to generate them, we need to prepare `cif files (structures)` and `json files (targets ex. property, class)]` in `root_cifs` directory.
+ From cif files, `model/utils/prepare_data.py` file will generate the inputs which are the atom-wise graph embeddings and enery-grid embeddings.
+We need to prepare `cif files (structures)` and `json files (targets ex. property, class)]` in `root_cifs` directory.
 The json files should be splited into `train`,`val` and `test`. 
 
-You can find an example in `demo.ipynb` and `examples` directory.
+You can find an example of generating custom datasets in `demo.ipynb` and `examples` directory.
+```
+from model.utils.prepare_data import prepare_data
+prepare_data(root_cifs, root_dataset, task="example") 
+```
 
 The example  of json files is as follows.
 ```
@@ -33,15 +37,13 @@ The example of `root_cifs` directory is as follows.
     root_cifs # root for cif files
     ├── [cif_id].cif
     ├── ...
-    ├── targe_train.json
-    ├── targe_val.json
-    └── target_test.json
+    ├── train_{task}.json
+    ├── val_{task}.json
+    └── test_{task}.json
 
-Then, use `model/utils/prepare_data.py` to generate dataset. 
-```
-from model.utils.prepare_data import prepare_data
-prepare_data(root_cifs, root_dataset) 
-```
+Then, we need to set parameters `root_dataset`, `task`.
+`root_dataset`: the saved directories of input files 
+`task` : name of user-specific task (e.g. bandgap, gasuptake, etc).
 
 Finally, `prepare_data.py` will generate the atom-wise graph embeddings and energy-grid embeddings in `root_dataset` directory.
 
@@ -64,10 +66,10 @@ Finally, `prepare_data.py` will generate the atom-wise graph embeddings and ener
     │   ├── [cif_id].griddata16 # grid data
     │   ├── [cif_id].cif # primitive cif
     │   └── ...
-    ├── target_train.json
-    ├── target_val.json
-    └── target_test.json
+    ├── train_{task}.json
+    ├── target_{task}.json
+    └── target_{task}.json
 
 ## 3. Dataset for public database (CoREMOF, QMOF).
-we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database.
+we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database in our [figshare](https://figshare.com/articles/dataset/MOFformer/19947767) database.
 
