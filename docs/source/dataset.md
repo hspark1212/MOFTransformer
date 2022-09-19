@@ -71,5 +71,5 @@ Finally, `prepare_data.py` will generate the atom-wise graph embeddings and ener
     └── target_{task}.json
 
 ## 3. Dataset for public database (CoREMOF, QMOF).
-we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database in our [figshare](https://figshare.com/articles/dataset/MOFformer/19947767) database.
+we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database in our [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506) database.
 
