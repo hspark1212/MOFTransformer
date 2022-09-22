@@ -47,9 +47,14 @@ def main(_config):
         num_gpus = len(num_gpus)
     
     # gradient accumulation
-    accumulate_grad_batches = _config["batch_size"] // (
-            _config["per_gpu_batchsize"] * num_gpus * _config["num_nodes"]
+    if num_gpus == 0:
+        accumulate_grad_batches = _config["batch_size"] // (
+            _config["per_gpu_batchsize"] * _config["num_nodes"]
     )
+    else:
+        accumulate_grad_batches = _config["batch_size"] // (
+                _config["per_gpu_batchsize"] * num_gpus * _config["num_nodes"]
+        )
 
     max_steps = _config["max_steps"] if _config["max_steps"] is not None else None
 

@@ -32,7 +32,7 @@ def config():
     # model
     exp_name = "pretrained_mof"
     seed = 0
-    use_transformer = False  # use graph embedding + vision transformer 3D
+    use_transformer = True  # use graph embedding + vision transformer 3D
     loss_names = _loss_names({})
 
     # graph seeting
@@ -98,10 +98,32 @@ def config():
     # visualize
     visualize = False  # return attention map
 
+@ex.named_config
+def downstream_example():
+    exp_name = "downstream_example"
+    data_root = "examples/dataset"
+    log_dir = "examples/logs"
+    downstream = "example"
+    load_path = "examples/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = None
+    std = None
+
+
 
 @ex.named_config
 def env_neuron():
-    data_root = "/scratch/x2287a03/ver4"
+    # data_root = "/scratch/x2287a03/ver4"
+    pass
 
 
 @ex.named_config
@@ -120,15 +142,9 @@ def medium_transformer():
     num_layers = 8
 
 
-@ex.named_config
-def optim_sgd():
-    # sgd optimizer
-    weight_decay = 0
-    decay_power = 'constant'
-
 
 """
-finetuning with only_vit (ver 3)
+before release
 """
 
 

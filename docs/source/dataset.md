@@ -19,14 +19,13 @@ We need to prepare `cif files (structures)` and `json files (targets ex. propert
 The json files should be splited into `train`,`val` and `test`. 
 
 You can find an example of generating custom datasets in `demo.ipynb` and `examples` directory.
-```
+```python
 from model.utils.prepare_data import prepare_data
 prepare_data(root_cifs, root_dataset, task="example") 
 ```
 
 The example  of json files is as follows.
 ```
-
 { 
     cif_id : property (float) or classes (int),
     ...
@@ -71,5 +70,5 @@ Finally, `prepare_data.py` will generate the atom-wise graph embeddings and ener
     └── target_{task}.json
 
 ## 3. Dataset for public database (CoREMOF, QMOF).
-we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database in our [figshare](https://figshare.com/articles/dataset/MOFformer/19947767) database.
+we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database in our [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506) database.
 
