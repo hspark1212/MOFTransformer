@@ -78,11 +78,11 @@ def config():
     test_only = False
 
     # below params varies with the environment
-    data_root = ""
-    log_dir = "result"
+    data_root = "examples/dataset"
+    log_dir = "examples/logs"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    num_gpus = 2
+    num_gpus = 1
     num_nodes = 1
     load_path = ""
     num_workers = 16  # the number of cpu's core
@@ -97,6 +97,17 @@ def config():
 
     # visualize
     visualize = False  # return attention map
+
+
+@ex.named_config
+def evn():
+    num_gpus = 1
+    num_nodes = 1
+    num_workers = 16  # the number of cpu's core
+
+    data_root = "examples/dataset"
+    log_dir = "examples/logs"
+
 
 @ex.named_config
 def downstream_example():
@@ -119,11 +130,46 @@ def downstream_example():
     std = None
 
 
+@ex.named_config
+def downstream_diffusivity_log():
+    exp_name = "downstream_diffusivity_log"
+    data_root = "examples/downstream_release"
+    log_dir = "examples/logs"
+    downstream = "diffusivity_log"
+    load_path = "examples/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = -8.300
+    std = 1.484
+
 
 @ex.named_config
-def env_neuron():
-    # data_root = "/scratch/x2287a03/ver4"
-    pass
+def downstream_raspa_100bar():
+    exp_name = "downstream_raspa_100bar"
+    data_root = "examples/downstream_release"
+    log_dir = "examples/logs"
+    downstream = "raspa_100bar"
+    load_path = "examples/best_mtp_moc_vfp.ckpt"  # should be set
+
+    # trainer
+    max_epochs = 20
+    batch_size = 32
+    per_gpu_batchsize = 8
+
+    # model
+    loss_names = _loss_names({"regression": 1})
+
+    # normalize
+    mean = 487.841
+    std = 63.088
 
 
 @ex.named_config
@@ -140,7 +186,6 @@ def medium_transformer():
     hid_dim = 512
     num_heads = 8
     num_layers = 8
-
 
 
 """
@@ -209,27 +254,6 @@ def downstream_100bar():
     # normalize
     mean = 447.920
     std = 68.100
-
-@ex.named_config
-def downstream_raspa_100bar():
-    exp_name = "downstream_raspa_100bar_20k"
-    data_root = "/home/data/pretrained_mof/ver4/downstream/20k"
-    log_dir = "result_downstream"
-    downstream = "raspa_100bar"
-    load_path = "###"  # should be set
-
-    # trainer
-    max_epochs = 20
-    batch_size = 32
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"regression": 1})
-
-    # normalize
-    mean = 487.841
-    std = 63.088
 
 
 @ex.named_config
@@ -309,6 +333,7 @@ def downstream_bandgap():
     mean = 2.097
     std = 1.088
 
+
 @ex.named_config
 def downstream_diffusivity():
     exp_name = "downstream_diffusivity"
@@ -328,68 +353,6 @@ def downstream_diffusivity():
 
     mean = 0.000506
     std = 0.000711
-
-
-@ex.named_config
-def downstream_diffusivity_log():
-    exp_name = "downstream_diffusivity_log"
-    data_root = "/home/data/pretrained_mof/qmof/dataset/20k"
-    log_dir = "result_downstream"
-    downstream = "diffusivity_log"
-    load_path = "###"  # should be set
-
-    # trainer
-    max_epochs = 20
-    batch_size = 32
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"regression": 1})
-
-    mean = -8.300
-    std = 1.484
-
-
-
-
-@ex.named_config
-def downstream_bulkmodulus():
-    exp_name = "downstream_bulkmodulus"
-    data_root = "/home/data/pretrained_mof/ver4/downstream/20k"
-    log_dir = "result_downstream"
-    downstream = "bulkmodulus"
-    load_path = "###"  # should be set
-
-    # trainer
-    max_epochs = 20
-    batch_size = 32
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"regression": 1})
-
-    mean = 6.466  # update 220419 (medium)
-    std = 10.367  # update 220419 (medium)
-
-
-@ex.named_config
-def downstream_bulkmodulus_scaled():
-    exp_name = "downstream_bulkmodulus_scaled"
-    data_root = "/home/data/pretrained_mof/ver4/downstream/20k"
-    log_dir = "result_downstream"
-    downstream = "bulkmodulus_scaled"
-    load_path = "###"  # should be set
-
-    # trainer
-    max_epochs = 20
-    batch_size = 32
-    per_gpu_batchsize = 8
-
-    # model
-    use_transformer = True
-    loss_names = _loss_names({"regression": 1})
 
 
 @ex.named_config
@@ -522,6 +485,7 @@ def downstream_tsr():
     mean = 361.322
     std = 88.122
 
+
 @ex.named_config
 def downstream_henry_co2():
     exp_name = "downstream_henry_co2"
@@ -542,6 +506,8 @@ def downstream_henry_co2():
     # normalize
     mean = -3.554
     std = 1.120
+
+
 """
 pretraining (ver 3)
 """
