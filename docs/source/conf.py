@@ -31,3 +31,29 @@ html_static_path = ['_static']
 
 pygments_style = "sphinx"
 pygments_dark_style = "monokai"
+
+
+html_theme_options = {
+    # announcement
+    # 'announcement': '<em>Important</em> announcement!',
+    # Adding an edit button
+    "source_repository": "https://github.com/pradyunsg/furo/",
+    "source_branch": "main",
+    "source_directory": "docs/",
+    # color
+    "light_css_variables": {
+        "color-brand-primary": "#4970E0",
+        "color-brand-content": "#4970E0",
+    },
+}
+
+html_sidebars = {
+    "**": [
+        "sidebar/scroll-start.html",
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
+    ]
+}
