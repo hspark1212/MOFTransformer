@@ -36,7 +36,7 @@ Contents
 
    installation
    dataset
-   training
+   getting_started
 
 Indices and Tables
 ------------------

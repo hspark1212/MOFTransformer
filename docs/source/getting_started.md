@@ -23,12 +23,12 @@ def my_env():
  In order to load the wights of pre-trained model as initial weights, you should change `load_path` in `conf.py`.
 The following script will fine-tune the pre-model with the `examples` directory.
 
-```
+```python
 run.py with downstream_example my_env
 ```
 you can find the parameter for `downstream_example` in `config.py`
 
-```
+```python
 def downstream_example():
     exp_name = "downstream_example"
     data_root = "examples/dataset"
@@ -55,10 +55,6 @@ you can run the fine-tuning examples for
 ### Pre-training
  Although we already provide `best_mtp_moc_vfp.ckpt` pretrained with 1M hMOF, you can also pre-train your mdoel.
 There are 6 types of pretraining tasks. (i.e. ggm, mpp, mtp, vfp, moc, bbp)
-
-```
-run.py with task_mtp my_env
-```
 ```python
 def _loss_names(d):
     ret = {
@@ -73,6 +69,10 @@ def _loss_names(d):
     }
     ret.update(d)
     return ret
+```
+
+```python
+run.py with task_mtp my_env
 ```
 
 if you need the 1M hMOF created by `PORMAKE`, please contact us by email. 
