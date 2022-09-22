@@ -15,7 +15,7 @@ The 3D energy grid are calculated by GRIDDAY (https://github.com/Sangwon91/GRIDA
  
 ## 2.Generate custom dataset
  From cif files, `model/utils/prepare_data.py` file will generate the inputs which are the atom-wise graph embeddings and enery-grid embeddings.
-We need to prepare `cif files (structures)` and `json files (targets ex. property, class)]` in `root_cifs` directory.
+You need to prepare `cif files (structures)` and `json files (targets ex. property, class)]` in `root_cifs` directory.
 The json files should be splited into `train`,`val` and `test`. 
 
 You can find an example of generating custom datasets in `demo.ipynb` and `examples` directory.
@@ -40,7 +40,7 @@ The example of `root_cifs` directory is as follows.
     ├── val_{task}.json
     └── test_{task}.json
 
-Then, we need to set parameters `root_dataset`, `task`.
+Then, You need to set parameters `root_dataset`, `task`.
 `root_dataset`: the saved directories of input files 
 `task` : name of user-specific task (e.g. bandgap, gasuptake, etc).
 
@@ -70,5 +70,5 @@ Finally, `prepare_data.py` will generate the atom-wise graph embeddings and ener
     └── target_{task}.json
 
 ## 3. Dataset for public database (CoREMOF, QMOF).
-we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database in our [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506) database.
+we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database in our [**figshare**](https://figshare.com/articles/dataset/MOFTransformer/21155506) database.
 

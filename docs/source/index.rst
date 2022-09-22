@@ -32,6 +32,7 @@ local features and global features, respectively.
 Contents
 --------
 .. toctree::
+   :titlesonly:
    :maxdepth: 2
 
    installation
