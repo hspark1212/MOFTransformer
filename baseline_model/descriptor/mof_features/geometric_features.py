@@ -44,7 +44,7 @@ if __name__ == '__main__':
         help='(str) path of json volume fraction (VF)'
     )
     parser.add_argument(
-        '--output', '-o', type=str, help='(str) csv output file name'
+        '--output', '-position', type=str, help='(str) csv output file name'
     )
     
     args = parser.parse_args()

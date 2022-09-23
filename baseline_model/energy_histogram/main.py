@@ -23,7 +23,7 @@ parser.add_argument(
     '--std', '-s', type=float, default=None, help='(str) Standard deviation of dataset (default : None)'
 )
 parser.add_argument(
-    '--output', '-o', type=str, default=None, help='(str) Output File'
+    '--output', '-position', type=str, default=None, help='(str) Output File'
 )
 
 args = parser.parse_args()

@@ -6,26 +6,26 @@
 This file allows for easy extraction of the following features cif files, 
 particularly for metal-organic frameworks:
     
-    number of hydrogen atoms per unit cell
-    number of carbon atoms per unit cell
-    number of nitrogen atoms per unit cell
-    number of oxygen atoms per unit cell
-    number of fluorine atoms per unit cell
-    number of chlorine atoms per unit cell
-    number of bromine atoms per unit cell
-    number of vanadium atoms per unit cell
-    number of copper atoms per unit cell
-    number of zinc atoms per unit cell
-    number of zirconium atoms per unit cell
+    number of hydrogen p_atoms per unit p_lattice
+    number of carbon p_atoms per unit p_lattice
+    number of nitrogen p_atoms per unit p_lattice
+    number of oxygen p_atoms per unit p_lattice
+    number of fluorine p_atoms per unit p_lattice
+    number of chlorine p_atoms per unit p_lattice
+    number of bromine p_atoms per unit p_lattice
+    number of vanadium p_atoms per unit p_lattice
+    number of copper p_atoms per unit p_lattice
+    number of zinc p_atoms per unit p_lattice
+    number of zirconium p_atoms per unit p_lattice
     metal type
     total degree of unsaturation
     degree of unsaturation per carbon
     metallic percentage
     oxygen to metal ratio
-    electronegative atoms to total atoms ratio
+    electronegative p_atoms to total p_atoms ratio
     weighted electronegativity per atom
     nitrogen to oxygen ratio
-    volume of MOF's unit cell
+    volume of MOF's unit p_lattice
 
 """
 
@@ -40,7 +40,7 @@ def get_atom_dict(file_address):
     Takes the full adress of a cif file as a string
     Returns atom counts of elements that make up a MOF
     
-    This will be used to get the counts of specific atoms, getting the metal-count etc.
+    This will be used to get the counts of specific p_atoms, getting the metal-count etc.
     """
     
     atoms = {}
@@ -176,7 +176,7 @@ def get_total_degree_of_unsaturation(atom_dict):
 
 def get_electronegative_atom_ratio(atom_dict):
     """
-    Returns the ratio of the number of electronegtive atoms to the total number of atoms in an atom_dict
+    Returns the ratio of the number of electronegtive p_atoms to the total number of p_atoms in an atom_dict
     """
     electronegatives = ["O","N","F","Cl","Br"]
     electro_negative_count = 0
@@ -191,7 +191,7 @@ def get_electronegative_atom_ratio(atom_dict):
 
 def get_weighted_electronegative_atom_ratio(atom_dict):
     """
-    Returns the ratio of the number of electronegtive atoms to the total number of atoms in an atom_dict
+    Returns the ratio of the number of electronegtive p_atoms to the total number of p_atoms in an atom_dict
     
     Weighs only the electronegtivities of O, N, F, Cl, and Br. Electronegativities gathered from Wikipedia
     are on the Pauling Scale. 
@@ -278,7 +278,7 @@ reference : 10.1021/acsami.1c18521""")
         '--cifpath', '-c', type=str, help='(str) path of cif files'
     )
     parser.add_argument(
-        '--output', '-o', type=str, help='(str) csv output file name'
+        '--output', '-position', type=str, help='(str) csv output file name'
     )
     
     args = parser.parse_args()

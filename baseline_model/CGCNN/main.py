@@ -53,7 +53,7 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
 ### NEW argument ###
 parser.add_argument('--downstream', type=str, default='')
 parser.add_argument('--gpu', default='0', type=str, help='set gpu')
-parser.add_argument('-o', '--outdir', default='output', type=str,
+parser.add_argument('-position', '--outdir', default='output', type=str,
                     metavar='N', help='output_dir (default: output)')
 
 

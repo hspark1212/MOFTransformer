@@ -158,7 +158,7 @@ def collate_pool(dataset_list):
       nbr_fea: torch.Tensor shape (n_i, M, nbr_fea_len)
       nbr_fea_idx: torch.LongTensor shape (n_i, M)
       target: torch.Tensor shape (1, )
-      cif_id: str or int
+      cifname: str or int
 
     Returns
     -------
@@ -183,7 +183,7 @@ def collate_pool(dataset_list):
 
     for i, ((atom_fea, nbr_fea, nbr_fea_idx), target, cif_id)\
             in enumerate(dataset_list):
-        n_i = atom_fea.shape[0]  # number of atoms for this crystal
+        n_i = atom_fea.shape[0]  # number of p_atoms for this crystal
         batch_atom_fea.append(atom_fea)
         batch_nbr_fea.append(nbr_fea)
         batch_nbr_fea_idx.append(nbr_fea_idx+base_idx)
@@ -247,7 +247,7 @@ class GaussianDistance(object):
 
 class AtomInitializer(object):
     """
-    Base class for intializing the vector representation for atoms.
+    Base class for intializing the vector representation for p_atoms.
 
     !!! Use one AtomInitializer per dataset !!!
     """
@@ -343,7 +343,7 @@ class CIFData(Dataset):
     nbr_fea: torch.Tensor shape (n_i, M, nbr_fea_len)
     nbr_fea_idx: torch.LongTensor shape (n_i, M)
     target: torch.Tensor shape (1, )
-    cif_id: str or int
+    cifname: str or int
     """
     def __init__(self, root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
                  random_seed=123, split=None):

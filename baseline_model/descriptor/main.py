@@ -32,7 +32,7 @@ parser.add_argument(
     '--path-geometric-descriptor', '-pg', type=str, default=None, help='(str) Path to geometric-descriptor csv file from mof_features/geometric_features.py.'
 )
 parser.add_argument(
-    '--output', '-o', type=str, default=None, help='(str) Output File'
+    '--output', '-position', type=str, default=None, help='(str) Output File'
 )
 
 args = parser.parse_args()

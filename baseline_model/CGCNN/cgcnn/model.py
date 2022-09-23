@@ -35,7 +35,7 @@ class ConvLayer(nn.Module):
         """
         Forward pass
 
-        N: Total number of atoms in the batch
+        N: Total number of p_atoms in the batch
         M: Max number of neighbors
 
         Parameters
@@ -126,7 +126,7 @@ class CrystalGraphConvNet(nn.Module):
         """
         Forward pass
 
-        N: Total number of atoms in the batch
+        N: Total number of p_atoms in the batch
         M: Max number of neighbors
         N0: Total number of crystals in the batch
 
@@ -169,7 +169,7 @@ class CrystalGraphConvNet(nn.Module):
         """
         Pooling the atom features to crystal features
 
-        N: Total number of atoms in the batch
+        N: Total number of p_atoms in the batch
         N0: Total number of crystals in the batch
 
         Parameters
