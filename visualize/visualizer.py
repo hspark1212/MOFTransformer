@@ -72,7 +72,7 @@ class PatchVisualizer(object):
         output = model.infer(batch)
         heatmap_graph, heatmap_grid = get_heatmap(output, batch_idx)
         uni_idx = batch["uni_idx"][batch_idx]
-        cif_id = batch["cifname"][batch_idx]
+        cif_id = batch["cif_id"][batch_idx]
         path_cif = os.path.join(cif_root, cif_id + ".cif")
         return cls(path_cif, heatmap_graph, heatmap_grid, uni_idx, cif_id=cif_id, **kwargs)
 

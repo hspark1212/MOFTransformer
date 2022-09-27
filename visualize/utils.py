@@ -59,7 +59,7 @@ def get_batch_from_cif_id(data_iter, cif_id):
         except StopIteration:
             raise ValueError(f'There are no {cif_id} in dataset')
         else:
-            batch_id = batch["cifname"][0]
+            batch_id = batch["cif_id"][0]
             print (batch_id)
             if batch_id == cif_id:
                 return batch
