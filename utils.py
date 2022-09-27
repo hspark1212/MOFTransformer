@@ -95,27 +95,26 @@ def cuboid_data2(o, size=(1, 1, 1)):
     return X
 
 
-def cuboid_data3(o, size=(1,1,1), color=None, lim=(30, 30, 30), cell=None,):
-    bound = np.array([[0, size[i]] for i in range(3)]) + np.array(o)[:,np.newaxis]
+def cuboid_data3(o, size=(1, 1, 1), color=None, lim=(30, 30, 30), cell=None, ):
+    bound = np.array([[0, size[i]] for i in range(3)]) + np.array(o)[:, np.newaxis]
     lim = np.array(lim)
-    
+
     plain_ls = []
 
     vertax = np.array(list(product(*bound)))
-        
+
     for i, (dn, up) in enumerate(bound):
-        plain1 = np.matmul(vertax[vertax[:, i] == dn], cell/lim)
-        plain2 = np.matmul(vertax[vertax[:, i] == up], cell/lim)
-       
+        plain1 = np.matmul(vertax[vertax[:, i] == dn], cell / lim)
+        plain2 = np.matmul(vertax[vertax[:, i] == up], cell / lim)
+
         plain_ls.append(plain1)
         plain_ls.append(plain2)
-            
-        
+
     plain_ls = np.array(plain_ls).astype('float')
-    plain_ls[:, [0,1], :] = plain_ls[:, [1,0], :]
-    
+    plain_ls[:, [0, 1], :] = plain_ls[:, [1, 0], :]
+
     color_ls = np.repeat(color[np.newaxis, :], 6, axis=0)
-    
+
     return plain_ls, color_ls
 
 
@@ -165,7 +164,7 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     aug_att_mat = att_mat + residual_att
 
     aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)  # [num_layers, max_len, max_len]
-    aug_att_mat = aug_att_mat.detach().numpy() # prevent from momory leakage
+    aug_att_mat = aug_att_mat.detach().numpy()  # prevent from momory leakage
 
     # Recursively multiply the weight matrices
     joint_attentions = np.zeros(aug_att_mat.shape)  # [num_layers, max_len, max_len]
@@ -179,15 +178,15 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     # Don't drop class token when normalizing
     if skip_cls:
         v_ = v[0][1:]  # skip cls token
-        cost_graph = v_[:graph_len] #/ v_.max()
-        cost_grid = v_[graph_len:] #/ v_.max()
+        cost_graph = v_[:graph_len]  # / v_.max()
+        cost_grid = v_[graph_len:]  # / v_.max()
         heatmap_graph = cost_graph
         heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
     else:
         v_ = v[0]
 
-        cost_graph = v_[:graph_len + 1] #/ v_.max()
-        cost_grid = v_[graph_len + 1:] #/ v_.max()
+        cost_graph = v_[:graph_len + 1]  # / v_.max()
+        cost_grid = v_[graph_len + 1:]  # / v_.max()
         heatmap_graph = cost_graph[1:]  # omit cls token
         heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
 
@@ -287,11 +286,11 @@ class Visualize(object):
         opp_vec = vec1 + vec2 + vec3 + center
 
         for vec1, vec2 in combinations([vec1, vec2, vec3], 2):
-            self.draw_line(center, center+vec1, **kwargs)
-            self.draw_line(center, center+vec2, **kwargs)
-            self.draw_line(center+vec1, center+vec1 + vec2, **kwargs)
-            self.draw_line(center+vec2, center+vec1 + vec2, **kwargs)
-            self.draw_line(center+vec1+vec2, opp_vec, **kwargs)
+            self.draw_line(center, center + vec1, **kwargs)
+            self.draw_line(center, center + vec2, **kwargs)
+            self.draw_line(center + vec1, center + vec1 + vec2, **kwargs)
+            self.draw_line(center + vec2, center + vec1 + vec2, **kwargs)
+            self.draw_line(center + vec1 + vec2, opp_vec, **kwargs)
 
     def draw_atoms(self, atoms, uni_idx):
         # draw atoms
@@ -400,4 +399,3 @@ class Visualize(object):
 
 class PatchVisualize(Visualize):
     pass
-

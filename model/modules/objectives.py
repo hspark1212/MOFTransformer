@@ -208,7 +208,8 @@ def compute_ggm(pl_module, batch):
 
 def compute_moc(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=False)
-    moc_logits = pl_module.moc_head(infer["graph_feats"][:, 1:, :]).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
+    moc_logits = pl_module.moc_head(
+        infer["graph_feats"][:, 1:, :]).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
     moc_labels = infer["mo_labels"].to(moc_logits).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
     mask = moc_labels != -100
 
@@ -239,7 +240,7 @@ def compute_bbp(pl_module, batch):
     bbp_logits = pl_module.bbp_head(infer["cls_feats"])  # [B, num_bbs]
     # labels
     batch_size, num_bbs = bbp_logits.shape
-    bbp_labels = torch.zeros([batch_size, num_bbs]).to(bbp_logits.device) # [B, num_bbs]
+    bbp_labels = torch.zeros([batch_size, num_bbs]).to(bbp_logits.device)  # [B, num_bbs]
     for bi, bb in enumerate(batch["bbp"]):
         for b in bb:
             bbp_labels[bi][b] = 1

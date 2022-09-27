@@ -24,7 +24,7 @@ parser.add_argument('data_options', metavar='OPTIONS', nargs='+',
                          'then other options')
 parser.add_argument('--task', choices=['regression', 'classification'],
                     default='regression', help='complete a regression or '
-                                                   'classification task (default: regression)')
+                                               'classification task (default: regression)')
 parser.add_argument('--disable-cuda', action='store_true',
                     help='Disable CUDA')
 parser.add_argument('-j', '--workers', default=0, type=int, metavar='N',
@@ -55,7 +55,6 @@ parser.add_argument('--downstream', type=str, default='')
 parser.add_argument('--gpu', default='0', type=str, help='set gpu')
 parser.add_argument('-o', '--outdir', default='output', type=str,
                     metavar='N', help='output_dir (default: output)')
-
 
 train_group = parser.add_mutually_exclusive_group()
 train_group.add_argument('--train-size', default=None, type=int, metavar='N',
@@ -89,12 +88,12 @@ if args.task == 'regression':
     best_mae_error = 1e10
 else:
     best_mae_error = 0.
-    
+
 
 def main():
     global args, best_mae_error
 
-    train_dataset = LoadGraphData(*args.data_options, split='train', 
+    train_dataset = LoadGraphData(*args.data_options, split='train',
                                   downstream=args.downstream)
     val_dataset = LoadGraphData(*args.data_options, split='val',
                                 downstream=args.downstream)
@@ -112,10 +111,9 @@ def main():
         batch_size=args.batch_size,
         num_workers=args.workers,
         pin_memory=args.cuda,
-        outdir = args.outdir,
+        outdir=args.outdir,
         return_test=True)
-    
-    
+
     # obtain target value normalizer
     if args.task == 'classification':
         normalizer = Normalizer(torch.zeros(2))
@@ -142,11 +140,11 @@ def main():
                                 n_h=args.n_h,
                                 classification=True if args.task ==
                                                        'classification' else False)
-    
+
     # make output folder if needed
     if not os.path.exists(args.outdir):
         os.mkdir(args.outdir)
-    
+
     if args.cuda:
         model.cuda()
 

@@ -10,7 +10,7 @@ from visualize.utils import get_structure, get_heatmap, scaler, get_model_and_da
     get_batch_from_cif_id
 from visualize.setting import get_fig_ax, set_fig_ax, set_axes_equal, DEFAULT_FIGSIZE, \
     DEFAULT_VIEW_INIT, get_default_cbar_kwargs, get_cmap
-from visualize.drawer import  draw_cell, draw_atoms, draw_heatmap_grid, draw_colorbar, draw_heatmap_graph
+from visualize.drawer import draw_cell, draw_atoms, draw_heatmap_grid, draw_colorbar, draw_heatmap_graph
 
 
 class PatchVisualizer(object):
@@ -281,7 +281,7 @@ class PatchVisualizer(object):
         set_fig_ax(ax, **kwargs)
 
         draw_cell(ax, lattice, color='black')
-        draw_atoms(ax, atoms, self.atomic_scale*atomic_scale_factor*grid_scale_factor)
+        draw_atoms(ax, atoms, self.atomic_scale * atomic_scale_factor * grid_scale_factor)
 
         colors = cmap(scaler(heatmap_graph, minatt, maxatt))
         atomic_scale = self.atomic_scale * att_scale_factor * grid_scale_factor * atomic_scale_factor
@@ -293,7 +293,7 @@ class PatchVisualizer(object):
         set_axes_equal(ax, scale_factor=grid_scale_factor)
         plt.show()
 
-    def draw_grid(self, minatt=0.000, maxatt=0.01, *, patch_list=None, remove_under_minatt = False,
+    def draw_grid(self, minatt=0.000, maxatt=0.01, *, patch_list=None, remove_under_minatt=False,
                   alpha=0.8, atomic_scale_factor=1, grid_scale_factor=1, **kwargs):
         """
         Draw grid attention score figure in supercell
@@ -350,8 +350,8 @@ class PatchVisualizer(object):
         set_axes_equal(ax, scale_factor=grid_scale_factor)
         plt.show()
 
-    def draw_grid_with_attention_rank(self, rank, minatt=0.000, maxatt=0.010, *, remove_under_minatt = False,
-                  alpha=0.8, atomic_scale_factor=1, grid_scale_factor=1, **kwargs):
+    def draw_grid_with_attention_rank(self, rank, minatt=0.000, maxatt=0.010, *, remove_under_minatt=False,
+                                      alpha=0.8, atomic_scale_factor=1, grid_scale_factor=1, **kwargs):
         """
         Draw grid attention score figure in supercell
         :param rank:  (int or iterable) The rank (int) or iterable of ranks (list, np.array, tuple, range, etc) of the patch you want to draw.
@@ -370,8 +370,8 @@ class PatchVisualizer(object):
         """
         rank = self._grid_attention_rank(rank)
         self.draw_grid(minatt, maxatt, patch_list=rank, remove_under_minatt=remove_under_minatt,
-                                 alpha=alpha, atomic_scale_factor=atomic_scale_factor,
-                                 grid_scale_factor=grid_scale_factor, **kwargs)
+                       alpha=alpha, atomic_scale_factor=atomic_scale_factor,
+                       grid_scale_factor=grid_scale_factor, **kwargs)
 
     def draw_specific_patch(self, patch_position, ep=0.5, *, color=True, alpha=0.5, minatt=0.000, maxatt=0.010,
                             atomic_scale_factor=5, grid_scale_factor=1, **kwargs):
@@ -421,7 +421,8 @@ class PatchVisualizer(object):
         set_axes_equal(ax, grid_scale_factor)
         plt.show()
 
-    def draw_specific_patch_with_attention_rank(self, rank, ep=0.5, *, color=True, alpha=0.5, minatt=0.000, maxatt=0.010,
+    def draw_specific_patch_with_attention_rank(self, rank, ep=0.5, *, color=True, alpha=0.5, minatt=0.000,
+                                                maxatt=0.010,
                                                 atomic_scale_factor=5, grid_scale_factor=1, **kwargs):
         """
         Draw one specific patch with neighbor atoms.

@@ -60,14 +60,14 @@ def get_batch_from_cif_id(data_iter, cif_id):
             raise ValueError(f'There are no {cif_id} in dataset')
         else:
             batch_id = batch["cif_id"][0]
-            print (batch_id)
+            print(batch_id)
             if batch_id == cif_id:
                 return batch
 
 
 @lru_cache
 def get_primitive_structure(path_cif, tolerance=2.0):
-    st, =  CifParser(path_cif, occupancy_tolerance=tolerance).get_structures(primitive=True)
+    st, = CifParser(path_cif, occupancy_tolerance=tolerance).get_structures(primitive=True)
     return st
 
 
@@ -188,7 +188,7 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     aug_att_mat = att_mat + residual_att
 
     aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)  # [num_layers, max_len, max_len]
-    aug_att_mat = aug_att_mat.detach().numpy() # prevent from memory leakage
+    aug_att_mat = aug_att_mat.detach().numpy()  # prevent from memory leakage
 
     # Recursively multiply the weight matrices
     joint_attentions = np.zeros(aug_att_mat.shape)  # [num_layers, max_len, max_len]
@@ -202,14 +202,14 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     # Don't drop class token when normalizing
     if skip_cls:
         v_ = v[0][1:]  # skip cls token
-        cost_graph = v_[:graph_len] #/ v_.max()
-        cost_grid = v_[graph_len:] #/ v_.max()
+        cost_graph = v_[:graph_len]  # / v_.max()
+        cost_grid = v_[graph_len:]  # / v_.max()
         heatmap_graph = cost_graph
         heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
     else:
         v_ = v[0]
-        cost_graph = v_[:graph_len + 1] #/ v_.max()
-        cost_grid = v_[graph_len + 1:] #/ v_.max()
+        cost_graph = v_[:graph_len + 1]  # / v_.max()
+        cost_grid = v_[graph_len + 1:]  # / v_.max()
         heatmap_graph = cost_graph[1:]  # omit cls token
         heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
 

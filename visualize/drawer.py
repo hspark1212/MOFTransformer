@@ -50,11 +50,11 @@ def draw_cell(ax, lattice, s_point=None, **kwargs):
     opp_vec = vec1 + vec2 + vec3 + s_point
 
     for v1, v2 in combinations([vec1, vec2, vec3], 2):
-        draw_line(ax, s_point, s_point+v1, **kwargs)
-        draw_line(ax, s_point, s_point+v2, **kwargs)
-        draw_line(ax, s_point+v1, s_point+v1+v2, **kwargs)
-        draw_line(ax, s_point+v2, s_point+v1+v2, **kwargs)
-        draw_line(ax, s_point+v1+v2, opp_vec, **kwargs)
+        draw_line(ax, s_point, s_point + v1, **kwargs)
+        draw_line(ax, s_point, s_point + v2, **kwargs)
+        draw_line(ax, s_point + v1, s_point + v1 + v2, **kwargs)
+        draw_line(ax, s_point + v2, s_point + v1 + v2, **kwargs)
+        draw_line(ax, s_point + v1 + v2, opp_vec, **kwargs)
 
 
 def draw_atoms(ax, atoms, atomic_scale):
@@ -91,8 +91,8 @@ def draw_heatmap_graph(ax, atoms, uni_idx, colors, atomic_scale, alpha):
     coords = atoms.get_positions()
     for i, idxes in enumerate(uni_idx):
         uni_coords = coords[idxes]
-        #att = heatmap_graph[i]
-        #c = cmap(scaler(att, minatt, maxatt))
+        # att = heatmap_graph[i]
+        # c = cmap(scaler(att, minatt, maxatt))
         ax.scatter(
             xs=uni_coords[:, 0],
             ys=uni_coords[:, 1],

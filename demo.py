@@ -18,7 +18,6 @@ for i, cif_id in enumerate(tqdm(cif_ids)):
     d[cif_id] = list(set(atomic_nums) - set(non_metals))
 json.dump(d, open("result_tsne/test_metal.json", "w"))
 
-
 """ get tsne
 import numpy as np
 from sklearn.manifold import TSNE
