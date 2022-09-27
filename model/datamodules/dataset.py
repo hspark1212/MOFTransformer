@@ -97,7 +97,6 @@ class Dataset(torch.utils.data.Dataset):
 
         return v.item() / (60 * 60 * 60)  # normalized volume
 
-
     def get_raw_grid_data(self, cif_id):
         file_grid = os.path.join(self.data_dir, self.split, f"{cif_id}.grid")
         file_griddata = os.path.join(self.data_dir, self.split, f"{cif_id}.griddata16")

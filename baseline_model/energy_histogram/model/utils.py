@@ -5,11 +5,11 @@ import pickle
 def get_griddata(griddata):
     with open(griddata, 'rb') as f:
         return pickle.load(f)
-    
+
 
 def get_grid(grid):
     parameter = {}
-    
+
     with open(grid) as f:
         for line in f:
             data = line.strip().split()
@@ -34,13 +34,13 @@ def get_energy_histogram(grid_data):
     """
     R = np.array([8.3145])
     energy = grid_data * R * 1.5 / 1000  # convert unit K -> KJ/mol
-    
-    energy[energy>0] = 0.5  # Positive energy
-    energy[energy<-10] = -10.5 # Energy under -10 KJ/mol
-    
-    i, _ = np.histogram(energy, bins=12, range=(-11, 1)) # Get energy histogram
-    i = i / np.sum(i) # Normalize
-    
+
+    energy[energy > 0] = 0.5  # Positive energy
+    energy[energy < -10] = -10.5  # Energy under -10 KJ/mol
+
+    i, _ = np.histogram(energy, bins=12, range=(-11, 1))  # Get energy histogram
+    i = i / np.sum(i)  # Normalize
+
     return i
 
 
@@ -51,5 +51,5 @@ def get_indice(n, m):
     
     return indices of m in n
     """
-    
+
     return np.vstack([np.where(n == m_dex) for m_dex in m]).squeeze()

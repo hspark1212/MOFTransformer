@@ -96,13 +96,12 @@ def get_train_val_test_loader(dataset, collate_fn=default_collate,
     else:
         return train_loader, val_loader
 
-    
-def get_train_val_test_from_dataloader(train_dataset, val_dataset, test_dataset, 
-                              collate_fn=default_collate,
-                              batch_size=64, return_test=False,
-                              num_workers=1, pin_memory=False,
-                              outdir = '.', **kwargs):
-    
+
+def get_train_val_test_from_dataloader(train_dataset, val_dataset, test_dataset,
+                                       collate_fn=default_collate,
+                                       batch_size=64, return_test=False,
+                                       num_workers=1, pin_memory=False,
+                                       outdir='.', **kwargs):
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
                               num_workers=num_workers,
                               collate_fn=collate_fn, pin_memory=pin_memory)
@@ -113,13 +112,13 @@ def get_train_val_test_from_dataloader(train_dataset, val_dataset, test_dataset,
         test_loader = DataLoader(test_dataset, batch_size=batch_size,
                                  num_workers=num_workers,
                                  collate_fn=collate_fn, pin_memory=pin_memory)
-            
+
     if return_test:
         return train_loader, val_loader, test_loader
     else:
-        return train_loader, val_loader    
-    
-    
+        return train_loader, val_loader
+
+
 def get_loader(dataset, **kwargs):
     if isinstance(dataset, (tuple, list)):
         train, val, test = dataset
@@ -128,20 +127,20 @@ def get_loader(dataset, **kwargs):
         num_workers = kwargs['num_workers']
         collate_fn = kwargs['collate_fn']
         pin_memory = kwargs['pin_memory']
-        
-        train_loader =  DataLoader(train, batch_size=batch_size,
-                                 num_workers=num_workers,
-                                 collate_fn=collate_fn, pin_memory=pin_memory)
-        val_loader =  DataLoader(val, batch_size=batch_size,
-                                 num_workers=num_workers,
-                                 collate_fn=collate_fn, pin_memory=pin_memory)
-        test_loader =  DataLoader(test, batch_size=batch_size,
+
+        train_loader = DataLoader(train, batch_size=batch_size,
+                                  num_workers=num_workers,
+                                  collate_fn=collate_fn, pin_memory=pin_memory)
+        val_loader = DataLoader(val, batch_size=batch_size,
+                                num_workers=num_workers,
+                                collate_fn=collate_fn, pin_memory=pin_memory)
+        test_loader = DataLoader(test, batch_size=batch_size,
                                  num_workers=num_workers,
                                  collate_fn=collate_fn, pin_memory=pin_memory)
         return train_loader, val_loader, test_loader
     else:
         get_train_val_test_loader(dataset, **kwrags)
-                  
+
 
 def collate_pool(dataset_list):
     """
@@ -181,13 +180,13 @@ def collate_pool(dataset_list):
     batch_cif_ids = []
     base_idx = 0
 
-    for i, ((atom_fea, nbr_fea, nbr_fea_idx), target, cif_id)\
+    for i, ((atom_fea, nbr_fea, nbr_fea_idx), target, cif_id) \
             in enumerate(dataset_list):
         n_i = atom_fea.shape[0]  # number of atoms for this crystal
         batch_atom_fea.append(atom_fea)
         batch_nbr_fea.append(nbr_fea)
-        batch_nbr_fea_idx.append(nbr_fea_idx+base_idx)
-        new_idx = torch.LongTensor(np.arange(n_i)+base_idx)
+        batch_nbr_fea_idx.append(nbr_fea_idx + base_idx)
+        new_idx = torch.LongTensor(np.arange(n_i) + base_idx)
         crystal_atom_idx.append(new_idx)
         batch_target.append(target)
         batch_cif_ids.append(cif_id)
@@ -195,9 +194,9 @@ def collate_pool(dataset_list):
     return (torch.cat(batch_atom_fea, dim=0),
             torch.cat(batch_nbr_fea, dim=0),
             torch.cat(batch_nbr_fea_idx, dim=0),
-            crystal_atom_idx),\
-        torch.stack(batch_target, dim=0),\
-        batch_cif_ids
+            crystal_atom_idx), \
+           torch.stack(batch_target, dim=0), \
+           batch_cif_ids
 
 
 class GaussianDistance(object):
@@ -206,6 +205,7 @@ class GaussianDistance(object):
 
     Unit: angstrom
     """
+
     def __init__(self, dmin, dmax, step, var=None):
         """
         Parameters
@@ -220,7 +220,7 @@ class GaussianDistance(object):
         """
         assert dmin < dmax
         assert dmax - dmin > step
-        self.filter = np.arange(dmin, dmax+step, step)
+        self.filter = np.arange(dmin, dmax + step, step)
         if var is None:
             var = step
         self.var = var
@@ -241,8 +241,8 @@ class GaussianDistance(object):
           Expanded distance matrix with the last dimension of length
           len(self.filter)
         """
-        return np.exp(-(distances[..., np.newaxis] - self.filter)**2 /
-                      self.var**2)
+        return np.exp(-(distances[..., np.newaxis] - self.filter) ** 2 /
+                      self.var ** 2)
 
 
 class AtomInitializer(object):
@@ -251,6 +251,7 @@ class AtomInitializer(object):
 
     !!! Use one AtomInitializer per dataset !!!
     """
+
     def __init__(self, atom_types):
         self.atom_types = set(atom_types)
         self._embedding = {}
@@ -274,6 +275,7 @@ class AtomInitializer(object):
                                 self._embedding.items()}
         return self._decodedict[idx]
 
+
 class AtomCustomJSONInitializer(AtomInitializer):
     """
     Initialize atom feature vectors using a JSON file, which is a python
@@ -286,6 +288,7 @@ class AtomCustomJSONInitializer(AtomInitializer):
     elem_embedding_file: str
         The path to the .json file
     """
+
     def __init__(self, elem_embedding_file):
         with open(elem_embedding_file) as f:
             elem_embedding = json.load(f)
@@ -345,6 +348,7 @@ class CIFData(Dataset):
     target: torch.Tensor shape (1, )
     cif_id: str or int
     """
+
     def __init__(self, root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
                  random_seed=123, split=None):
         self.root_dir = root_dir
@@ -364,25 +368,23 @@ class CIFData(Dataset):
         assert os.path.exists(atom_init_file), 'atom_init.json does not exist!'
         self.ari = AtomCustomJSONInitializer(atom_init_file)
         self.gdf = GaussianDistance(dmin=dmin, dmax=self.radius, step=step)
-        
+
     @classmethod
     def get_dataset(cls, root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
-                 random_seed=123, use_split=False):
+                    random_seed=123, use_split=False):
         if not use_split:
-            print ('Use random dataset\n')
+            print('Use random dataset\n')
             return CIFData(root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
-                 random_seed=123)
+                           random_seed=123)
         else:
-            print ('Use split dataset\n')
+            print('Use split dataset\n')
             train = CIFData(root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
-                 random_seed=123, split='train')
+                            random_seed=123, split='train')
             val = CIFData(root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
-                 random_seed=123, split='val')
+                          random_seed=123, split='val')
             test = CIFData(root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
-                 random_seed=123, split='test')
+                           random_seed=123, split='test')
             return train, val, test
-        
-            
 
     def __len__(self):
         return len(self.id_prop_data)
@@ -391,7 +393,7 @@ class CIFData(Dataset):
     def __getitem__(self, idx):
         cif_id, target = self.id_prop_data[idx]
         crystal = Structure.from_file(os.path.join(self.root_dir,
-                                                   cif_id+'.cif'))
+                                                   cif_id + '.cif'))
         atom_fea = np.vstack([self.ari.get_atom_fea(crystal[i].specie.number)
                               for i in range(len(crystal))])
         atom_fea = torch.Tensor(atom_fea)
@@ -421,7 +423,7 @@ class CIFData(Dataset):
         target = torch.Tensor([float(target)])
         return (atom_fea, nbr_fea, nbr_fea_idx), target, cif_id
 
-    
+
 class LoadGraphData(Dataset):
     """ 
     Load CIFDATA dataset from "CIF_NAME.graphdata"
@@ -429,38 +431,37 @@ class LoadGraphData(Dataset):
 
 
     """
-    
-    def __init__(self, path_file, split, downstream, radius=8, dmin=0, step=0.2,):
-        
+
+    def __init__(self, path_file, split, downstream, radius=8, dmin=0, step=0.2, ):
         path_file = Path(path_file)
         assert path_file.exists(), str(path_file)
-        
-        target_file = path_file/f'{split}_{downstream}.json'
+
+        target_file = path_file / f'{split}_{downstream}.json'
         assert target_file.exists(), f'{str(target_file)} not exists'
-        
+
         with open(target_file) as f:
             self.targets = json.load(f)
-        
-        file_list = (path_file/split).glob('*.graphdata')
+
+        file_list = (path_file / split).glob('*.graphdata')
         self.data = [file for file in file_list if file.stem in self.targets.keys()]
-        
+
         property_json = './atom_init.json'
         self.ari = AtomCustomJSONInitializer(property_json)
         self.gdf = GaussianDistance(dmin=dmin, dmax=radius, step=step)
-        
+
     def __len__(self):
         return len(self.data)
-    
-    @functools.lru_cache(maxsize=None) # cache load strcutrue
+
+    @functools.lru_cache(maxsize=None)  # cache load strcutrue
     def __getitem__(self, idx):
         with open(self.data[idx], 'rb') as f:
             data = pickle.load(f)
-            
-        cif_id, atom_num, nbr_idx, nbr_dist, _, _, _ =  data
+
+        cif_id, atom_num, nbr_idx, nbr_dist, _, _, _ = data
         target = self.targets[cif_id]
 
         target = torch.FloatTensor([target])
-        
+
         atom_fea = np.vstack([self.ari.get_atom_fea(i) for i in atom_num])
         atom_fea = torch.Tensor(atom_fea)
 
@@ -468,5 +469,5 @@ class LoadGraphData(Dataset):
         nbr_dist = torch.FloatTensor(nbr_dist).view(len(atom_num), -1)
         nbr_fea = self.gdf.expand(nbr_dist).float()
         assert isinstance(nbr_fea, torch.Tensor)
-        
-        return (atom_fea, nbr_fea, nbr_idx), target, cif_id     
+
+        return (atom_fea, nbr_fea, nbr_idx), target, cif_id

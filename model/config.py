@@ -32,7 +32,6 @@ def config():
     # model
     exp_name = "pretrained_mof"
     seed = 0
-    use_transformer = True  # use graph embedding + vision transformer 3D
     loss_names = _loss_names({})
 
     # graph seeting
@@ -207,7 +206,6 @@ def downstream_topology():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"classification": 1})
     n_classes = 1100
 
@@ -226,7 +224,6 @@ def downstream_1bar():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -248,7 +245,6 @@ def downstream_100bar():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -270,7 +266,6 @@ def downstream_5_scaled():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
 
@@ -288,7 +283,6 @@ def downstream_100_scaled():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
 
@@ -306,7 +300,6 @@ def downstream_uptake():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     mean = 291.453
@@ -327,7 +320,6 @@ def downstream_bandgap():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     mean = 2.097
@@ -348,7 +340,6 @@ def downstream_diffusivity():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     mean = 0.000506
@@ -369,7 +360,6 @@ def downstream_N2diffusivity_dilute():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -391,7 +381,6 @@ def downstream_O2diffusivity_dilute():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -413,7 +402,6 @@ def downstream_N2uptake():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -435,7 +423,6 @@ def downstream_O2uptake():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -458,7 +445,6 @@ def downstream_ssc():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"classification": 1})
     n_classes = 2
 
@@ -478,7 +464,6 @@ def downstream_tsr():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -500,7 +485,6 @@ def downstream_henry_co2():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"regression": 1})
 
     # normalize
@@ -525,7 +509,6 @@ def task_ggm():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"ggm": 1})
 
     draw_false_grid = True
@@ -543,7 +526,6 @@ def task_mtp():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1})
 
 
@@ -559,7 +541,6 @@ def task_vfp():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"vfp": 1})
 
 
@@ -575,7 +556,6 @@ def task_moc():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"moc": 1})
 
 
@@ -591,7 +571,6 @@ def task_mtp_ggm():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"ggm": 1, "mtp": 1})
 
     draw_false_grid = True
@@ -609,7 +588,6 @@ def task_mtp_bbp():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "bbp": 1})
 
 
@@ -625,7 +603,6 @@ def task_mtp_vfp():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "vfp": 1})
 
 
@@ -641,7 +618,6 @@ def task_mtp_moc():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1})
 
 
@@ -657,7 +633,6 @@ def task_moc_vfp():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"moc": 1, "vfp": 1})
 
 
@@ -673,7 +648,6 @@ def task_mtp_bbp_vfp():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "bbp": 1, "vfp": 1})
 
 
@@ -689,7 +663,6 @@ def task_mtp_moc_vfp():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
 
 
@@ -711,7 +684,6 @@ def task_mtp_moc_vfp_10k():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
 
 
@@ -728,7 +700,6 @@ def task_mtp_moc_vfp_50k():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
 
 
@@ -745,7 +716,6 @@ def task_mtp_moc_vfp_100k():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
 
 
@@ -762,7 +732,6 @@ def task_mtp_moc_vfp_500k():
     per_gpu_batchsize = 8
 
     # model
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
 
 
@@ -786,7 +755,6 @@ def task_mtp_moc_vfp_small():
     hid_dim = 512
     num_heads = 8
     num_layers = 4
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})
 
 
@@ -805,5 +773,4 @@ def task_mtp_moc_vfp_medium():
     hid_dim = 512
     num_heads = 8
     num_layers = 8
-    use_transformer = True
     loss_names = _loss_names({"mtp": 1, "moc": 1, "vfp": 1})

@@ -1,9 +1,11 @@
-#  Installation
+# Installation
 
 ## 1. Install
+
 `pip install -r requirements.txt`
 
 ## 2. Install griday
+
 A [**griday**](https://github.com/Sangwon91/GRIDAY) is a tool for generating energy grids of a material.
 
 The c++14 version is required to use the griday.

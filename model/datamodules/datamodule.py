@@ -40,7 +40,7 @@ class Datamodule(LightningDataModule):
             downstream=self.downstream,
             nbr_fea_len=self.nbr_fea_len,
             tasks=self.tasks,
-            dataset_size = self.dataset_size,
+            dataset_size=self.dataset_size,
         )
 
     def set_val_dataset(self):

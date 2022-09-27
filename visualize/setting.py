@@ -3,7 +3,6 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 
-
 DEFAULT_FIGSIZE = (8, 8)
 DEFAULT_VIEW_INIT = (0, 0)
 
@@ -43,9 +42,9 @@ def get_fig_ax(**kwargs):
 def set_fig_ax(ax, **kwargs):
     if not kwargs:
         return
-    if view_init := kwargs.get('view_init'): # view_init
+    if view_init := kwargs.get('view_init'):  # view_init
         ax.view_init(*view_init)
-    if show_axis := kwargs.get('show_axis'): # show axis
+    if show_axis := kwargs.get('show_axis'):  # show axis
         if show_axis:
             ax.set_axis_on()
         else:

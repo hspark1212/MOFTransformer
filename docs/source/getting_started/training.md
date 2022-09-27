@@ -1,8 +1,10 @@
 # Training
- In `model/config.py`, you can change setting parameters for training, test, visualization.
+
+In `model/config.py`, you can change setting parameters for training, test, visualization.
 
 Before training, you should check the environment of server you will run and modify the `my_env` function in `conf.py`.
-Unfortunately, `MOFTransformer` is not available with CPUs. Given `MOFTransformer`have over 85 M of parameters, we strongly recommend to use the server containing with GPUs.
+Unfortunately, `MOFTransformer` is not available with CPUs. Given `MOFTransformer`have over 85 M of parameters, we
+strongly recommend to use the server containing with GPUs.
 
 ```python
 def my_env():
@@ -14,13 +16,20 @@ def my_env():
     log_dir = "examples/logs"
 ```
 
-##  Fine-tuning
-In oder to fine-tuning the pre-trained `MOFTransforemr`, you should download `best_mtp_moc_vfp.ckpt` that is the pretrained model with MTP + MOC + VFP tasks from [**figshare**](https://figshare.com/articles/dataset/MOFTransformer/21155506) for the first time.
- Then, you should set `load_path` in `conf.py` to load the wights of pre-trained model as initial weights.
- 
+## Fine-tuning
+
+In oder to fine-tuning the pre-trained `MOFTransforemr`, you should download `best_mtp_moc_vfp.ckpt` that is the
+pretrained model with MTP + MOC + VFP tasks from [**
+figshare**](https://figshare.com/articles/dataset/MOFTransformer/21155506) for the first time.
+Then, you should set `load_path` in `conf.py` to load the wights of pre-trained model as initial weights.
+
 ### Fine-tuning with downstream dataset
-if you download `downstream_release.tar.gz` in [**figshare**](https://figshare.com/articles/dataset/MOFTransformer/21155506), 
-you can run the fine-tuning examples for H<sub>2</sub> uptake (`raspa_100bar`) and dilute diffusivity in log scale (`diffusivity_log`)
+
+if you download `downstream_release.tar.gz` in [**
+figshare**](https://figshare.com/articles/dataset/MOFTransformer/21155506),
+you can run the fine-tuning examples for H<sub>2</sub> uptake (`raspa_100bar`) and dilute diffusivity in log
+scale (`diffusivity_log`)
+
 ```python
 @ex.named_config
 def downstream_raspa_100bar():
@@ -63,15 +72,19 @@ def downstream_diffusivity_log():
     mean = -8.300
     std = 1.484
 ```
+
 Then, you can run the fine-tuning examples:
+
 ```shell
 run.py with  downstream_raspa_100bar my_env
 ```
+
 or
+
 ```shell
 run.py with  downstream_raspa_100bar my_env
 ```
- 
+
 ### Fine-tuning with custom dataset
 
 Here is an example for fine-tuning with `example/datasets`
@@ -96,15 +109,18 @@ def downstream_example():
     mean = None
     std = None
 ```
+
 Then, you can run the fine-tuning examples:
+
 ```shell
 run.py with downstream_example my_env
 ```
 
-
 ## Pre-training
- Although we already provide `best_mtp_moc_vfp.ckpt` pretrained with 1M hMOF, you can also pre-train your mdoel.
+
+Although we already provide `best_mtp_moc_vfp.ckpt` pretrained with 1M hMOF, you can also pre-train your mdoel.
 There are 6 types of pretraining tasks. (i.e. ggm, mpp, mtp, vfp, moc, bbp)
+
 ```python
 def _loss_names(d):
     ret = {

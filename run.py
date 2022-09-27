@@ -41,16 +41,16 @@ def main(_config):
 
     lr_callback = pl.callbacks.LearningRateMonitor(logging_interval="step")
     callbacks = [checkpoint_callback, lr_callback]
-    
+
     num_gpus = _config["num_gpus"]
     if isinstance(num_gpus, list):
         num_gpus = len(num_gpus)
-    
+
     # gradient accumulation
     if num_gpus == 0:
         accumulate_grad_batches = _config["batch_size"] // (
-            _config["per_gpu_batchsize"] * _config["num_nodes"]
-    )
+                _config["per_gpu_batchsize"] * _config["num_nodes"]
+        )
     else:
         accumulate_grad_batches = _config["batch_size"] // (
                 _config["per_gpu_batchsize"] * num_gpus * _config["num_nodes"]

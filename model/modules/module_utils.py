@@ -137,7 +137,7 @@ def set_schedule(pl_module):
 
     if optim_type == "adamw":
         optimizer = AdamW(optimizer_grouped_parameters, lr=lr, eps=1e-8, betas=(0.9, 0.98)
-        )
+                          )
     elif optim_type == "adam":
         optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=lr)
     elif optim_type == "sgd":
@@ -146,10 +146,10 @@ def set_schedule(pl_module):
     if pl_module.trainer.max_steps == -1:
         if pl_module.trainer.num_gpus == 0:
             max_steps = (
-                len(pl_module.trainer.datamodule.train_dataloader())
-                * pl_module.trainer.max_epochs
-                // pl_module.trainer.accumulate_grad_batches
-                // pl_module.trainer.num_nodes
+                    len(pl_module.trainer.datamodule.train_dataloader())
+                    * pl_module.trainer.max_epochs
+                    // pl_module.trainer.accumulate_grad_batches
+                    // pl_module.trainer.num_nodes
             )
         else:
             max_steps = (
@@ -199,6 +199,7 @@ def set_schedule(pl_module):
         [sched],
     )
 
+
 class Normalizer(object):
     """
     normalize for regression
@@ -206,7 +207,7 @@ class Normalizer(object):
 
     def __init__(self, mean, std):
         if mean and std:
-            self._norm_func = lambda tensor : (tensor - mean) / std
+            self._norm_func = lambda tensor: (tensor - mean) / std
             self._denorm_func = lambda tensor: tensor * std + mean
         else:
             self._norm_func = lambda tensor: tensor
@@ -220,6 +221,3 @@ class Normalizer(object):
 
     def decode(self, tensor):
         return self._denorm_func(tensor)
-
-
-

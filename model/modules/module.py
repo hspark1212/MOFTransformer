@@ -16,7 +16,6 @@ class Module(LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        self.use_transformer = config["use_transformer"]
         self.max_grid_len = config["max_grid_len"]
         self.vis = config["visualize"]
 
