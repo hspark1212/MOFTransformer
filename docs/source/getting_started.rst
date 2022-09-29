@@ -12,5 +12,6 @@ In this section, you will learn about training, visualization with MOFTransforme
 
    getting_started/training
    getting_started/test
+   getting_started/visualization
 
 
