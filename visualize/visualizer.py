@@ -3,8 +3,10 @@ import numpy as np
 from pathlib import Path
 from collections.abc import Iterable, Sequence
 from itertools import product
+from functools import wraps, partial
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
+from matplotlib import animation
 
 from visualize.utils import get_structure, get_heatmap, scaler, get_model_and_datamodule, get_batch_from_index, \
     get_batch_from_cif_id
@@ -257,7 +259,7 @@ class PatchVisualizer(object):
                     self.cbar_kwargs[key] = value
 
     def draw_graph(self, minatt=0.000, maxatt=0.010, *, alpha=0.7, atomic_scale_factor=3,
-                   grid_scale_factor=1, att_scale_factor=3, **kwargs):
+                   grid_scale_factor=1, att_scale_factor=3, return_fig=False, **kwargs):
         """
         Draw graph attention score figure in primitive unit cell
         :param minatt: (float) Minimum value of attention score (default : 0.000). A value smaller than minatt is treated as minatt.
@@ -266,6 +268,7 @@ class PatchVisualizer(object):
         :param atomic_scale_factor: (float) The factors that determines atom size. (default = 1)
         :param grid_scale_factor: (float) The factors that determines grid size (default = 3)
         :param att_scale_factor: (float) The factor that determines attention-score overlay size (default = 5)
+        :param return_fig : (bool) If True, matplotlib.figure.Figure and matplotlib.Axes3DSubplot are returned.
         :param kwargs:
             view_init : (float, float) view init from matplotlib
             show_axis : <bool> If True, axis are visible. (default : False)
@@ -291,10 +294,13 @@ class PatchVisualizer(object):
             draw_colorbar(fig, ax, cmap, minatt, maxatt, **self.cbar_kwargs)
 
         set_axes_equal(ax, scale_factor=grid_scale_factor)
-        plt.show()
+        if return_fig:
+            return fig, ax
+        else:
+            plt.show()
 
     def draw_grid(self, minatt=0.000, maxatt=0.01, *, patch_list=None, remove_under_minatt=False,
-                  alpha=0.8, atomic_scale_factor=1, grid_scale_factor=1, **kwargs):
+                  alpha=0.8, atomic_scale_factor=1, grid_scale_factor=1, return_fig=False, **kwargs):
         """
         Draw grid attention score figure in supercell
         :param minatt: (float) Minimum value of attention score (default : 0.000). A value smaller than minatt is treated as minatt.
@@ -304,6 +310,7 @@ class PatchVisualizer(object):
         :param alpha: (float) The alpha blending value, between 0 (transparent) and 1 (opaque).
         :param atomic_scale_factor: (float) The factors that determines atom size. (default = 1)
         :param grid_scale_factor: (float) The factors that determines grid size (default = 3)
+        :param return_fig : (bool) If True, matplotlib.figure.Figure and matplotlib.Axes3DSubplot are returned.
         :param kwargs:
             view_init : (float, float) view init from matplotlib
             show_axis : <bool> If True, axis are visible. (default : False)
@@ -348,10 +355,13 @@ class PatchVisualizer(object):
             draw_colorbar(fig, ax, cmap, minatt, maxatt, **self.cbar_kwargs)
 
         set_axes_equal(ax, scale_factor=grid_scale_factor)
-        plt.show()
+        if return_fig:
+            return fig, ax
+        else:
+            plt.show()
 
     def draw_grid_with_attention_rank(self, rank, minatt=0.000, maxatt=0.010, *, remove_under_minatt=False,
-                                      alpha=0.8, atomic_scale_factor=1, grid_scale_factor=1, **kwargs):
+                                      alpha=0.8, atomic_scale_factor=1, grid_scale_factor=1, return_fig=False, **kwargs):
         """
         Draw grid attention score figure in supercell
         :param rank:  (int or iterable) The rank (int) or iterable of ranks (list, np.array, tuple, range, etc) of the patch you want to draw.
@@ -362,6 +372,7 @@ class PatchVisualizer(object):
         :param alpha: (float) The alpha blending value, between 0 (transparent) and 1 (opaque).
         :param atomic_scale_factor: (float) The factors that determines atom size. (default = 1)
         :param grid_scale_factor: (float) The factors that determines grid size (default = 3)
+        :param return_fig : (bool) If True, matplotlib.figure.Figure and matplotlib.Axes3DSubplot are returned.
         :param kwargs:
             view_init : (float, float) view init from matplotlib
             show_axis : <bool> If True, axis are visible. (default : False)
@@ -369,12 +380,12 @@ class PatchVisualizer(object):
             cmap : (str or matplotlib.colors.ListedColormap) color map used in figure. (default : None)
         """
         rank = self._grid_attention_rank(rank)
-        self.draw_grid(minatt, maxatt, patch_list=rank, remove_under_minatt=remove_under_minatt,
+        return self.draw_grid(minatt, maxatt, patch_list=rank, remove_under_minatt=remove_under_minatt,
                        alpha=alpha, atomic_scale_factor=atomic_scale_factor,
-                       grid_scale_factor=grid_scale_factor, **kwargs)
+                       grid_scale_factor=grid_scale_factor, return_fig=return_fig, **kwargs)
 
     def draw_specific_patch(self, patch_position, ep=0.5, *, color=True, alpha=0.5, minatt=0.000, maxatt=0.010,
-                            atomic_scale_factor=5, grid_scale_factor=1, **kwargs):
+                            atomic_scale_factor=5, grid_scale_factor=1, return_fig=False, **kwargs):
         """
         Draw one specific patch with neighbor atoms.
         :param patch_position:  (list) patch position that plot in figure.
@@ -385,6 +396,7 @@ class PatchVisualizer(object):
         :param alpha: (float) The alpha blending value, between 0 (transparent) and 1 (opaque).
         :param atomic_scale_factor: (float) The factors that determines atom size. (default = 1)
         :param grid_scale_factor: (float) The factors that determines grid size (default = 3)
+        :param return_fig : (bool) If True, plt.figure and plt.axes are returned.
         :param kwargs:
             view_init : (float, float) view init from matplotlib
             show_axis : <bool> If True, axis are visible. (default : False)
@@ -419,11 +431,14 @@ class PatchVisualizer(object):
             draw_colorbar(fig, ax, cmap, minatt, maxatt, **self.cbar_kwargs)
 
         set_axes_equal(ax, grid_scale_factor)
-        plt.show()
 
-    def draw_specific_patch_with_attention_rank(self, rank, ep=0.5, *, color=True, alpha=0.5, minatt=0.000,
-                                                maxatt=0.010,
-                                                atomic_scale_factor=5, grid_scale_factor=1, **kwargs):
+        if return_fig:
+            return fig, ax
+        else:
+            plt.show()
+
+    def draw_specific_patch_with_attention_rank(self, rank, ep=0.5, *, color=True, alpha=0.5, minatt=0.000, maxatt=0.010,
+                                                atomic_scale_factor=5, grid_scale_factor=1, return_fig=False, **kwargs):
         """
         Draw one specific patch with neighbor atoms.
         :param rank : (int or iterable) The rank (int) of the patch you want to draw.
@@ -435,6 +450,7 @@ class PatchVisualizer(object):
         :param alpha: (float) The alpha blending value, between 0 (transparent) and 1 (opaque).
         :param atomic_scale_factor: (float) The factors that determines atom size. (default = 1)
         :param grid_scale_factor: (float) The factors that determines grid size (default = 3)
+        :param return_fig : (bool) If True, matplotlib.figure.Figure and matplotlib.Axes3DSubplot are returned.
         :param kwargs:
             view_init : (float, float) view init from matplotlib
             show_axis : <bool> If True, axis are visible. (default : False)
@@ -445,6 +461,26 @@ class PatchVisualizer(object):
             raise TypeError(f'rank must be int, not {type(rank)}')
 
         rank = self._grid_attention_rank(rank).squeeze()
-        self.draw_specific_patch(rank, ep=ep, color=color, minatt=minatt, maxatt=maxatt,
+        return self.draw_specific_patch(rank, ep=ep, color=color, minatt=minatt, maxatt=maxatt,
                                  atomic_scale_factor=atomic_scale_factor, grid_scale_factor=grid_scale_factor,
-                                 alpha=alpha, **kwargs)
+                                 alpha=alpha, return_fig=return_fig, **kwargs)
+
+    def animate(self, func, frame=360, interval=20, savefile=None, fps=30):
+        def turn(i, ax, fig, **kwargs):
+            view_init = kwargs.get('view_init', self.view_init)
+            ax.view_init(elev=view_init[0], azim=i)
+            return fig
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            kwargs['return_fig'] = True
+            fig, ax = func(*args, **kwargs)
+            anim = animation.FuncAnimation(fig, partial(turn, ax=ax, fig=fig, **kwargs), init_func=lambda:fig,
+                                           frames=frame, interval=interval, blit=True)
+            if savefile:
+                anim.save(savefile, fps=fps, dpi=300)
+
+            plt.show()
+            return anim
+
+        return wrapper
