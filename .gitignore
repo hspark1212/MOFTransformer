@@ -15,6 +15,7 @@ libs/
 
 # docs
 docs/build/
+_build/
 
 # result directory
 result*
