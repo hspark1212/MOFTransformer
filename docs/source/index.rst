@@ -1,27 +1,38 @@
 MOFTransformer
 ===============
 
-MOFTransformer is a multi-modal pretrained Transformer encoder which is designed to effectively capture both
-local features and global features for Metal-Organic Frameworks (MOFs).
-* local features: chemistry of the building blocks (e.g., metal nodes, organic linkers, functional groups, etc)
-* global features: geometric and topological descriptors (e.g., topology, pore volume, surface area, etc.)
-
-We provided the pretrained model pretrained with 1M hypothetical Metal-Organic Frameworks (MOFs).
-The pretraining tasks are as belows:
-
-1. **MTP** (MOF Topology Prediction)
-2. **MOC** (Metal node/Organic linker Classification)
-3. **VFP** (accessible Void Fraction Prediction)
+MOFTransformer is a python library for transfer learning of metal-organic frameworks (MOFs).
+it provides tools for fine-tuning, pre-training, feature importance analysis with MOFTransformer.
 
 .. image:: assets/fig1.jpg
    :width: 800
 
-Architecture
-------------
-MOFTransformer takes atom-wise graph embeddings and energy-grid embeddings that include information regarding
-local features and global features, respectively.
 
-.. image:: assets/fig2.jpg
+
+Features
+--------
+- we provide `a ckpt file <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ of MOFTransformer pre-trained with 1 million hypothetical MOFs.
+- By fine-tuning the pretraining model, it ensures high-performance of transfer learning across various properties.
+- we provide `the pre-calculated atom-based embeddings and energy-grid embedding <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ for CoRE MOF, QMOF database.
+- You can easily visualize feature importance analysis from attention scores of the fine-tuning models.
+
+
+**atom-base graph embedding**
+
+.. image:: getting_started/assets/1.gif
+   :width: 800
+
+**energy-grid embedding**
+
+.. image:: getting_started/assets/6.gif
+   :width: 800
+
+**patches of energy-grid embedding**
+
+.. image:: getting_started/assets/7.gif
+   :width: 800
+
+.. image:: getting_started/assets/8.gif
    :width: 800
 
 Contents
@@ -30,6 +41,7 @@ Contents
    :titlesonly:
    :maxdepth: 2
 
+   introduction
    installation
    dataset
    getting_started
