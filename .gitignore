@@ -35,3 +35,6 @@ case_study/
 baseline_model/*/*.csv
 baseline_model/*/*.txt
 baseline_model/*/output
+
+# example
+examples/logs/

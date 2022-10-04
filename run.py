@@ -63,7 +63,6 @@ def main(_config):
         num_nodes=_config["num_nodes"],
         precision=_config["precision"],
         strategy=DDPPlugin(find_unused_parameters=True),
-        # deterministic=True,
         benchmark=True,
         max_epochs=_config["max_epochs"],
         max_steps=max_steps,
