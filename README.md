@@ -2,7 +2,7 @@
 
  Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
 <p align="center">
-  <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig1.jpg" width=800>
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=800>
 </p>
 
 ## Architectures
@@ -12,7 +12,7 @@
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
 <p align="center">
-  <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig2.jpg" width=800>
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig2.jpg" width=800>
 </p>
 
 ## Install
@@ -32,13 +32,13 @@ cifname = 'MIBQAR01_FSR'
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_graph()
 ```
-<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/1.gif" width="300">
+<img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/getting_started/assets/1.gif" width="300">
 
 ```python
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/3.gif" width="300">
+<img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/getting_started/assets/3.gif" width="300">
 
 ## Universal Transfer Learning
 | Property                                 | MOFTransformer | Original Paper | Number of Data | Remarks          | Reference |
