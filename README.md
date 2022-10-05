@@ -35,7 +35,7 @@ vis.draw_graph()
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-![vis2](docs/source/getting_started/assets/2.gif){width=250}
+![vis2](docs/source/getting_started/assets/3.gif =100x)
 
 ## Universal Transfer Learning
 
