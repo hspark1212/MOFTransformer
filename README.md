@@ -35,7 +35,7 @@ vis.draw_graph()
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-![vis2](docs/source/getting_started/assets/3.gif=100x)
+![vis2](https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/1.gif)
 
 ## Universal Transfer Learning
 
