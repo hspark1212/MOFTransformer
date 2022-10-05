@@ -29,13 +29,13 @@ cifname = 'MIBQAR01_FSR'
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_graph()
 ```
-![vis1](docs/source/getting_started/assets/1.gif=250x)
+![vis1](docs/source/getting_started/assets/1.gif)
 
 ```
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-![vis2](docs/source/getting_started/assets/2.gif=250x)
+![vis2](docs/source/getting_started/assets/2.gif)
 
 ## Universal Transfer Learning
 
