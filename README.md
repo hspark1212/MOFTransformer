@@ -1,8 +1,9 @@
 # MOFTransformer
 
  Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
- 
-![fig1](https://user-images.githubusercontent.com/64190846/167797065-1a104b35-a949-4775-93d4-c7310d90afbb.jpg)
+<p align="center">
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig1.jpg" width=800>
+</p>
 
 ## Architectures
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
@@ -10,7 +11,9 @@
 - `MOFformer` takes two different representations as input
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
-![fig2](https://user-images.githubusercontent.com/64190846/167792454-32ea32ad-29ba-4230-a15d-7e51c3ce8412.jpg)
+<p align="center">
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig2.jpg" width=800>
+</p>
 
 ## Install
 
@@ -18,7 +21,7 @@
 
 ## Feature Importance Anaylsis
 you can easily visualize feature importance analysis of atom-based graph embeddings and energy-grid embeddings.
-```
+```python
 %matplotlib widget
 from visualize import PatchVisualizer
 
@@ -29,16 +32,15 @@ cifname = 'MIBQAR01_FSR'
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_graph()
 ```
-![vis1](docs/source/getting_started/assets/1.gif)
+<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/1.gif" width="300">
 
-```
+```python
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-![vis2](docs/source/getting_started/assets/2.gif)
+<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/3.gif" width="300">
 
 ## Universal Transfer Learning
-
 | Property                                 | MOFTransformer | Original Paper | Number of Data | Remarks          | Reference |
 |------------------------------------------|----------------|----------------|----------------|------------------|-----------|
 |N<sub>2</sub> uptake                     | R2: 0.78       | R2: 0.71       | 5,286          | CoRE MOF         | 1         |
