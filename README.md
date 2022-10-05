@@ -29,13 +29,13 @@ cifname = 'MIBQAR01_FSR'
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_graph()
 ```
-![vis1](docs/source/getting_started/assets/1.gif)
+![vis1](docs/source/getting_started/assets/1.gif=250x)
 
 ```
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-![vis2](docs/source/getting_started/assets/2.gif)
+![vis2](docs/source/getting_started/assets/2.gif=250x)
 
 ## Universal Transfer Learning
 
@@ -49,8 +49,6 @@ vis.draw_grid()
 |Solvent removal stability classification | ACC : 0.76     | ACC : 0.76     | 2,148          | Text-mining data | 3         |
 |Thermal stability regression             | R2 : 0.44      | R2 : 0.46      | 3,098          | Text-mining data | 3         |
 ### reference
-![image](https://user-images.githubusercontent.com/64190846/171344412-c43cbf12-adc3-41ab-86ef-f4d65ea35765.png)
-
 1. [Prediction of O2/N2 Selectivity in Metal−Organic Frameworks via High-Throughput Computational Screening and Machine Learning](https://pubs.acs.org/doi/abs/10.1021/acsami.1c18521)
 2. [Using Machine Learning and Data Mining to Leverage Community Knowledge for the Engineering of Stable Metal–Organic Frameworks](https://pubs.acs.org/doi/10.1021/jacs.1c07217)
 3. [Understanding the diversity of the metal-organic framework ecosystem](https://www.nature.com/articles/s41467-020-17755-8)
