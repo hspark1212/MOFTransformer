@@ -1,15 +1,18 @@
 # MOFTransformer
 
  Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
-<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig1.jpg" width=800>
-
+<p align="center">
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig1.jpg" width=800>
+</p>
 ## Architectures
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
 - `MOFformer` takes two different representations as input
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
-<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig2.jpg" width=800>
+<p align="center">
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig2.jpg" width=800>
+</p>
 
 ## Install
 
