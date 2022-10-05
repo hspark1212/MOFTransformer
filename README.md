@@ -1,8 +1,7 @@
 # MOFTransformer
 
  Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
- 
-![fig1](https://user-images.githubusercontent.com/64190846/167797065-1a104b35-a949-4775-93d4-c7310d90afbb.jpg)
+<img src="https://user-images.githubusercontent.com/64190846/167797065-1a104b35-a949-4775-93d4-c7310d90afbb.jpg" width=500>
 
 ## Architectures
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
@@ -10,7 +9,7 @@
 - `MOFformer` takes two different representations as input
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
-![fig2](https://user-images.githubusercontent.com/64190846/167792454-32ea32ad-29ba-4230-a15d-7e51c3ce8412.jpg)
+<img src="[https://user-images.githubusercontent.com/64190846/167797065-1a104b35-a949-4775-93d4-c7310d90afbb.jpg](https://user-images.githubusercontent.com/64190846/167792454-32ea32ad-29ba-4230-a15d-7e51c3ce8412.jpg)" width=500>
 
 ## Install
 
@@ -29,14 +28,13 @@ cifname = 'MIBQAR01_FSR'
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_graph()
 ```
-![vis1](docs/source/getting_started/assets/1.gif)
+<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/1.gif" width="300">
 
 ```
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-![vis2](https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/1.gif =100x)
-<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/1.gif" width="100">
+<img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/2.gif" width="300">
 ## Universal Transfer Learning
 
 | Property                                 | MOFTransformer | Original Paper | Number of Data | Remarks          | Reference |
