@@ -4,6 +4,7 @@
 <p align="center">
   <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/assets/fig1.jpg" width=800>
 </p>
+
 ## Architectures
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
@@ -38,8 +39,8 @@ vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
 <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/3.gif" width="300">
-## Universal Transfer Learning
 
+## Universal Transfer Learning
 | Property                                 | MOFTransformer | Original Paper | Number of Data | Remarks          | Reference |
 |------------------------------------------|----------------|----------------|----------------|------------------|-----------|
 |N<sub>2</sub> uptake                     | R2: 0.78       | R2: 0.71       | 5,286          | CoRE MOF         | 1         |
