@@ -21,7 +21,7 @@
 
 ## Feature Importance Anaylsis
 you can easily visualize feature importance analysis of atom-based graph embeddings and energy-grid embeddings.
-```
+```python
 %matplotlib widget
 from visualize import PatchVisualizer
 
@@ -34,7 +34,7 @@ vis.draw_graph()
 ```
 <img src="https://github.com/hspark1212/MOFTransformer/blob/modify_readme/docs/source/getting_started/assets/1.gif" width="300">
 
-```
+```python
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
