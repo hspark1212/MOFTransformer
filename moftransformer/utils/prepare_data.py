@@ -18,8 +18,8 @@ from pymatgen.io.cssr import Cssr
 from ase.neighborlist import natural_cutoffs
 from ase import neighborlist
 
-GRIDAY_PATH = os.path.realpath(os.path.join(__file__, '../../../libs/GRIDAY/scripts/grid_gen'))
-FF_PATH = os.path.realpath(os.path.join(__file__, '../../../libs/GRIDAY/FF'))
+GRIDAY_PATH = os.path.realpath(os.path.join(__file__, '../../libs/GRIDAY/scripts/grid_gen'))
+FF_PATH = os.path.realpath(os.path.join(__file__, '../../libs/GRIDAY/FF'))
 
 
 def get_logger(filename):
@@ -197,6 +197,15 @@ def prepare_data(root_cifs,
         max_num_nbr (int) : maximum number of neighbors when calculating graph
         calculate_energy_grid (bool) : calculate energy grid using GRIDDAY or not
     """
+
+    if not os.path.exists(GRIDAY_PATH):
+        raise ImportError('GRIDAY must be installed. \n'
+                          'Run the following code in bash, \n\n'
+                          '$ moftransformer install-griday\n\n'
+                          'or run the following code on Python\n\n'
+                          '>>> from moftransformer.utils import install_griday\n'
+                          '>>> install_griday()')
+
     # set logger
     logger = get_logger(filename="prepare_data.log")
     eg_logger = get_logger(filename="prepare_energy_grid.log")

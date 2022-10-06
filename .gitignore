@@ -38,3 +38,9 @@ baseline_model/*/output
 
 # example
 examples/logs/
+
+# setuptools
+build/
+dist/
+*.egg-info
+*.eggs

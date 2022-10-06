@@ -1,0 +1,1 @@
+from moftransformer.assets import colors

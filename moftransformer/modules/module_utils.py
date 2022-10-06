@@ -8,7 +8,7 @@ from transformers import (
     get_constant_schedule_with_warmup,
 )
 
-from model.gadgets.my_metrics import Accuracy, Scalar
+from moftransformer.gadgets.my_metrics import Accuracy, Scalar
 
 
 def set_metrics(pl_module):
@@ -146,18 +146,20 @@ def set_schedule(pl_module):
     if pl_module.trainer.max_steps == -1:
         if pl_module.trainer.num_gpus == 0:
             max_steps = (
-                    len(pl_module.trainer.datamodule.train_dataloader())
+                    len(pl_module.trainer.datamodule.train_dataset)
                     * pl_module.trainer.max_epochs
                     // pl_module.trainer.accumulate_grad_batches
                     // pl_module.trainer.num_nodes
             )
         else:
             max_steps = (
-                    len(pl_module.trainer.datamodule.train_dataloader())
+                    len(pl_module.trainer.datamodule.train_dataset)
                     * pl_module.trainer.max_epochs
                     // pl_module.trainer.accumulate_grad_batches
                     // (pl_module.trainer.num_gpus * pl_module.trainer.num_nodes)
             )
+        if not max_steps:
+            max_steps = 1
     else:
         max_steps = pl_module.trainer.max_steps
 

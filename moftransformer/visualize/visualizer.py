@@ -8,11 +8,11 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib import animation
 
-from visualize.utils import get_structure, get_heatmap, scaler, get_model_and_datamodule, get_batch_from_index, \
-    get_batch_from_cif_id
-from visualize.setting import get_fig_ax, set_fig_ax, set_axes_equal, DEFAULT_FIGSIZE, \
+from moftransformer.visualize.utils import get_structure, get_heatmap, scaler, get_model_and_datamodule, \
+    get_batch_from_index, get_batch_from_cif_id
+from moftransformer.visualize.setting import get_fig_ax, set_fig_ax, set_axes_equal, DEFAULT_FIGSIZE, \
     DEFAULT_VIEW_INIT, get_default_cbar_kwargs, get_cmap
-from visualize.drawer import draw_cell, draw_atoms, draw_heatmap_grid, draw_colorbar, draw_heatmap_graph
+from moftransformer.visualize.drawer import draw_cell, draw_atoms, draw_heatmap_grid, draw_colorbar, draw_heatmap_graph
 
 
 class PatchVisualizer(object):

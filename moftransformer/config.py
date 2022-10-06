@@ -32,7 +32,7 @@ def config():
     # model
     exp_name = "pretrained_mof"
     seed = 0
-    loss_names = _loss_names({})
+    loss_names = _loss_names({"regression":1})
 
     # graph seeting
     # max_atom_len = 1000  # number of maximum atoms in primitive cell
