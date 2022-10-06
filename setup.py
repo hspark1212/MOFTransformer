@@ -42,6 +42,6 @@ setup(
 try:
     import numpy
 except ImportWarning:
-    passp
+    pass
 except ImportError:
     os.system('pip install numpy')
