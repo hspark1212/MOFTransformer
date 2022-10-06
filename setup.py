@@ -1,7 +1,8 @@
+import os
 from setuptools import setup, find_packages
+import re
 
 setup_requires = ['numpy~=1.22.3']
-#setup_requires = []
 
 with open("requirements.txt", "r") as f:
     install_requires = f.readlines()
@@ -12,6 +13,11 @@ with open("README.md", "r") as f:
 extras_require = {
     'docs': ['sphinx', 'livereload', 'myst-parser']
 }
+
+with open('moftransformer/__init__.py') as f:
+    version = re.search(r"__version__ = '(?P<version>.+)'", f.read()).group('version')
+    print (version)
+
 
 setup(
     name='moftransformer',
@@ -28,5 +34,14 @@ setup(
     extras_require=extras_require,
     scripts=[],
     download_url='https://github.com/hspark1212/MOFTransformer',
+    entry_points={'console_scripts':['moftransformer=moftransformer.cli.main:main']},
     python_requires='>=3.8',
 )
+
+
+try:
+    import numpy
+except ImportWarning:
+    passp
+except ImportError:
+    os.system('pip install numpy')
