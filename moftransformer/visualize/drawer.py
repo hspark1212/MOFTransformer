@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
 import matplotlib.ticker as mticker
 from ase.data import covalent_radii
-from model.assets.colors import cpk_colors
-from visualize.utils import plot_cube
+from moftransformer.assets.colors import cpk_colors
+from moftransformer.visualize.utils import plot_cube
 
 
 def draw_colorbar(fig, ax, cmap, minatt, maxatt, **cbar_kwargs):

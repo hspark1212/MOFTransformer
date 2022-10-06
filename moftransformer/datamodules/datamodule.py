@@ -4,7 +4,7 @@ from typing import Optional
 from torch.utils.data import DataLoader
 
 from pytorch_lightning import LightningDataModule
-from model.datamodules.dataset import Dataset
+from moftransformer.datamodules.dataset import Dataset
 
 
 class Datamodule(LightningDataModule):

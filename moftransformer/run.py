@@ -2,10 +2,11 @@ import copy
 import os
 import pytorch_lightning as pl
 
-from model.config import ex
+from moftransformer.config import ex
 
-from model.datamodules.datamodule import Datamodule
-from model.modules.module import Module
+from moftransformer.datamodules.datamodule import Datamodule
+from moftransformer.modules.module import Module
+from moftransformer.utils.validation import get_valid_config
 
 from pytorch_lightning.plugins import DDPPlugin
 
@@ -21,6 +22,7 @@ def main(_config):
     _config = copy.deepcopy(_config)
     pl.seed_everything(_config["seed"])
 
+    _config = get_valid_config(_config)
     dm = Datamodule(_config)
     model = Module(_config)
     exp_name = f"{_config['exp_name']}"

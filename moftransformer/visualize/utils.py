@@ -11,9 +11,9 @@ from pymatgen.io.cif import CifParser
 from pymatgen.io.ase import AseAtomsAdaptor
 import torch
 import pytorch_lightning as pl
-from model.modules.module import Module
-from model.datamodules.datamodule import Datamodule
-from model.config import config
+from moftransformer.modules.module import Module
+from moftransformer.datamodules.datamodule import Datamodule
+from moftransformer.config import config
 
 
 @lru_cache

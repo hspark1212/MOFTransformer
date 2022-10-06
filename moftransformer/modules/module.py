@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule
 
-from model.modules import objectives, heads, module_utils
-from model.modules.cgcnn import GraphEmbeddings
-from model.modules.vision_transformer_3d import VisionTransformer3D
+from moftransformer.modules import objectives, heads, module_utils
+from moftransformer.modules.cgcnn import GraphEmbeddings
+from moftransformer.modules.vision_transformer_3d import VisionTransformer3D
 
-from model.modules.module_utils import Normalizer
+from moftransformer.modules.module_utils import Normalizer
 
 from torchmetrics.functional import r2_score
 
@@ -251,14 +251,12 @@ class Module(LightningModule):
         # classification
         if "classification" in self.current_tasks:
             ret.update(objectives.compute_classification(self, batch))
-
         return ret
 
     def training_step(self, batch, batch_idx):
         module_utils.set_task(self)
         output = self(batch)
         total_loss = sum([v for k, v in output.items() if "loss" in k])
-
         return total_loss
 
     def training_epoch_end(self, outputs):
