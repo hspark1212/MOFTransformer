@@ -33,6 +33,7 @@ setup(
     setup_requires=setup_requires,
     extras_require=extras_require,
     scripts=[],
+    url='https://hspark1212.github.io/MOFTransformer/',
     download_url='https://github.com/hspark1212/MOFTransformer',
     entry_points={'console_scripts':['moftransformer=moftransformer.cli.main:main']},
     python_requires='>=3.8',
@@ -41,7 +42,7 @@ setup(
 
 try:
     import numpy
-except ImportWarning:
+except (UserWarning, ImportWarning):
     pass
 except ImportError:
     os.system('pip install numpy')
