@@ -3,7 +3,9 @@ import os
 
 class CLICommand:
     """
-    run Pathlib
+    run moftransformer code
+
+    ex) moftransformer run downstream='example' num_gpus=1 max_epochs=10
 
     """
 
@@ -13,8 +15,8 @@ class CLICommand:
 
     @staticmethod
     def run(args):
-        from moftransformer import __file__ as dir
-        run_path = Path(dir).parent/'run.py'
+        from moftransformer import __root_dir__
+        run_path = Path(__root_dir__)/'run.py'
         config = args.args
         print (config)
         os.system(f"python {run_path} with {' '.join(config)}")

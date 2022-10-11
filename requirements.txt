@@ -1,4 +1,5 @@
-numpy
+tarfile
+wget
 pytorch-lightning>=1.6.0
 torch>=1.10.0
 torchmetrics>=0.6.0

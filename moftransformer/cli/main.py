@@ -1,5 +1,7 @@
 import argparse
+import textwrap
 from importlib import import_module
+from argparse import RawTextHelpFormatter
 from moftransformer import __version__
 
 commands = [
@@ -7,6 +9,7 @@ commands = [
     ('install-griday' , 'moftransformer.cli.install_griday'),
     ('uninstall-griday', 'moftransformer.cli.uninstall_griday'),
     ('run', 'moftransformer.cli.run'),
+    ('download', 'moftransformer.cli.download'),
 ]
 
 
@@ -47,7 +50,7 @@ def main(prog='moftransformer', version=__version__, commands=commands, args=Non
                 #long = short + '\n' + textwrap.dedent(body)
         subparser = subparsers.add_parser(
             command,
-            #formatter_class=Formatter,
+            formatter_class=RawTextHelpFormatter,
             help=short,
             description=long)
         cmd.add_arguments(subparser)
@@ -55,6 +58,7 @@ def main(prog='moftransformer', version=__version__, commands=commands, args=Non
         parsers[command] = subparser
 
     #if hook:
+    #    args = hook(parser, args)
     #    args = hook(parser, args)
     #else:
     args = parser.parse_args(args)
