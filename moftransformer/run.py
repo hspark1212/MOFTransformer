@@ -97,11 +97,6 @@ def run(**kwargs):
 
 @ex.automain
 def main(_config):
-    try:
-        torch.multiprocessing.set_start_method('spawn')
-    except RuntimeError as e:
-        print (e)
-
     _config = copy.deepcopy(_config)
     pl.seed_everything(_config["seed"])
 

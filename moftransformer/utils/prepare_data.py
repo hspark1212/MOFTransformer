@@ -18,8 +18,11 @@ from pymatgen.io.cssr import Cssr
 from ase.neighborlist import natural_cutoffs
 from ase import neighborlist
 
-GRIDAY_PATH = os.path.realpath(os.path.join(__file__, '../../libs/GRIDAY/scripts/grid_gen'))
-FF_PATH = os.path.realpath(os.path.join(__file__, '../../libs/GRIDAY/FF'))
+from moftransformer import __root_dir__
+
+
+GRIDAY_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/scripts/grid_gen')
+FF_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/FF')
 
 
 def get_logger(filename):

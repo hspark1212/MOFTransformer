@@ -1,4 +1,7 @@
+import os
 from sacred import Experiment
+from moftransformer import __root_dir__
+from moftransformer.utils.download import DEFAULT_PRETRAIN_MODEL_PATH
 
 ex = Experiment("pretrained_mof", save_git_info=False)
 
@@ -77,13 +80,18 @@ def config():
     test_only = False
 
     # below params varies with the environment
-    data_root = "examples/dataset"
-    log_dir = "examples/logs"
+    data_root = os.path.join(__root_dir__, "examples/dataset")
+    log_dir = "examples/logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
     num_gpus = 1
     num_nodes = 1
-    load_path = ""
+
+    if os.path.exists(DEFAULT_PRETRAIN_MODEL_PATH):
+        load_path = DEFAULT_PRETRAIN_MODEL_PATH
+    else:
+        load_path = ""
+
     num_workers = 16  # the number of cpu's core
     precision = 16
 
