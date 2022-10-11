@@ -27,6 +27,7 @@ best_ckpt/
 demo.py
 model/config_YH.py
 model/config_HS.py
+moftransformer/database/
 dft/
 figure/
 case_study/
