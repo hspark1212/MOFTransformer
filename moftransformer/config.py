@@ -1,6 +1,6 @@
 from sacred import Experiment
 
-ex = Experiment("pretrained_mof")
+ex = Experiment("pretrained_mof", save_git_info=False)
 
 
 def _loss_names(d):
