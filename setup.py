@@ -1,6 +1,7 @@
 import os
-from setuptools import setup, find_packages
 import re
+from setuptools import setup, find_packages
+
 
 setup_requires = ['numpy~=1.22.3']
 
@@ -16,19 +17,20 @@ extras_require = {
 
 with open('moftransformer/__init__.py') as f:
     version = re.search(r"__version__ = '(?P<version>.+)'", f.read()).group('version')
-    print (version)
 
 
 setup(
     name='moftransformer',
-    version='1.0.0',
+    version=version,
     description='moftransformer',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Yeonghun Kang, Hyunsoo Park',
     author_email='dudgns1675@kaist.ac.kr, phs68660888@gmail.com',
     packages=find_packages(),
     package_data={'moftransformer': ['libs/GRIDAY/*', 'libs/GRIDAY/scripts/*', 'libs/GRIDAY/FF/*',
-                                     'assets/*.json']},
+                                     'assets/*.json', 'examples/dataset/*', 'examples/dataset/**/*',
+                                     'examples/raw/*', 'examples/visualize/dataset/*', 'examples/visualize/dataset/test/*']},
     install_requires=install_requires,
     setup_requires=setup_requires,
     extras_require=extras_require,

@@ -45,15 +45,16 @@ def download_pretrain_model(direc=None, ):
         direc = DEFAULT_PRETRAIN_MODEL_PATH
     else:
         direc = Path(direc)
-        if direc.is_dir():
-            if not direc.exists():
-                direc.mkdir(parents=True, exist_ok=True)
-            direc = direc / 'pretrained_model.ckpt'
-        elif direc.suffix == '.ckpt':
-            if not direc.parent.exists():
-                direc.parent.mkdir(parents=True, exist_ok=True)
-        else:
-            raise ValueError(f'direc must be path for directory or ~.ckpt, not {direc}')
+
+    if not direc.suffix:
+        if not direc.exists():
+            direc.mkdir(parents=True, exist_ok=True)
+        direc = direc / 'pretrained_model.ckpt'
+    elif direc.suffix == '.ckpt':
+        if not direc.parent.exists():
+            direc.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        raise ValueError(f'direc must be path for directory or ~.ckpt, not {direc}')
 
     link = 'https://figshare.com/ndownloader/files/37511767'
     name = 'pretrain_model'
@@ -67,7 +68,7 @@ def download_finetuned_model(direc=None, ):
             direc.mkdir(parents=True, exist_ok=True)
     else:
         direc = Path(direc)
-        if direc.is_dir():
+        if not direc.suffix:
             if not direc.exists():
                 direc.mkdir(parents=True, exist_ok=True)
         else:
@@ -85,17 +86,17 @@ def download_finetuned_model(direc=None, ):
 def download_coremof(direc=None, remove_tarfile=False):
     if not direc:
         direc = Path(DEFAULT_COREMOF_PATH)
-        if not direc.exists():
-            direc.mkdir(parents=True, exist_ok=True)
-        direc = direc/'coremof.tar.gz'
     else:
         direc = Path(direc)
-        if direc.is_dir():
-            if not direc.exists():
-                direc.mkdir(parents=True, exist_ok=True)
-            direc = direc / 'coremof.tar.gz'
-        else:
-            raise ValueError(f'direc must be path for directory, not {direc}')
+
+    if direc.suffix:
+       raise ValueError(f'direc must be directory, not {direc}')
+    elif (direc/'raw/GIRGUL_clean.grid').exists():
+        print ('CoREMOF database is already existed')
+        return
+    elif not direc.exists():
+        direc.mkdir(parents=True, exist_ok=True)
+    direc = direc/'coremof.tar.gz'
 
     link = 'https://figshare.com/ndownloader/files/37511746'
     name = 'coremof_database'
@@ -114,17 +115,18 @@ def download_coremof(direc=None, remove_tarfile=False):
 def download_qmof(direc=None, remove_tarfile=False):
     if not direc:
         direc = Path(DEFAULT_QMOF_PATH)
-        if not direc.exists():
-            direc.mkdir(parents=True, exist_ok=True)
-        direc = direc/'qmof.tar.gz'
     else:
         direc = Path(direc)
-        if direc.is_dir():
-            if not direc.exists():
-                direc.mkdir(parents=True, exist_ok=True)
-            direc = direc / 'qmof.tar.gz'
-        else:
-            raise ValueError(f'direc must be path for directory, not {direc}')
+
+    if direc.suffix:
+       raise ValueError(f'direc must be directory, not {direc}')
+    elif (direc/'raw/JORCOK_FSR.grid').exists():
+        print ('QMOF database is already existed')
+        return
+    elif not direc.exists():
+        direc.mkdir(parents=True, exist_ok=True)
+    direc = direc/'qmof.tar.gz'
+
 
     link = 'https://figshare.com/ndownloader/files/37511758'
     name = 'qmof_database'
@@ -144,17 +146,17 @@ def download_qmof(direc=None, remove_tarfile=False):
 def download_hmof(direc=None, remove_tarfile=False):
     if not direc:
         direc = Path(DEFAULT_HMOF_PATH)
-        if not direc.exists():
-            direc.mkdir(parents=True, exist_ok=True)
-        direc = direc / 'hmof.tar.gz'
     else:
         direc = Path(direc)
-        if direc.is_dir():
-            if not direc.exists():
-                direc.mkdir(parents=True, exist_ok=True)
-            direc = direc / 'hmof.tar.gz'
-        else:
-            raise ValueError(f'direc must be path for directory, not {direc}')
+
+    if direc.suffix:
+       raise ValueError(f'direc must be directory, not {direc}')
+    elif (direc/'downstream_release/train_raspa_100bar.json').exists():
+        print ('hMOF database is already existed')
+        return
+    elif not direc.exists():
+        direc.mkdir(parents=True, exist_ok=True)
+    direc = direc/'hmof.tar.gz'
 
     link = 'https://figshare.com/ndownloader/files/37511755'
     name = 'hmof_database'
