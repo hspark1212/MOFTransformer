@@ -45,15 +45,16 @@ def download_pretrain_model(direc=None, ):
         direc = DEFAULT_PRETRAIN_MODEL_PATH
     else:
         direc = Path(direc)
-        if not direc.suffix:
-            if not direc.exists():
-                direc.mkdir(parents=True, exist_ok=True)
-            direc = direc / 'pretrained_model.ckpt'
-        elif direc.suffix == '.ckpt':
-            if not direc.parent.exists():
-                direc.parent.mkdir(parents=True, exist_ok=True)
-        else:
-            raise ValueError(f'direc must be path for directory or ~.ckpt, not {direc}')
+
+    if not direc.suffix:
+        if not direc.exists():
+            direc.mkdir(parents=True, exist_ok=True)
+        direc = direc / 'pretrained_model.ckpt'
+    elif direc.suffix == '.ckpt':
+        if not direc.parent.exists():
+            direc.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        raise ValueError(f'direc must be path for directory or ~.ckpt, not {direc}')
 
     link = 'https://figshare.com/ndownloader/files/37511767'
     name = 'pretrain_model'

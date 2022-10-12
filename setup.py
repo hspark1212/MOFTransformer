@@ -25,6 +25,7 @@ setup(
     version='1.0.0',
     description='moftransformer',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Yeonghun Kang, Hyunsoo Park',
     author_email='dudgns1675@kaist.ac.kr, phs68660888@gmail.com',
     packages=find_packages(),
