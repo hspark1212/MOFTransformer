@@ -1,6 +1,3 @@
-# MOFTransformer
-
- Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
 <p align="center">
   <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=700>
 </p>
@@ -22,11 +19,10 @@
  </a>
 </p>
 
-<p align="center">
- <img src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?logo=LOGO">(https://hspark1212.github.io/MOFTransformer/)
- <img src="https://img.shields.io/badge/PyPI-1.0.1-blue.svg?logo=LOGO">(https://pypi.org/project/moftransformer/)
- <img src="https://img.shields.io/badge/Paper-Arxiv-blue.svg?logo=LOGO">()
-</p>
+# MOFTransformer
+
+ Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
+
 ## Architectures
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
