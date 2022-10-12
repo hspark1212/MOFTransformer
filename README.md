@@ -5,8 +5,11 @@
   <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=800>
 </p>
 
+<p align="center">
 [<img src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?logo=LOGO">](https://hspark1212.github.io/MOFTransformer/)
-https://shields.io/badge/style-plastic-green?logo=appveyor&style=plastic
+[<img src="https://img.shields.io/badge/PyPI-1.0.1-blue.svg?logo=LOGO">](https://pypi.org/project/moftransformer/)
+[<img src="https://img.shields.io/badge/Paper-Arxiv-blue.svg?logo=LOGO">]()
+</p>
 ## Architectures
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
