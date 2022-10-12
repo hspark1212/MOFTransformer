@@ -6,6 +6,7 @@
 </p>
 
 [<img src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?logo=LOGO">](https://hspark1212.github.io/MOFTransformer/)
+https://shields.io/badge/style-plastic-green?logo=appveyor&style=plastic
 ## Architectures
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
