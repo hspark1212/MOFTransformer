@@ -1,23 +1,41 @@
-# MOFTransformer
-
- Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
 <p align="center">
   <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=800>
 </p>
+<p align="center">
+ <a href="https://hspark1212.github.io/MOFTransformer/">
+     <img alt="Docs" src="https://img.shields.io/badge/Docs-v1.0.1-brightgreen.svg?style=plastic">
+ </a>
+  <a href="https://pypi.org/project/moftransformer/">
+     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v1.0.1-blue.svg?style=plastic&logo=PyPI">
+ </a>
+  <a href="https://doi.org/10.6084/m9.figshare.21155506.v2">
+     <img alt="Figshare" src="https://img.shields.io/badge/Figshare-v2-blue.svg?style=plastic&logo=figshare">
+ </a>
+ <a href="">
+     <img alt="DOI" src="https://img.shields.io/badge/DOI-doi-organge.svg?style=plastic">
+ </a>
+ <a href="https://pypi.org/project/moftransformer/">
+     <img alt="Lincense" src="https://img.shields.io/badge/License-MIT-lightgrey.svg?style=plastic">
+ </a>
+</p>
 
-## Architectures
+# MOFTransformer
+
+ Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
+
+## Install
+
+## Getting Started
+
+## Architecture
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
 - `MOFformer` takes two different representations as input
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
 <p align="center">
-  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig2.jpg" width=800>
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig2.jpg" width=700>
 </p>
-
-## Install
-
-## Getting Started
 
 ## Feature Importance Anaylsis
 you can easily visualize feature importance analysis of atom-based graph embeddings and energy-grid embeddings.

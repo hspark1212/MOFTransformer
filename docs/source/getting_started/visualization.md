@@ -44,7 +44,7 @@ Here is an example of visualization with attention scores of atom-based graph em
 %matplotlib widget
 vis.draw_graph()
 ```
-![1](./assets/1.gif)
+![1](./assets/1.png)
 
 You can change some parameters of visualization that belong to parameters of `matplotlib`:
 ```python
@@ -61,7 +61,7 @@ vis.draw_graph(minatt=minatt, maxatt=maxatt, view_init=view_init, alpha=alpha, c
                atomic_scale_factor=atomic_scale_factor,
                att_scale_factor=att_scale_factor)
 ```
-![2](./assets/2.gif)
+![2](./assets/2.png)
 
 ### Visualize Energy-grid Embeddings
 Here is an example of visualization with attention scores of Energy-grid embeddings:
@@ -69,7 +69,7 @@ Here is an example of visualization with attention scores of Energy-grid embeddi
 %matplotlib widget
 vis.draw_grid()
 ```
-![3](./assets/3.gif)
+![3](./assets/3.png)
 
 Likewise, you can change parameters of visualization.
 If you want to visualize only patches that have higher attention scores than the minimum attention score `min_att`.
@@ -88,7 +88,7 @@ vis.draw_grid(minatt=minatt, maxatt=maxatt, view_init=view_init, alpha=alpha, cm
               atomic_scale_factor=atomic_scale_factor, 
               remove_under_minatt=True)
 ```
-![4](./assets/4.gif)
+![4](./assets/4.png)
 
 Also, you can visualize patches with patch positions out of 6 X 6 X 6 patches. 
 ```python
@@ -104,7 +104,7 @@ vis.draw_grid(view_init=view_init, alpha=alpha,
               patch_list=patch_list,
               atomic_scale_factor=atomic_scale_factor)
 ```
-![5](./assets/5.gif)
+![5](./assets/5.png)
 
 If you want to visualize patches according to a rank of attention scores of patches, you can use a `rank` parameter.
 ```python
@@ -118,7 +118,7 @@ vis.draw_grid_with_attention_rank(rank, view_init=view_init,
                                   grid_scale_factor=grid_scale_factor,
                                   atomic_scale_factor=atomic_scale_factor)
 ```
-![6](./assets/6.gif)
+![6](./assets/6.png)
 
 You can visualize a patch at a specific position of patches
 ```python
@@ -128,7 +128,7 @@ view_init = (0, -55)
 
 vis.draw_specific_patch(patch_position, alpha=0.5, view_init=view_init)
 ```
-![7](./assets/7.gif)
+![7](./assets/7.png)
 
 Also, you can visualize a patch with a rank of attention scores of patches.
 ```python
@@ -138,4 +138,4 @@ vis.draw_specific_patch_with_attention_rank(1, alpha=0.5, ep=0.8,
                                             view_init = view_init,
                                            grid_scale_factor=2)
 ```
-![8](./assets/8.gif)
+![8](./assets/8.png)
