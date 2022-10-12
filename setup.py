@@ -17,12 +17,11 @@ extras_require = {
 
 with open('moftransformer/__init__.py') as f:
     version = re.search(r"__version__ = '(?P<version>.+)'", f.read()).group('version')
-    print (version)
 
 
 setup(
     name='moftransformer',
-    version='1.0.0',
+    version=version,
     description='moftransformer',
     long_description=long_description,
     long_description_content_type='text/markdown',
