@@ -6,8 +6,18 @@
 </p>
 <p align="center">
     <a href="https://hspark1212.github.io/MOFTransformer/">
-        <img alt="hi" src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?logo=LOGO">
+        <img alt="Docs" src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?logo=LOGO">
     </a>
+     <a href="https://pypi.org/project/moftransformer/">
+        <img alt="PypI" src="https://img.shields.io/badge/PyPI-1.0.1-blue.svg?logo=LOGO">
+    </a>
+    <a href="https://pypi.org/project/moftransformer/">
+        <img alt="Lincense" src="https://img.shields.io/badge/License-MIT-lightgrey.svg?logo=LOGO">
+    </a>
+    <a href="">
+        <img alt="DOI" src="https://img.shields.io/badge/DOI-doi-organge.svg?logo=LOGO">
+    </a>
+ 
     <a href="https://github.com/huggingface/transformers/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/huggingface/transformers.svg?color=blue">
     </a>
