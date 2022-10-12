@@ -6,7 +6,7 @@
 </p>
 <p align="center">
  <a href="https://hspark1212.github.io/MOFTransformer/">
-     <img alt="Docs" src="https://img.shields.io/badge/Docs-v1.0.1-brightgreen.svg?style=plastic&logoWidth=50">
+     <img alt="Docs" src="https://img.shields.io/badge/Docs-v1.0.1-brightgreen.svg?style=plastic">
  </a>
   <a href="https://pypi.org/project/moftransformer/">
      <img alt="PypI" src="https://img.shields.io/badge/PyPI-v1.0.1-blue.svg?style=plastic&logo=PyPI">
