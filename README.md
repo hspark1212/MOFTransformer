@@ -6,16 +6,19 @@
 </p>
 <p align="center">
  <a href="https://hspark1212.github.io/MOFTransformer/">
-     <img alt="Docs" src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?style=plastic&logo=figshare">
+     <img alt="Docs" src="https://img.shields.io/badge/Docs-v1.0.1-brightgreen.svg?style=plastic&logoWidth=50">
  </a>
   <a href="https://pypi.org/project/moftransformer/">
-     <img alt="PypI" src="https://img.shields.io/badge/PyPI-1.0.1-blue.svg?logo=LOGO">
+     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v1.0.1-blue.svg?style=plastic&logo=PyPI">
  </a>
- <a href="https://pypi.org/project/moftransformer/">
-     <img alt="Lincense" src="https://img.shields.io/badge/License-MIT-lightgrey.svg?logo=LOGO">
+  <a href="https://doi.org/10.6084/m9.figshare.21155506.v2">
+     <img alt="Figshare" src="https://img.shields.io/badge/Figshare-v2-blue.svg?style=plastic&logo=figshare">
  </a>
  <a href="">
-     <img alt="DOI" src="https://img.shields.io/badge/DOI-doi-organge.svg?logo=LOGO">
+     <img alt="DOI" src="https://img.shields.io/badge/DOI-doi-organge.svg?style=plastic">
+ </a>
+ <a href="https://pypi.org/project/moftransformer/">
+     <img alt="Lincense" src="https://img.shields.io/badge/License-MIT-lightgrey.svg?style=plastic">
  </a>
 </p>
 
