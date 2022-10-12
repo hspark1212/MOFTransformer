@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=700>
+  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=800>
 </p>
 <p align="center">
  <a href="https://hspark1212.github.io/MOFTransformer/">
@@ -23,7 +23,11 @@
 
  Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
 
-## Architectures
+## Install
+
+## Getting Started
+
+## Architecture
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
 - `MOFformer` takes two different representations as input
@@ -32,10 +36,6 @@
 <p align="center">
   <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig2.jpg" width=700>
 </p>
-
-## Install
-
-## Getting Started
 
 ## Feature Importance Anaylsis
 you can easily visualize feature importance analysis of atom-based graph embeddings and energy-grid embeddings.
