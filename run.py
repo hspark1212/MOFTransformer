@@ -9,7 +9,6 @@ from moftransformer.modules.module import Module
 from moftransformer.utils.validation import get_valid_config
 
 from pytorch_lightning.plugins import DDP2Plugin
-s
 import warnings
 
 warnings.filterwarnings(
