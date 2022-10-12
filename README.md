@@ -5,7 +5,7 @@
   <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=700>
 </p>
 <p align="center">
-    <a href="https://circleci.com/gh/huggingface/transformers">
+    <a href="https://hspark1212.github.io/MOFTransformer/">
         <img alt="Build" src="https://img.shields.io/circleci/build/github/huggingface/transformers/main">
     </a>
     <a href="https://github.com/huggingface/transformers/blob/main/LICENSE">
