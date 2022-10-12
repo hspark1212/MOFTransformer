@@ -23,6 +23,9 @@ result*
 # ckpt directory
 best_ckpt/
 
+# idea
+.idea/
+
 # file
 demo.py
 model/config_YH.py
