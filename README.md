@@ -6,7 +6,7 @@
 </p>
 <p align="center">
     <a href="https://hspark1212.github.io/MOFTransformer/">
-        <img alt="Build" src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?logo=LOGO">
+        <img alt="hi" src="https://img.shields.io/badge/Docs-1.0.1-brightgreen.svg?logo=LOGO">
     </a>
     <a href="https://github.com/huggingface/transformers/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/huggingface/transformers.svg?color=blue">
