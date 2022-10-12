@@ -9,7 +9,7 @@
 
 ## 2. Installation
 
-### Installation using PIP (not yet)
+### Installation using PIP
 
 The simplest way for installing `moftransformer` is to use PIP.
 
