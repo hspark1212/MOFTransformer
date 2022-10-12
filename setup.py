@@ -1,6 +1,7 @@
 import os
-from setuptools import setup, find_packages
 import re
+from setuptools import setup, find_packages
+
 
 setup_requires = ['numpy~=1.22.3']
 
@@ -28,7 +29,8 @@ setup(
     author_email='dudgns1675@kaist.ac.kr, phs68660888@gmail.com',
     packages=find_packages(),
     package_data={'moftransformer': ['libs/GRIDAY/*', 'libs/GRIDAY/scripts/*', 'libs/GRIDAY/FF/*',
-                                     'assets/*.json']},
+                                     'assets/*.json', 'examples/dataset/*', 'examples/dataset/**/*',
+                                     'examples/raw/*', 'examples/visualize/dataset/*', 'examples/visualize/dataset/test/*']},
     install_requires=install_requires,
     setup_requires=setup_requires,
     extras_require=extras_require,
