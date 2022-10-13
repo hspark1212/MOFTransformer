@@ -34,9 +34,9 @@ html_theme_options = {
     # announcement
     # 'announcement': '<em>Important</em> announcement!',
     # Adding an edit button
-    "source_repository": "https://github.com/pradyunsg/furo/",
+    "source_repository": "https://github.com/hspark1212/MOFTransformer/",
     "source_branch": "main",
-    "source_directory": "docs/",
+    "source_directory": "docs/source",
     # color
     "light_css_variables": {
         "color-brand-primary": "#4970E0",
