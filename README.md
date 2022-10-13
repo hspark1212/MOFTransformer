@@ -28,12 +28,32 @@
 ```
 python>=3.8
 ```
-1. installation using PIP 
+### Installation using PIP 
 ```
-pip install moftransfomer
+$ pip install moftransfomer
 ```
 
+### Download the pretrained model (ckpt file)
+- you can download the pretrained model with 1 M hMOFs in [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506)
+or you can download with a command line:
+```
+$ moftransformer download pretrain_model
+```
+### (Optional) Download dataset for CoREMOF, QMOF
+- we've provide the dataset of MOFTransformer (i.e., atom-based graph embeddings and energy-grid embeddings) for CoREMOF, QMOF:
+```
+$ moftransformer download coremof
+$ moftransformer download qmof
+```
+we recommend downloading the tar.gz files in [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506) (more fast)
+
 ## Getting Started
+1. At first, you download dataset of hMOFs (20,000 MOFs) for examples.
+```
+$ moftransformer download hmof
+```
+2. run.py
+
 
 ## Architecture
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
