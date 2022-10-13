@@ -36,7 +36,7 @@ html_theme_options = {
     # Adding an edit button
     "source_repository": "https://github.com/hspark1212/MOFTransformer/",
     "source_branch": "main",
-    "source_directory": "docs/source",
+    "source_directory": "docs/",
     # color
     "light_css_variables": {
         "color-brand-primary": "#4970E0",
