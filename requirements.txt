@@ -17,4 +17,4 @@ google-auth
 jupyter-client
 smmap<6
 emmet-core
-numpy~=1.22.3
+numpy
