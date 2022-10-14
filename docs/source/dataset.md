@@ -26,7 +26,7 @@ The json files should be splited into `train`,`val` and `test`.
 You can find an example of generating custom datasets in `demo.ipynb` and `examples` directory.
 
 ```python
-from model.utils.prepare_data import prepare_data
+from moftransformer.utils.prepare_data import prepare_data
 prepare_data(root_cifs, root_dataset, task="example") 
 ```
 
@@ -50,7 +50,7 @@ The example of `root_cifs` directory is as follows.
 
 Then, You need to set parameters `root_dataset`, `task`.
 `root_dataset`: the saved directories of input files
-`task` : name of user-specific task (e.g. bandgap, gasuptake, etc).
+`task` : name of user-specific task (e.g. band gap, gas uptake, etc).
 
 Finally, `prepare_data.py` will generate the atom-wise graph embeddings and energy-grid embeddings in `root_dataset`
 directory.

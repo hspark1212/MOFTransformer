@@ -2,14 +2,8 @@ import os
 import wget
 import tarfile
 from pathlib import Path
-from moftransformer import __root_dir__
-
-
-DEFAULT_PRETRAIN_MODEL_PATH = Path(__root_dir__) / 'database/pretrained_model.ckpt'
-DEFAULT_FINETUNED_MODEL_PATH = Path(__root_dir__) / 'database/finetuned/'
-DEFAULT_COREMOF_PATH = Path(__root_dir__) / 'database/coremof/'
-DEFAULT_QMOF_PATH = Path(__root_dir__) / 'database/qmof/'
-DEFAULT_HMOF_PATH = Path(__root_dir__) / 'database/hmof/'
+from moftransformer.database import DEFAULT_PRETRAIN_MODEL_PATH, DEFAULT_COREMOF_PATH, DEFAULT_QMOF_PATH, \
+    DEFAULT_FINETUNED_MODEL_PATH, DEFAULT_HMOF_PATH
 
 
 class DownloadError(Exception):
@@ -42,7 +36,7 @@ def _download_file(link, direc, name='target'):
 
 def download_pretrain_model(direc=None, ):
     if not direc:
-        direc = DEFAULT_PRETRAIN_MODEL_PATH
+        direc = Path(DEFAULT_PRETRAIN_MODEL_PATH)
     else:
         direc = Path(direc)
 
