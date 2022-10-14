@@ -30,7 +30,11 @@ best_ckpt/
 demo.py
 model/config_YH.py
 model/config_HS.py
-moftransformer/database/
+moftransformer/database/coremof/
+moftransformer/database/hmof/
+moftransformer/database/qmof/
+moftransformer/database/finetuned/
+
 dft/
 figure/
 case_study/
@@ -46,5 +50,6 @@ examples/logs/
 # setuptools
 build/
 dist/
+.eggs/
 *.egg-info
 *.eggs

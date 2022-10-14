@@ -11,5 +11,5 @@ You can calculate the scores for test set.
 you set the parameters `test_only=True` and `load_path`
 
 ```shell
-python run.py with downstream_raspa_100bar load_path={ckpt path of fine-tuning model} test_only=True
+moftransformer run downstream_raspa_100bar load_path={ckpt path of fine-tuning model} test_only=True
 ```
