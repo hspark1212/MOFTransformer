@@ -1,6 +1,6 @@
 import torch
 
-from transformers.optimization import AdamW
+from torch.optim import AdamW
 from transformers import (
     get_polynomial_decay_schedule_with_warmup,
     get_cosine_schedule_with_warmup,
