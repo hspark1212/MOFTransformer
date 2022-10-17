@@ -84,7 +84,8 @@ def config():
     log_dir = "logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    num_gpus = 1
+    accelerator='gpu'
+    devices = 1
     num_nodes = 1
 
     if os.path.exists(DEFAULT_PRETRAIN_MODEL_PATH):

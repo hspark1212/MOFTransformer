@@ -8,7 +8,7 @@ from moftransformer.config import ex
 from moftransformer.config import config as _config
 from moftransformer.datamodules.datamodule import Datamodule
 from moftransformer.modules.module import Module
-from moftransformer.utils.validation import get_valid_config, ConfigurationError
+from moftransformer.utils.validation import get_valid_config, get_num_devices, ConfigurationError
 
 from pytorch_lightning.plugins import DDPPlugin
 
@@ -68,31 +68,12 @@ def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwarg
 
     Other Parameters
     ________________
-    load_path: str, default : DEFAULT_PRETRAIN_MODEL_PATH
+    load_path: str, default : None
         The path of the model that starts when training/testing.
-        If you downloaded the pretrain_model, it is set to default. Else, default is scratch model.
+        If you want to test the fine-tuned model, enter the path of the .ckpt file stored in the 'log' folder
+        If you downloaded the pretrain_model, it is set to default. Else, the default is set to a scratch model.
         You can download pretrain_model as following method:
             $ moftransformer download pretrain_model
-
-    batch_size: int, default: 1024
-        desired batch size; for gradient accumulation
-
-    per_gpu_batchsize: int, default: 8
-        you should define this manually with per_gpu_batch_size
-
-    num_gpus: int or list, default: 1
-        number of gpus or list of gpus that you want to use in training
-
-    num_nodes: int, default: 1
-        number of nodes that you want to use in training
-
-    num_workers: int, default: 16
-        the number of cpu's core
-
-    precision = 16
-
-    seed: int, default: 0
-        The random seed for pytorch_lightning.
 
     loss_names: str or list, or dict, default: "regression"
         One or more of the following loss : 'regression', 'classification', 'mpt', 'moc', and 'vfp'
@@ -100,8 +81,36 @@ def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwarg
     n_classes: int, default: 0
         Number of classes when your loss is 'classification'
 
-    visualize: bool, default: False
-        return attention map (use at attetion visualization step)
+    batch_size: int, default: 1024
+        desired batch size; for gradient accumulation
+
+    per_gpu_batchsize: int, default: 8
+        you should define this manually with per_gpu_batch_size
+
+    accelerator: str, default: 'auto'
+        Supports passing different accelerator types ("cpu", "gpu", "tpu", "ipu", "hpu", "mps, "auto")
+        as well as custom accelerator instances.
+
+    devices: int or list, default: "auto"
+        Number of devices to train on (int), which devices to train on (list or str), or "auto".
+        It will be mapped to either gpus, tpu_cores, num_processes or ipus, based on the accelerator type ("cpu", "gpu", "tpu", "ipu", "auto").
+
+    num_nodes: int, default: 1
+        Number of GPU nodes for distributed training.
+
+    num_workers: int, default: 16
+        the number of cpu's core
+
+    precision: int or str, default: 16
+        MOFTransformer supports either double (64), float (32), bfloat16 (bf16), or half (16) precision training.
+        Half precision, or mixed precision, is the combined use of 32 and 16 bit floating points to reduce memory footprint during model training.
+        This can result in improved performance, achieving +3X speedups on modern GPUs.
+
+    max_epochs: int, default: 100
+        Stop training once this number of epochs is reached.
+
+    seed: int, default: 0
+        The random seed for pytorch_lightning.
 
 
     Normalization parameters:
@@ -112,6 +121,34 @@ def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwarg
     std: float or None, default: None
         standard deviation for normalizer. If None, it is automatically obtained from the train dataset.
 
+
+    Optimzer setting parameters
+    ___________________________
+    optim_type: str, default: "adamw"
+        Type of optimizer, which is "adamw", "adam", or "sgd" (momentum=0.9)
+
+    learning_rate: float, default: 1e-4
+        Learning rate for optimizer
+
+    weight_decay: float, default: 1e-2
+        Weight decay for optmizer
+
+    decay_power: float, default: 1
+        default polynomial decay, [cosine, constant, constant_with_warmup]
+
+    max_steps: int, default: -1
+        num_data * max_epoch // batch_size (accumulate_grad_batches)
+        if -1, set max_steps automatically.
+
+    warmup_steps : int or float, default: 0.05
+        warmup steps for optimizer. If type is float, set to max_steps * warmup_steps.
+
+    end_lr: float, default: 0
+
+    lr_mult: float, default: 1
+        multiply lr for downstream heads
+
+
     Transformer setting parameters
     ______________________________
     hid_dim = 768
@@ -121,35 +158,14 @@ def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwarg
     drop_rate = 0.1
     mpp_ratio = 0.15
 
-    Optimzer setting parameters
-    ___________________________
-    optim_type: str, default: "adamw"
-        adamw, adam, sgd (momentum=0.9)
-
-    learning_rate = 1e-4
-    weight_decay = 1e-2
-    decay_power = 1  # default polynomial decay, [cosine, constant, constant_with_warmup]
-    max_epochs = 100
-    max_steps : int, defatul: -1
-      num_data * max_epoch // batch_size (accumulate_grad_batches)
-      if -1, set max_steps automatically.
-
-    warmup_steps : int or float, default: 0.05
-        warmup steps for optimizer. If type is float, set to max_steps * warmup_steps.
-
-    end_lr = 0
-    lr_mult = 1  # multiply lr for downstream heads
 
     Atom-based Graph Parameters
     ___________________________
     atom_fea_len = 64
-
     nbr_fea_len = 64
-
-    max_graph_len: int, default: 300
-        number of maximum nodes in graph
-
+    max_graph_len = 300 # number of maximum nodes in graph
     max_nbr_atoms = 12
+
 
     Energy-grid Parameters
     ______________________
@@ -160,11 +176,16 @@ def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwarg
     draw_false_grid = False
 
 
+    Visuallization Parameters
+    _________________________
+    visualize: bool, default: False
+        return attention map (use at attetion visualization step)
+
+
     Pytorch lightning setting parameters
     ____________________________________
     resume_from = None
     val_check_interval = 1.0
-
     dataset_size = False  # experiments for dataset size with 100 [k] or 500 [k]
 
     """
@@ -210,18 +231,16 @@ def main(_config):
     lr_callback = pl.callbacks.LearningRateMonitor(logging_interval="step")
     callbacks = [checkpoint_callback, lr_callback]
 
-    num_gpus = _config["num_gpus"]
-    if isinstance(num_gpus, list):
-        num_gpus = len(num_gpus)
+    num_device = get_num_devices(_config)
 
     # gradient accumulation
-    if num_gpus == 0:
+    if num_device == 0:
         accumulate_grad_batches = _config["batch_size"] // (
                 _config["per_gpu_batchsize"] * _config["num_nodes"]
         )
     else:
         accumulate_grad_batches = _config["batch_size"] // (
-                _config["per_gpu_batchsize"] * num_gpus * _config["num_nodes"]
+                _config["per_gpu_batchsize"] * num_device * _config["num_nodes"]
         )
 
     max_steps = _config["max_steps"] if _config["max_steps"] is not None else None
@@ -234,8 +253,8 @@ def main(_config):
     log_every_n_steps=10
 
     trainer = pl.Trainer(
-        accelerator='gpu',
-        devices=_config["num_gpus"],
+        accelerator=_config['accelerator'],
+        devices=_config["devices"],
         num_nodes=_config["num_nodes"],
         precision=_config["precision"],
         strategy=strategy,
