@@ -45,6 +45,7 @@ Contents
    installation
    dataset
    getting_started
+   tutorial
 
 Indices and Tables
 ------------------
