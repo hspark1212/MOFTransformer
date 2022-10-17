@@ -73,5 +73,5 @@ In the `config` argument, it is used in the form of `parameter=value`, and sever
 
 For example:
 ```bash
-$ moftransformer run --data_root './data' --downstream 'exmaple' --config max_epcohs=10 num_gpus=2 batch_size=216
+$ moftransformer run --data_root './data' --downstream 'exmaple' --config max_epcohs=10 devices=2 batch_size=216
 ```

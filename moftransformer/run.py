@@ -1,6 +1,5 @@
 import copy
 import os
-import torch
 import pytorch_lightning as pl
 from pytorch_lightning.utilities import _IS_INTERACTIVE
 
@@ -232,6 +231,7 @@ def main(_config):
     callbacks = [checkpoint_callback, lr_callback]
 
     num_device = get_num_devices(_config)
+    print ('num_device', num_device)
 
     # gradient accumulation
     if num_device == 0:

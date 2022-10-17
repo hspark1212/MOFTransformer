@@ -1,5 +1,4 @@
 import warnings
-from functools import lru_cache
 from pytorch_lightning.utilities import _IS_INTERACTIVE
 from pytorch_lightning.trainer.connectors.accelerator_connector import AcceleratorConnector
 
