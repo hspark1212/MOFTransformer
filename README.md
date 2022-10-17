@@ -1,6 +1,5 @@
-<p align="center">
-  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig1.jpg" width=800>
-</p>
+![](https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/assets/fig1.jpg)
+
 <p align="center">
  <a href="https://hspark1212.github.io/MOFTransformer/">
      <img alt="Docs" src="https://img.shields.io/badge/Docs-v1.0.1-brightgreen.svg?style=plastic">
@@ -68,9 +67,8 @@ $ moftransformer download hmof
 - `MOFformer` takes two different representations as input
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
-<p align="center">
-  <img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/assets/fig2.jpg" width=700>
-</p>
+
+![](https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/assets/fig2.jpg)
 
 ## Feature Importance Anaylsis
 you can easily visualize feature importance analysis of atom-based graph embeddings and energy-grid embeddings.
@@ -85,13 +83,15 @@ cifname = 'MIBQAR01_FSR'
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_graph()
 ```
-<img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/getting_started/assets/1.gif" width="300">
+
+![images](https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/getting_started/assets/1.gif)
 
 ```python
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-<img src="https://github.com/hspark1212/MOFTransformer/blob/master/docs/source/getting_started/assets/3.gif" width="300">
+
+![images](https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/getting_started/assets/3.gif)
 
 ## Universal Transfer Learning
 | Property                                 | MOFTransformer | Original Paper | Number of Data | Remarks          | Reference |
@@ -103,7 +103,7 @@ vis.draw_grid()
 |CO<sub>2</sub> Henry coefficient         | MAE : 0.30     | MAE : 0.42     | 8,183          | CoRE MOF         | 2         |
 |Solvent removal stability classification | ACC : 0.76     | ACC : 0.76     | 2,148          | Text-mining data | 3         |
 |Thermal stability regression             | R2 : 0.44      | R2 : 0.46      | 3,098          | Text-mining data | 3         |
-### reference
+### Reference
 1. [Prediction of O2/N2 Selectivity in Metal−Organic Frameworks via High-Throughput Computational Screening and Machine Learning](https://pubs.acs.org/doi/abs/10.1021/acsami.1c18521)
 2. [Using Machine Learning and Data Mining to Leverage Community Knowledge for the Engineering of Stable Metal–Organic Frameworks](https://pubs.acs.org/doi/10.1021/jacs.1c07217)
 3. [Understanding the diversity of the metal-organic framework ecosystem](https://www.nature.com/articles/s41467-020-17755-8)

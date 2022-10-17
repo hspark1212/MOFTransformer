@@ -1,4 +1,5 @@
-# 1. Download pretrain_model and hMOF file
+# Tutorial
+## 1. Download pretrain_model and hMOF file
 First, download pretrain_model
 ```bash
 $ moftransformer download pretrain_model
@@ -42,7 +43,7 @@ The configuration of the generated hMOF folder is as follows.
 
 Here, the calculated values for the two tasks (diffusivity, uptake) exist in the json file.
 
-# 2. Train MOFTransformer
+## 2. Train MOFTransformer
 Training MOFTransformer is conducted based on the download hMOF database.
 
 ```python
@@ -61,7 +62,7 @@ moftransformer.run(data_root, downstream, max_epochs=max_epochs, mean=mean, std=
 ```
 Trained model and their hyper-parameters are saved in `log_dir` folder.
 
-# 3. Test MOFTransformer
+## 3. Test MOFTransformer
 In order to proceed with the test of the saved model, the `.ckpt` of the file must be loaded.
 
 
