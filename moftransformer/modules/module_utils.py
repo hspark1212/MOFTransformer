@@ -144,22 +144,7 @@ def set_schedule(pl_module):
         optimizer = torch.optim.SGD(optimizer_grouped_parameters, lr=lr, momentum=0.9)
 
     if pl_module.trainer.max_steps == -1:
-        if pl_module.trainer.num_gpus == 0:
-            max_steps = (
-                    len(pl_module.trainer.datamodule.train_dataset)
-                    * pl_module.trainer.max_epochs
-                    // pl_module.trainer.accumulate_grad_batches
-                    // pl_module.trainer.num_nodes
-            )
-        else:
-            max_steps = (
-                    len(pl_module.trainer.datamodule.train_dataset)
-                    * pl_module.trainer.max_epochs
-                    // pl_module.trainer.accumulate_grad_batches
-                    // (pl_module.trainer.num_gpus * pl_module.trainer.num_nodes)
-            )
-        if not max_steps:
-            max_steps = 1
+        max_steps = pl_module.trainer.estimated_stepping_batches
     else:
         max_steps = pl_module.trainer.max_steps
 
