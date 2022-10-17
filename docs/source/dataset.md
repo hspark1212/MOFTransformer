@@ -75,8 +75,8 @@ directory.
     │   ├── [cif_id].cif # primitive cif
     │   └── ...
     ├── train_{task}.json
-    ├── target_{task}.json
-    └── target_{task}.json
+    ├── val_{task}.json
+    └── test_{task}.json
 
 ## 3. Dataset for public database (CoREMOF, QMOF).
 
