@@ -67,8 +67,10 @@ $ moftransformer download hmof
 - `MOFformer` takes two different representations as input
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
-
-![](https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/assets/fig2.jpg)
+  
+<p align="center">
+  <img src="https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/assets/fig2.jpg" width="700")
+</p>
 
 ## Feature Importance Anaylsis
 you can easily visualize feature importance analysis of atom-based graph embeddings and energy-grid embeddings.
@@ -83,15 +85,17 @@ cifname = 'MIBQAR01_FSR'
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_graph()
 ```
-
-![images](https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/getting_started/assets/1.gif)
+<p align="center">
+<img src="https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/getting_started/assets/1.gif" width="300">
+</p>
 
 ```python
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
-
-![images](https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/getting_started/assets/3.gif)
+<p align="center">
+<img src="https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/getting_started/assets/3.gif" width="300">
+</p>
 
 ## Universal Transfer Learning
 | Property                                 | MOFTransformer | Original Paper | Number of Data | Remarks          | Reference |
