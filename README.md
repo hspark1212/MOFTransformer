@@ -18,7 +18,7 @@
  </a>
 </p>
 
-# MOFTransformer
+# [MOFTransformer](https://hspark1212.github.io/MOFTransformer/index.html)
 
  Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
 
@@ -53,15 +53,38 @@ $ moftransformer download coremof
 $ moftransformer download qmof
 ```
 
-## Getting Started
-1. At first, you download dataset of hMOFs (20,000 MOFs) for examples.
+## [Getting Started](https://hspark1212.github.io/MOFTransformer/tutorial.html)
+1. At first, you download dataset of hMOFs (20,000 MOFs) as an example.
 ```
 $ moftransformer download hmof
 ```
-2. run.py
+2. Fine-tune the pretrained MOFTransformer.
+```python
+import moftransformer
+from moftransformer.examples import example_path
 
+# data root and downstream from example
+data_root = example_path['data_root']
+downstream = example_path['downstream']
+log_dir = './logs/'
 
-## Architecture
+moftransformer.run(data_root, downstream, log_dir=log_dir, 
+                   max_epochs=max_epochs, batch_size=batch_size,)
+```
+3. Visualize analysis of feature importance for the fine-tuned model.
+```python
+%matplotlib widget
+from visualize import PatchVisualizer
+
+model_path = "examples/finetuned_bandgap.ckpt" # or 'examples/finetuned_h2_uptake.ckpt'
+data_path = 'examples/visualize/dataset/'
+cifname = 'MIBQAR01_FSR'
+
+vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
+vis.draw_graph() # or vis.draw_grid()
+```
+
+## [Architecture](https://hspark1212.github.io/MOFTransformer/introduction.html)
 `MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
 
 - `MOFformer` takes two different representations as input
@@ -72,7 +95,7 @@ $ moftransformer download hmof
   <img src="https://raw.githubusercontent.com/hspark1212/MOFTransformer/master/docs/source/assets/fig2.jpg" width="700")
 </p>
 
-## Feature Importance Anaylsis
+## [Feature Importance Anaylsis](https://hspark1212.github.io/MOFTransformer/getting_started/visualization.html)
 you can easily visualize feature importance analysis of atom-based graph embeddings and energy-grid embeddings.
 ```python
 %matplotlib widget
