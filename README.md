@@ -10,7 +10,7 @@
   <a href="https://doi.org/10.6084/m9.figshare.21155506.v2">
      <img alt="Figshare" src="https://img.shields.io/badge/Figshare-v2-blue.svg?style=plastic&logo=figshare">
  </a>
- <a href="">
+ <a href="https://chemrxiv.org/engage/chemrxiv/article-details/634fbf8a4a18764f58e9fda5">
      <img alt="DOI" src="https://img.shields.io/badge/DOI-doi-organge.svg?style=plastic">
  </a>
  <a href="https://pypi.org/project/moftransformer/">
