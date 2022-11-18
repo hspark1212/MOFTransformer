@@ -32,14 +32,6 @@ python>=3.8
 $ pip install moftransformer
 ```
 
-### Installation from github repository
-- you can also download from the github repository.
-```
-$ git clone https://github.com/hspark1212/MOFTransformer.git
-$ cd moftransformer
-$ python setup.py install
-```
-
 ### Download the pretrained model (ckpt file)
 - you can download the pretrained model with 1 M hMOFs in [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506)
 or you can download with a command line:
