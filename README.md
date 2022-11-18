@@ -29,7 +29,7 @@ python>=3.8
 ```
 ### Installation using PIP 
 ```
-$ pip install moftransfomer
+$ pip install moftransformer
 ```
 
 ### Installation from github repository
