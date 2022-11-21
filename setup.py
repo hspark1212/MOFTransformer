@@ -2,6 +2,10 @@ import os
 import re
 from setuptools import setup, find_packages
 
+try:
+    import torch
+except ImportError:
+    raise EnvironmentError('Torch must be installed before install moftransformer')
 
 setup_requires = ['numpy~=1.22.3']
 

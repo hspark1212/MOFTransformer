@@ -21,8 +21,8 @@ from ase import neighborlist
 from moftransformer import __root_dir__
 
 
-GRIDAY_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/scripts/grid_gen') ### tmp
-FF_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/FF') ### tmp
+GRIDAY_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/scripts/grid_gen')
+FF_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/FF')
 
 
 def get_logger(filename):

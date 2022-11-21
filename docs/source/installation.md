@@ -9,6 +9,8 @@
 
 ## 2. Installation
 
+Given that MOFTransformer is based on pytorch, please install [pytorch](https://pytorch.org/get-started/locally/) (>= 1.10.0) according to your environments.
+
 ### Installation using PIP
 
 The simplest way for installing `moftransformer` is to use PIP.

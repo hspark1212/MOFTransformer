@@ -21,19 +21,7 @@ From cif files, `moftransformer/utils/prepare_data.py` file will generate inputs
 enery-grid embeddings.
 You need to prepare `cif files (structures)` and `json files (targets ex. property, class)]` in `root_cifs` directory.
 
-### randomly split dataset
-If there is a json file named `raw_{task}.json` in `root_cifs` directory, then it will be randomly splitted by 8:1:1 (train:val:test). 
-
-### custom splitted dataset
-If you want to split data yourself, you just manually make splitted json files (train.json, val.json, test.json) without makeing `raw_{task}.json` in `root_cifs` directory.
-
-```python
-from moftransformer.utils.prepare_data import prepare_data
-prepare_data(root_cifs, root_dataset, task="example") 
-```
-
 The example of json files is as follows.
-
 ```
 { 
     cif_id : property (float) or classes (int),
@@ -41,7 +29,9 @@ The example of json files is as follows.
 }
 ```
 
-### 1. randomly split dataset
+### 1) randomly split dataset
+If there is a json file named `raw_{task}.json` in `root_cifs` directory, then it will be randomly splitted by 8:1:1 (train:val:test). 
+
 The example of `root_cifs` directory is as follows.
 
     root_cifs # root for cif files
@@ -49,7 +39,9 @@ The example of `root_cifs` directory is as follows.
     ├── ...
     └── raw_{task}.json
 
-### 2. custom splitted dataset
+### 2) custom splitted dataset
+If you want to split data yourself, you just manually make splitted json files (train.json, val.json, test.json) without makeing `raw_{task}.json` in `root_cifs` directory.
+
 The example of `root_cifs` directory is as follows.
 
     root_cifs # root for cif files
@@ -62,6 +54,11 @@ The example of `root_cifs` directory is as follows.
 Then, You need to set parameters `root_dataset`, `task`.
 `root_dataset`: the saved directories of input files
 `task` : name of user-specific task (e.g. band gap, gas uptake, etc).
+
+```python
+from moftransformer.utils.prepare_data import prepare_data
+prepare_data(root_cifs, root_dataset, task="example") 
+```
 
 Finally, `prepare_data.py` will generate the atom-wise graph embeddings and energy-grid embeddings in `root_dataset`
 directory.
