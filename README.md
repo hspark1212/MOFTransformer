@@ -28,7 +28,7 @@
 ```
 python>=3.8
 ```
-Given that MOFTransformer is based on pytorch, please install pytorch (>= 1.10.0) according to your environments.
+Given that MOFTransformer is based on pytorch, please install pytorch (≥ 1.10.0) according to your environments.
 
 ### Installation using PIP 
 ```
