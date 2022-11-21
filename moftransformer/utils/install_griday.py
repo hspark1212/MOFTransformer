@@ -15,20 +15,20 @@ class InstallationError(Exception):
         return "Installation Error"
 
 def _install_make():
-    print ('=== Download gcc=11.2.0 =========================================================')
-    ps = subprocess.run('conda install -c conda-forge gcc=11.2.0 -y'.split())
+    print ('=== Download gcc=9.5.0 =========================================================')
+    ps = subprocess.run('conda install -c conda-forge gcc=9.5.0 -y'.split())
     if ps.returncode:
         raise InstallationError(ps.stderr)
     else:
         print ('=== Successfully download =======================================================')
-    print ('=== Download gxx=11.2.0 =========================================================')
-    ps = subprocess.run('conda install -c conda-forge gxx=11.2.0 -y'.split())
+    print ('=== Download gxx=9.5.0 =========================================================')
+    ps = subprocess.run('conda install -c conda-forge gxx=9.5.0 -y'.split())
     if ps.returncode:
         raise InstallationError(ps.stderr)
     else:
         print ('=== Successfully download =======================================================')
-    print ('=== Download make ===============================================================')
-    ps = subprocess.run('conda install -c anaconda make -y'.split())
+    print ('=== Download make=4.2.1 ===============================================================')
+    ps = subprocess.run('conda install -c anaconda make=4.2.1 -y'.split())
     if ps.returncode:
         raise InstallationError(ps.stderr)
     else:
