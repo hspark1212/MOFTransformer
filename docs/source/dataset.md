@@ -22,10 +22,10 @@ enery-grid embeddings.
 You need to prepare `cif files (structures)` and `json files (targets ex. property, class)]` in `root_cifs` directory.
 
 ### randomly split dataset
-If name of the json file is `raw_{task}.json`, then it will be randomly splitted by 8:1:1 (train:val:test). 
+If there is a json file named `raw_{task}.json` in `root_cifs` directory, then it will be randomly splitted by 8:1:1 (train:val:test). 
 
 ### custom splitted dataset
-If you want to split data yourself, you just manually make splitted json files (train.json, val.json, test.json) at `root_cifs`.
+If you want to split data yourself, you just manually make splitted json files (train.json, val.json, test.json) without makeing `raw_{task}.json` in `root_cifs` directory.
 
 ```python
 from moftransformer.utils.prepare_data import prepare_data
