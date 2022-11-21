@@ -1,7 +1,9 @@
-import copy
+import sys
 import os
+import copy
+import warnings
+
 import pytorch_lightning as pl
-from pytorch_lightning.utilities import _IS_INTERACTIVE
 
 from moftransformer.config import ex
 from moftransformer.config import config as _config
@@ -11,11 +13,12 @@ from moftransformer.utils.validation import get_valid_config, get_num_devices, C
 
 from pytorch_lightning.plugins import DDPPlugin
 
-import warnings
-
 warnings.filterwarnings(
     "ignore", ".*Trying to infer the `batch_size` from an ambiguous collection.*"
 )
+
+
+_IS_INTERACTIVE = hasattr(sys, 'ps1')
 
 
 def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwargs):
