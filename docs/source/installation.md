@@ -9,6 +9,8 @@
 
 ## 2. Installation
 
+Given that MOFTransformer is based on pytorch, please install [pytorch](https://pytorch.org/get-started/locally/) (>= 1.10.0) according to your environments.
+
 ### Installation using PIP
 
 The simplest way for installing `moftransformer` is to use PIP.
@@ -17,34 +19,14 @@ The simplest way for installing `moftransformer` is to use PIP.
 $ pip install moftransformer
 ```
 
-If you want to deal with docs, use:
-
-```bash
-$ pip install moftransformer[docs]
-```
-
-
-
-### Installation from git clone
-
-Or you can download it directly from github and install it.
-
-```bash
-$ git clone https://github.com/hspark1212/MOFTransformer.git
-$ cd moftransformer
-$ python setup.py install
-```
-
-
 ### Editable install
 If you want to modify the code, you can use the develop mode.
 
 ```bash
 $ git clone https://github.com/hspark1212/MOFTransformer.git
 $ cd moftransformer
-$ pip install -e
+$ pip install -e .
 ```
-
 
 ## 3. Download model and data
 You can download various data needed for MOFTransformer. \
