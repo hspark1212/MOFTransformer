@@ -20,13 +20,16 @@
 
 # [MOFTransformer](https://hspark1212.github.io/MOFTransformer/index.html)
 
- Do you train machine learning models for every application? This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
+ This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
 
 ## [Install](https://hspark1212.github.io/MOFTransformer/installation.html)
-- Depedencies
+
+### Depedencies
 ```
 python>=3.8
 ```
+Given that MOFTransformer is based on pytorch, please install pytorch (>= 1.10.0) according to your environments.
+
 ### Installation using PIP 
 ```
 $ pip install moftransformer
