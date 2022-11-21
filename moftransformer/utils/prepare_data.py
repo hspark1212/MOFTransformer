@@ -21,8 +21,8 @@ from ase import neighborlist
 from moftransformer import __root_dir__
 
 
-GRIDAY_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/scripts/grid_gen')
-FF_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/FF')
+GRIDAY_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/scripts/grid_gen') ### tmp
+FF_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/FF') ### tmp
 
 
 def get_logger(filename):
@@ -213,6 +213,29 @@ def prepare_data(root_cifs,
     logger = get_logger(filename="prepare_data.log")
     eg_logger = get_logger(filename="prepare_energy_grid.log")
 
+    # automatically split data
+    json_path = os.path.join(root_cifs, f"raw_{task}.json")
+    if os.path.exists(json_path):
+        with open(json_path, "r") as f:
+            d = json.load(f)
+            f.close()
+
+        names = np.array(list(d.keys()))
+        idxs = np.random.permutation(len(names))
+        k = int(len(names) * 0.8)
+        k_ = int(len(names) * 0.9)
+        idx_train = idxs[:k]
+        idx_val = idxs[k:k_]
+        idx_test = idxs[k_:]
+        split = ["train", "val", "test"]
+        for i, idx_ in enumerate([idx_train, idx_val, idx_test]):
+            target = {}
+            for n in names[idx_]:
+                target[n] = d[n]
+            save_path = os.path.join(root_cifs, f"{split[i]}_{task}.json")
+            json.dump(target, open(save_path, "w"))
+            print(f" save {save_path}, the number is {len(target)}")
+
     for split in ["test", "val", "train"]:
         # check target json and make root_dataset
         json_path = os.path.join(root_cifs, f"{split}_{task}.json")
@@ -227,6 +250,7 @@ def prepare_data(root_cifs,
 
         with open(json_path, "r") as f:
             d = json.load(f)
+            f.close()
 
         for i, (cif_id, target) in enumerate(tqdm(d.items())):
             # check file exist (removed in future)
