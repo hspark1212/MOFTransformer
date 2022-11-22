@@ -7,6 +7,8 @@ import subprocess
 import hashlib
 import pickle
 import shutil
+import glob
+from collections import defaultdict
 
 import numpy as np
 
@@ -179,6 +181,77 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
         eg_logger.info(f"{cif_id} energy grid failed to change to np16")
 
 
+def _split_dataset(root_cifs, root_dataset, single_task, **kwargs):
+    """
+    make train_{task}.json, test_{task}.json, and val_{task}.json from raw_{task}.json
+    :param root_cifs: root for cif files
+    :param root_dataset: root for generated datasets
+    :param single_task: name of downstream tasks
+    :param kwargs:
+        - overwrite_json : pass
+        - seed : (int) random seed for split data. (default : 42)
+        - duplicate : (bool) If True, allow duplication of data in train, test, and validation. (default: False)
+
+    :return:
+    """
+
+    overwrite_json = kwargs.get('overwrite_json', False)
+    duplicate = kwargs.get('duplicate', False)
+    seed = kwargs.get('seed', 42)
+    np.random.seed(seed=seed)
+
+    json_path = os.path.join(root_cifs, f"raw_{single_task}.json")
+    if not os.path.exists(json_path):   # raw_{task}.json does not exists
+        return
+    elif not overwrite_json and os.path.exists(os.path.join(root_cifs, f'train_{single_task}.json')): # json file already exists.
+        return
+    else:
+        with open(json_path, "r") as f:
+            dic = json.load(f)
+
+    dic_json = defaultdict(dict)
+
+    if os.path.exists(os.path.join(root_dataset, 'train')) and os.path.exists(os.path.join(root_dataset, 'test')):
+        # 1. train / test / validation file already exists in root_dataset
+        tmp_list = []
+        for split in ['train', 'test', 'val']:
+            cifs = [cif.replace('.cif', '') for cif in glob.glob(os.path.join(root_dataset, f'{split}/*.cif'))]
+            for i, v in dic.items():
+                if not duplicate and i in tmp_list:    # duplicated data -> raise Error
+                    raise ValueError(f'cifid {i} is duplicated in {root_dataset}.')
+                elif i in cifs:                        # data in root_dataset/split folder
+                    dic_json[split][i] = v
+                    tmp_list.append(i)
+        unused_list = [d for d in dic.keys() if d not in tmp_list]
+
+    else:
+        # 2. No data in root_dataset
+        unused_list = list(dic.keys())
+
+    if unused_list:
+        cifs = glob.glob(os.path.join(root_cifs, '*.cif'))
+        cifs.sort()
+
+        k_train = int(len(cifs) * 0.8)
+        k_test = int(len(cifs) * 0.9)
+        k_val = len(cifs) - k_train - k_test
+        split_list = ['train']*k_train + ['val']*k_val + ['test']*k_test
+        assert len(cifs) == len(split_list)
+        np.random.shuffle(split_list)
+
+        cif_split = {cif.replace('.cif', ''):split for cif, split in zip(cifs, split_list)}
+
+        for cif in unused_list:
+            split = cif_split.get(cif, None)
+            dic_json[split][cif] = dic[cif]
+
+
+    for split in ['train', 'test', 'val']:
+        save_path = os.path.join(root_cifs, f"{split[i]}_{single_task}.json")
+        with open(save_path, 'w') as f:
+            json.dump(dic_json[split], f)
+
+
 def prepare_data(root_cifs,
                  root_dataset,
                  task,
@@ -186,19 +259,23 @@ def prepare_data(root_cifs,
                  max_length=60.,
                  min_length=30.,
                  max_num_nbr=12,
-                 calculate_energy_grid=True):
+                 calculate_energy_grid=True,
+                 **kwargs):
     """
     Args:
         root_cifs (str): root for cif files,
                         it should contains "train" and "test" directory in root_cifs
                         ("val" directory is optional)
         root_dataset (str): root for generated datasets
-        task (str) : name of downstream tasks
+        task (str or list) : name of downstream tasks
         max_num_atoms (int): max number atoms in primitive cell
         max_length (float) : maximum length of supercell
         min_length (float) : minimum length of supercell
         max_num_nbr (int) : maximum number of neighbors when calculating graph
         calculate_energy_grid (bool) : calculate energy grid using GRIDDAY or not
+
+    Kwargs:
+        overwrite_json (bool) : If True, overwrite {split}_task.json file when it exists. (default : False)
     """
 
     if not os.path.exists(GRIDAY_PATH):
@@ -214,27 +291,8 @@ def prepare_data(root_cifs,
     eg_logger = get_logger(filename="prepare_energy_grid.log")
 
     # automatically split data
-    json_path = os.path.join(root_cifs, f"raw_{task}.json")
-    if os.path.exists(json_path):
-        with open(json_path, "r") as f:
-            d = json.load(f)
-            f.close()
-
-        names = np.array(list(d.keys()))
-        idxs = np.random.permutation(len(names))
-        k = int(len(names) * 0.8)
-        k_ = int(len(names) * 0.9)
-        idx_train = idxs[:k]
-        idx_val = idxs[k:k_]
-        idx_test = idxs[k_:]
-        split = ["train", "val", "test"]
-        for i, idx_ in enumerate([idx_train, idx_val, idx_test]):
-            target = {}
-            for n in names[idx_]:
-                target[n] = d[n]
-            save_path = os.path.join(root_cifs, f"{split[i]}_{task}.json")
-            json.dump(target, open(save_path, "w"))
-            print(f" save {save_path}, the number is {len(target)}")
+    for single_task in task:
+        _split_dataset(root_dataset, root_dataset, single_task, **kwargs)
 
     for split in ["test", "val", "train"]:
         # check target json and make root_dataset
