@@ -295,77 +295,78 @@ def prepare_data(root_cifs,
         _split_dataset(root_dataset, root_dataset, single_task, **kwargs)
 
     for split in ["test", "val", "train"]:
-        # check target json and make root_dataset
-        json_path = os.path.join(root_cifs, f"{split}_{task}.json")
+        for single_task in task:
+            # check target json and make root_dataset
+            json_path = os.path.join(root_cifs, f"{split}_{single_task}.json")
 
-        assert os.path.exists(json_path)
+            assert os.path.exists(json_path)
 
-        root_dataset_split = os.path.join(root_dataset, split)
-        # make split directory in root_dataset
-        os.makedirs(root_dataset_split, exist_ok=True)
-        # copy target_{split}.json to root_data
-        shutil.copy(json_path, root_dataset)
+            root_dataset_split = os.path.join(root_dataset, split)
+            # make split directory in root_dataset
+            os.makedirs(root_dataset_split, exist_ok=True)
+            # copy target_{split}.json to root_data
+            shutil.copy(json_path, root_dataset)
 
-        with open(json_path, "r") as f:
-            d = json.load(f)
-            f.close()
+            with open(json_path, "r") as f:
+                d = json.load(f)
+                f.close()
 
-        for i, (cif_id, target) in enumerate(tqdm(d.items())):
-            # check file exist (removed in future)
-            p_graphdata = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
-            p_griddata = os.path.join(root_dataset_split, f"{cif_id}.griddata16")
-            p_grid = os.path.join(root_dataset_split, f"{cif_id}.grid")
-            if os.path.exists(p_graphdata) and os.path.exists(p_griddata) and os.path.exists(p_grid):
-                logger.info(f"{cif_id} graph data already exists")
-                eg_logger.info(f"{cif_id} energy grid already exists")
-                continue
+            for i, (cif_id, target) in enumerate(tqdm(d.items())):
+                # check file exist (removed in future)
+                p_graphdata = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
+                p_griddata = os.path.join(root_dataset_split, f"{cif_id}.griddata16")
+                p_grid = os.path.join(root_dataset_split, f"{cif_id}.grid")
+                if os.path.exists(p_graphdata) and os.path.exists(p_griddata) and os.path.exists(p_grid):
+                    logger.info(f"{cif_id} graph data already exists")
+                    eg_logger.info(f"{cif_id} energy grid already exists")
+                    continue
 
-            # 0. check primitive cell and atom number < max_num_atoms
-            p = os.path.join(root_cifs, f"{cif_id}.cif")
-            try:
-                st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
-                # save primitive cif
-                p_primitive_cif = os.path.join(root_dataset_split, f"{cif_id}.cif")
-                st.to(fmt="cif", filename=p_primitive_cif)
-            except Exception as e:
-                logger.info(f"{cif_id} failed : {e}")
-                continue
+                # 0. check primitive cell and atom number < max_num_atoms
+                p = os.path.join(root_cifs, f"{cif_id}.cif")
+                try:
+                    st = CifParser(p, occupancy_tolerance=2.0).get_structures(primitive=True)[0]
+                    # save primitive cif
+                    p_primitive_cif = os.path.join(root_dataset_split, f"{cif_id}.cif")
+                    st.to(fmt="cif", filename=p_primitive_cif)
+                except Exception as e:
+                    logger.info(f"{cif_id} failed : {e}")
+                    continue
 
-            if len(st.atomic_numbers) > max_num_atoms:
-                logger.info(f"{cif_id} failed : more than max_num_atoms in primitive cell")
-                continue
-            # 1. get crystal graph
-            atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
-            if len(nbr_idx) < len(atom_num) * max_num_nbr:
-                logger.info(f"{cif_id} failed : num_nbr is smaller than max_num_nbr")
-                print("please make radius larger")
-                continue
+                if len(st.atomic_numbers) > max_num_atoms:
+                    logger.info(f"{cif_id} failed : more than max_num_atoms in primitive cell")
+                    continue
+                # 1. get crystal graph
+                atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
+                if len(nbr_idx) < len(atom_num) * max_num_nbr:
+                    logger.info(f"{cif_id} failed : num_nbr is smaller than max_num_nbr")
+                    print("please make radius larger")
+                    continue
 
-            # 2. make orthogonal cell and supercell with min_length and max_length
+                # 2. make orthogonal cell and supercell with min_length and max_length
 
-            scale_abc = []
-            for l in st.lattice.abc:
-                if l > max_length:
-                    logger.info(f"{cif_id} failed : supercell have more than max_length")
-                    break
-                elif l < min_length:
-                    scale_abc.append(math.ceil(min_length / l))
-                else:
-                    scale_abc.append(1)
+                scale_abc = []
+                for l in st.lattice.abc:
+                    if l > max_length:
+                        logger.info(f"{cif_id} failed : supercell have more than max_length")
+                        break
+                    elif l < min_length:
+                        scale_abc.append(math.ceil(min_length / l))
+                    else:
+                        scale_abc.append(1)
 
-            if len(scale_abc) != len(st.lattice.abc):
-                continue
+                if len(scale_abc) != len(st.lattice.abc):
+                    continue
 
-            st.make_supercell(scale_abc)
+                st.make_supercell(scale_abc)
 
-            # 3. calculate energy grid
-            if calculate_energy_grid:
-                get_energy_grid(st, cif_id, root_dataset_split, eg_logger)
+                # 3. calculate energy grid
+                if calculate_energy_grid:
+                    get_energy_grid(st, cif_id, root_dataset_split, eg_logger)
 
-            logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
+                logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
 
-            data = [cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count, target]
+                data = [cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count, target]
 
-            p = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
-            with open(p, "wb") as f:
-                pickle.dump(data, f)
+                p = os.path.join(root_dataset_split, f"{cif_id}.graphdata")
+                with open(p, "wb") as f:
+                    pickle.dump(data, f)
