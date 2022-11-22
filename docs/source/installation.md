@@ -98,8 +98,9 @@ download_finetuned_model()
 ```
 
 
-## 4. Install GRIDAY
+## 4. Install GRIDAY (Optional)
 
+If you want to calculate energy grids with cif files, you can use GRIDAY.
 A `GRIDAY` is a tool for calculating energy grids shape of porous materials. (reference : https://github.com/Sangwon91/GRIDAY)
 
 ![GRIDAY](https://raw.githubusercontent.com/Sangwon91/GRIDAY/master/doc/img.png)
