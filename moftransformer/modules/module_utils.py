@@ -45,6 +45,7 @@ def epoch_wrapup(pl_module):
             pl_module.log(
                 f"{loss_name}/{phase}/loss_epoch",
                 getattr(pl_module, f"{phase}_{loss_name}_loss").compute(),
+                batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
             )
             getattr(pl_module, f"{phase}_{loss_name}_loss").reset()
             # mae loss
@@ -52,17 +53,21 @@ def epoch_wrapup(pl_module):
             pl_module.log(
                 f"{loss_name}/{phase}/mae_epoch",
                 value,
+                batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
             )
             getattr(pl_module, f"{phase}_{loss_name}_mae").reset()
 
             value = -value
         else:
             value = getattr(pl_module, f"{phase}_{loss_name}_accuracy").compute()
-            pl_module.log(f"{loss_name}/{phase}/accuracy_epoch", value)
+            pl_module.log(f"{loss_name}/{phase}/accuracy_epoch",
+                          value,
+                          batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],)
             getattr(pl_module, f"{phase}_{loss_name}_accuracy").reset()
             pl_module.log(
                 f"{loss_name}/{phase}/loss_epoch",
                 getattr(pl_module, f"{phase}_{loss_name}_loss").compute(),
+                batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
             )
             getattr(pl_module, f"{phase}_{loss_name}_loss").reset()
 
