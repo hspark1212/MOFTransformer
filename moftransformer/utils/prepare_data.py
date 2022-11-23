@@ -7,9 +7,8 @@ import subprocess
 import hashlib
 import pickle
 import shutil
-import glob
 from pathlib import Path
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from collections.abc import Iterable
 
 import numpy as np
@@ -21,7 +20,6 @@ from pymatgen.io.cssr import Cssr
 
 from ase.neighborlist import natural_cutoffs
 from ase import neighborlist
-from typing import List
 
 from moftransformer import __root_dir__
 
@@ -36,9 +34,9 @@ def get_logger(filename):
 
     formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
+    #stream_handler = logging.StreamHandler()
+    #stream_handler.setFormatter(formatter)
+    #logger.addHandler(stream_handler)
 
     file_handler = logging.FileHandler(filename)
     file_handler.setFormatter(formatter)
@@ -396,7 +394,7 @@ def prepare_data(root_cifs, root_dataset, task, **kwargs):
     root_dataset_total.mkdir(exist_ok=True, parents=True)
 
     # make *.grid, *.griddata16, and *.graphdata file
-    for cif in root_cifs.glob('*.cif'):
+    for cif in tqdm(root_cifs.glob('*.cif'), total=sum(1 for _ in root_cifs.glob('*.cif'))):
         _make_prepared_data(cif, root_dataset_total, logger, eg_logger, **kwargs)
 
     # automatically split data
