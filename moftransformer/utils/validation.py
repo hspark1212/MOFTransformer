@@ -1,9 +1,10 @@
+import sys
 import warnings
-from pytorch_lightning.utilities import _IS_INTERACTIVE
 from pytorch_lightning.trainer.connectors.accelerator_connector import AcceleratorConnector
 
 from moftransformer.config import _loss_names
 
+_IS_INTERACTIVE = hasattr(sys, 'ps1')
 
 class ConfigurationError(Exception):
     pass
