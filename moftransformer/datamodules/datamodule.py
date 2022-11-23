@@ -25,9 +25,6 @@ class Datamodule(LightningDataModule):
 
         self.tasks = [k for k, v in _config["loss_names"].items() if v >= 1]
 
-        # future removed (only experiments)
-        self.dataset_size = _config["dataset_size"]
-
     @property
     def dataset_cls(self):
         return Dataset
@@ -40,7 +37,6 @@ class Datamodule(LightningDataModule):
             downstream=self.downstream,
             nbr_fea_len=self.nbr_fea_len,
             tasks=self.tasks,
-            dataset_size=self.dataset_size,
         )
 
     def set_val_dataset(self):
@@ -51,7 +47,6 @@ class Datamodule(LightningDataModule):
             downstream=self.downstream,
             nbr_fea_len=self.nbr_fea_len,
             tasks=self.tasks,
-            dataset_size=self.dataset_size,
         )
 
     def set_test_dataset(self):
@@ -62,7 +57,6 @@ class Datamodule(LightningDataModule):
             downstream=self.downstream,
             nbr_fea_len=self.nbr_fea_len,
             tasks=self.tasks,
-            dataset_size=self.dataset_size,
         )
 
     def setup(self, stage: Optional[str] = None):

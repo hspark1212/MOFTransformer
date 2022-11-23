@@ -1,5 +1,5 @@
 wget
-pytorch-lightning==1.6.0
+pytorch-lightning>=1.8.0
 torchmetrics>=0.6.0
 transformers>=4.12.5
 timm>=0.4.12

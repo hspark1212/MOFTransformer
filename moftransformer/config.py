@@ -96,12 +96,45 @@ def config():
     num_workers = 16  # the number of cpu's core
     precision = 16
 
-    # experiments
-    dataset_size = False  # experiments for dataset size with 100 [k] or 500 [k]
-
     # normalization target
     mean = None
     std = None
 
     # visualize
     visualize = False  # return attention map
+
+
+@ex.named_config
+def example():
+    exp_name = "example"
+    data_root = "moftransformer/examples/dataset"
+    downstream = "example"
+    max_epochs = 20
+    batch_size = 32
+
+
+@ex.named_config
+def ppn_1bar():
+    exp_name = "ppn_1bar"
+    data_root = "transfer_learning/2_insilico_ppn/dataset"
+    downstream = "1bar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 3.79
+    std = 5.32
+
+    devices = 2
+
+
+@ex.named_config
+def ppn_65bar():
+    exp_name = "ppn_65bar"
+    data_root = "transfer_learning/2_insilico_ppn/dataset"
+    downstream = "65bar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 117.78
+    std = 30.75
+
+    devices = 2
+
