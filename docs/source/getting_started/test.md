@@ -1,15 +1,23 @@
 # Test
 
-After training, the trained model, logs and hyperparameters will be saved at `log_dir` in `config.py`.
-Then you look over the results with `tensorboard`
+When you want to check the test after the training is finished, you can proceed with the test through the argument `test_only` and `load_path`.
 
-```shell
-tensorboard --logdir=examples/logs --bind_all
+## Example for test using python
+```python
+import moftransformer
+from moftransformer.examples import example_path
+
+root_dataset = example_path['data_root']
+downstream = example_path['downstream']
+load_path = <fine_tuned_model_ckpt_file_saved_in_log_folder>
+
+moftransformer.run(root_dataset, downstream, test_only=True,
+                   load_path=load_path)
 ```
 
-You can calculate the scores for test set.
-you set the parameters `test_only=True` and `load_path`
 
-```shell
-moftransformer run downstream_raspa_100bar load_path={ckpt path of fine-tuning model} test_only=True
+## Example for test using command-line
+It can be executed using the command line in the same way.
+```bash
+$ moftransformer run --root_dataset './data' --downstream 'exmaple' --test-only True --config load_path='path_load'
 ```

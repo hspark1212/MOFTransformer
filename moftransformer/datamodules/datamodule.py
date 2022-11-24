@@ -11,7 +11,7 @@ class Datamodule(LightningDataModule):
     def __init__(self, _config):
         super().__init__()
 
-        self.data_dir = _config["data_root"]
+        self.data_dir = _config["root_dataset"]
 
         self.num_workers = _config["num_workers"]
         self.batch_size = _config["per_gpu_batchsize"]
