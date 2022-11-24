@@ -11,8 +11,6 @@ from moftransformer.datamodules.datamodule import Datamodule
 from moftransformer.modules.module import Module
 from moftransformer.utils.validation import get_valid_config, get_num_devices, ConfigurationError
 
-from pytorch_lightning.plugins import DDPPlugin
-
 warnings.filterwarnings(
     "ignore", ".*Trying to infer the `batch_size` from an ambiguous collection.*"
 )
@@ -251,7 +249,7 @@ def main(_config):
     if _IS_INTERACTIVE:
         strategy = None
     else:
-        strategy = DDPPlugin(find_unused_parameters=True)
+        strategy = "ddp"
 
     log_every_n_steps=10
 
@@ -274,5 +272,6 @@ def main(_config):
 
     if not _config["test_only"]:
         trainer.fit(model, datamodule=dm)
+        trainer.test(model, datamodule=dm)
     else:
         trainer.test(model, datamodule=dm)
