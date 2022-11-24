@@ -1,6 +1,6 @@
 # Dataset Preparation
 
-## 1. Introdction
+## 1. Introduction
 
 `MOFTransformer` takes both atom-wise graph embeddings and energy-grid embeddings to capture local and global features,
 respectively.
@@ -12,56 +12,54 @@ atom selection.
 
 (2) energy-grid embeddings
 
-The 3D energy grids are calculated by [GRIDDAY](https://github.com/Sangwon91/GRIDAY.git) with the united atom model of
+The 3D energy grids are calculated by [GRIDAY](https://github.com/Sangwon91/GRIDAY.git) with the united atom model of
 methane molecule using UFF.
 
 ## 2.Generate custom dataset
 
-From cif files, `moftransformer/utils/prepare_data.py` file will generate inputs of MOFTranformer which are the atom-wise graph embeddings and
+From cif files, `moftransformer/utils/prepare_data` file will generate inputs of MOFTranformer which are the atom-wise graph embeddings and
 enery-grid embeddings.
-You need to prepare `cif files (structures)` and `json files (targets ex. property, class)]` in `root_cifs` directory.
+You need to prepare `cif files` and `raw_{downstream}.json files` in `root_cifs` directory.
 
-The example of json files is as follows.
+- `root_cif`: A directory that contains `.cif` and `.json` file.
+- `downstream` : name of user-specific downstream task (e.g. band_gap, gas_uptake, etc).
+
+### Example for `root_cif`
+
+The example of `root_cifs` directory is as follows.
+
+    root_cifs # root for cif files
+    ├── [cif_id].cif
+    ├── [cif_id].cif
+    ├── ...
+    └── raw_{downstream}.json
+
+The example of `raw_{downstream}.json` files is as follows.
 ```
 { 
-    cif_id : property (float) or classes (int),
+    cif_id : property (float or int),
     ...
 }
 ```
 
-### 1) randomly split dataset
-If there is a json file named `raw_{task}.json` in `root_cifs` directory, then it will be randomly splitted by 8:1:1 (train:val:test). 
+### Run `prepare_data` function
 
-The example of `root_cifs` directory is as follows.
-
-    root_cifs # root for cif files
-    ├── [cif_id].cif
-    ├── ...
-    └── raw_{task}.json
-
-### 2) custom splitted dataset
-If you want to split data yourself, you just manually make splitted json files (train.json, val.json, test.json) without makeing `raw_{task}.json` in `root_cifs` directory.
-
-The example of `root_cifs` directory is as follows.
-
-    root_cifs # root for cif files
-    ├── [cif_id].cif
-    ├── ...
-    ├── train_{task}.json
-    ├── val_{task}.json
-    └── test_{task}.json
-
-Then, You need to set parameters `root_dataset`, `task`.
-`root_dataset`: the saved directories of input files
-`task` : name of user-specific task (e.g. band gap, gas uptake, etc).
+If there is a json files named `raw_{downstream}.json` in `root_cifs` directory, then it will be randomly splitted to `train`, `val` and `test`. (Default = 8:1:1).
 
 ```python
-from moftransformer.utils.prepare_data import prepare_data
-prepare_data(root_cifs, root_dataset, task="example") 
+from moftransformer.utils import prepare_data
+
+# single task
+prepare_data(root_cifs, root_dataset, downstream="example") 
+
+# multiple tasks (contain several json files in root_cif)
+prepare_data(root_cifs, root_dataset, downstream=["example1", "example2", ...])
 ```
 
-Finally, `prepare_data.py` will generate the atom-wise graph embeddings and energy-grid embeddings in `root_dataset`
+
+`prepare_data` will generate the atom-wise graph embeddings and energy-grid embeddings in `root_dataset`
 directory.
+
 
     root_dataset # root for generated inputs 
     ├── train
@@ -82,12 +80,16 @@ directory.
     │   ├── [cif_id].griddata16 # grid data
     │   ├── [cif_id].cif # primitive cif
     │   └── ...
-    ├── train_{task}.json
-    ├── val_{task}.json
-    └── test_{task}.json
+    ├── train_{downstream}.json
+    ├── val_{downstream}.json
+    └── test_{downstream}.json
+
 
 ## 3. Dataset for public database (CoREMOF, QMOF).
 
 we've provided the dataset of atom-wise graph embedding and energy-grid embedding for the CoREMOF and the QMOF database
 in our [**figshare**](https://figshare.com/articles/dataset/MOFTransformer/21155506) database.
+
+Or, you can download using [command line](https://hspark1212.github.io/MOFTransformer/installation.html#download-using-python) or [python](https://hspark1212.github.io/MOFTransformer/installation.html#download-using-python)
+(refer in [installation](https://hspark1212.github.io/MOFTransformer/installation.html#installation))
 

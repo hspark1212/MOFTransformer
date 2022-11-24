@@ -35,7 +35,7 @@ moftransformer/database/coremof/
 moftransformer/database/hmof/
 moftransformer/database/qmof/
 moftransformer/database/finetuned/
-
+moftransformer/examples/dataset/
 dft/
 figure/
 case_study/

@@ -19,26 +19,27 @@ warnings.filterwarnings(
 _IS_INTERACTIVE = hasattr(sys, 'ps1')
 
 
-def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwargs):
+def run(root_dataset, downstream=None, log_dir='logs/', *, test_only=False, **kwargs):
     """
     Train or predict MOFTransformer.
 
     Call signatures::
-        run(data_root, downstream, [test_only], **kwargs)
+        run(root_dataset, downstream, [test_only], **kwargs)
 
     The basic usage of the code is as follows:
 
-    >>> run(data_root, downstream)  # train MOFTransformer from [data_root] with train_{downstream}.json
-    >>> run(data_root, downstream, log_dir, test_only=True, load_path=model_path) # predict MOFTransformer from trained-model path
+    >>> run(root_dataset, downstream)  # train MOFTransformer from [root_dataset] with train_{downstream}.json
+    >>> run(root_dataset, downstream, log_dir, test_only=True, load_path=model_path) # predict MOFTransformer from trained-model path
 
     Dataset preperation is necessary for learning
     (url: https://hspark1212.github.io/MOFTransformer/dataset.html)
 
     Parameters
     __________
-    :param data_root: A folder containing graph data, grid data, and json of MOFs that you want to train or test.
+    :param root_dataset: A folder containing graph data, grid data, and json of MOFs that you want to train or test.
+            The way to make root_dataset is at this link (https://hspark1212.github.io/MOFTransformer/dataset.html)
             The root data must be in the following format:
-            data_root # root for generated inputs
+            root_dataset # root for generated inputs
             ├── train
             │   ├── [cif_id].graphdata # graphdata
             │   ├── [cif_id].grid # energy grid information
@@ -196,7 +197,7 @@ def run(data_root, downstream=None, log_dir='logs/', *, test_only=False, **kwarg
             raise ConfigurationError(f'{key} is not in configuration.')
 
     config.update(kwargs)
-    config['data_root'] = data_root
+    config['root_dataset'] = root_dataset
     config['downstream'] = downstream
     config['log_dir'] = log_dir
     config['test_only'] = test_only

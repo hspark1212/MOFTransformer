@@ -205,7 +205,7 @@ def _split_dataset(root_dataset:Path, **kwargs):
     seed = kwargs.get('seed', 42)
     threshold = kwargs.get('threshold', 0.01)
     train_fraction = kwargs.get('train_fraction', 0.8)
-    test_fraction = kwargs.get('train_fraction', 0.1)
+    test_fraction = kwargs.get('test_fraction', 0.1)
 
     # get directories
     total_dir = root_dataset/'total'
@@ -269,15 +269,15 @@ def _split_dataset(root_dataset:Path, **kwargs):
             shutil.copy(src, dest)
 
 
-def _split_json(root_cifs:Path, root_dataset:Path, single_task:str):
-    with open(str(root_cifs/f'raw_{single_task}.json')) as f:
+def _split_json(root_cifs:Path, root_dataset:Path, downstream:str):
+    with open(str(root_cifs/f'raw_{downstream}.json')) as f:
         src = json.load(f)
 
     for split in ['train', 'test', 'val']:
         cif_folder = root_dataset/split
         cif_list = [cif.stem for cif in cif_folder.glob('*.cif')]
         split_json = {i:src[i] for i in cif_list if i in src}
-        with open(str(root_dataset/f'{split}_{single_task}.json'), 'w') as f:
+        with open(str(root_dataset/f'{split}_{downstream}.json'), 'w') as f:
             json.dump(split_json, f)
 
 
@@ -352,19 +352,17 @@ def _make_prepared_data(cif:Path, root_dataset_total:Path, logger, eg_logger, **
         return False
 
 
-def prepare_data(root_cifs, root_dataset, task, **kwargs):
+def prepare_data(root_cifs, root_dataset, downstream, **kwargs):
     """
     Args:
         root_cifs (str): root for cif files,
                         it should contains "train" and "test" directory in root_cifs
                         ("val" directory is optional)
         root_dataset (str): root for generated datasets
-        task (str or list) : name of downstream tasks
+        downstream (str or list) : name of downstream tasks
 
     kwargs:
-        - overwrite_json (bool) : If True, overwrite {split}_task.json file when it exists. (default : False)
         - seed : (int) random seed for split data. (default : 42)
-        - duplicate : (bool) If True, allow duplication of data in train, test, and validation. (default: False)
         - train_fraction : (float) fraction for train dataset. train_fraction + test_fraction must be smaller than 1 (default : 0.8)
         - test_fraction : (float) fraction for test dataset. train_fraction + test_fraction must be smaller than 1 (default : 0.1)
 
@@ -389,6 +387,9 @@ def prepare_data(root_cifs, root_dataset, task, **kwargs):
     root_cifs = Path(root_cifs)
     root_dataset = Path(root_dataset)
 
+    if not root_cifs.exists():
+        raise ValueError(f'{root_cifs} does not exists.')
+
     # make prepare_data in 'total' directory
     root_dataset_total = Path(root_dataset) / 'total'
     root_dataset_total.mkdir(exist_ok=True, parents=True)
@@ -401,10 +402,10 @@ def prepare_data(root_cifs, root_dataset, task, **kwargs):
     _split_dataset(root_dataset, **kwargs)
 
     # split json file
-    if isinstance(task, str):
-        _split_json(root_cifs, root_dataset, task)
-    elif isinstance(task, Iterable):
-        for single_task in task:
-            _split_json(root_cifs, root_dataset, single_task)
+    if isinstance(downstream, str):
+        _split_json(root_cifs, root_dataset, downstream)
+    elif isinstance(downstream, Iterable):
+        for single_downstream in downstream:
+            _split_json(root_cifs, root_dataset, single_downstream)
     else:
-        raise TypeError(f'task must be str or Iterable, not {type(task)}')
+        raise TypeError(f'task must be str or Iterable, not {type(downstream)}')

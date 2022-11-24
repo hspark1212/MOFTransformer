@@ -10,6 +10,7 @@ In this section, you will learn about training, visualization with MOFTransforme
    :maxdepth: 2
    :caption: Table of Contents
 
+   getting_started/prepare_data
    getting_started/training
    getting_started/test
    getting_started/visualization
