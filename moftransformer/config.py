@@ -80,7 +80,7 @@ def config():
     test_only = False
 
     # below params varies with the environment
-    data_root = os.path.join(__root_dir__, "examples/dataset")
+    root_dataset = os.path.join(__root_dir__, "examples/dataset")
     log_dir = "logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
@@ -107,7 +107,7 @@ def config():
 @ex.named_config
 def example():
     exp_name = "example"
-    data_root = "moftransformer/examples/dataset"
+    root_dataset = "moftransformer/examples/dataset"
     downstream = "example"
     max_epochs = 20
     batch_size = 32
@@ -116,7 +116,7 @@ def example():
 @ex.named_config
 def ppn_1bar():
     exp_name = "ppn_1bar"
-    data_root = "transfer_learning/2_insilico_ppn/dataset"
+    root_dataset = "transfer_learning/2_insilico_ppn/dataset"
     downstream = "1bar"
     max_epochs = 20
     batch_size = 32
@@ -129,7 +129,7 @@ def ppn_1bar():
 @ex.named_config
 def ppn_65bar():
     exp_name = "ppn_65bar"
-    data_root = "transfer_learning/2_insilico_ppn/dataset"
+    root_dataset = "transfer_learning/2_insilico_ppn/dataset"
     downstream = "65bar"
     max_epochs = 20
     batch_size = 32
