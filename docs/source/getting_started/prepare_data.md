@@ -24,6 +24,10 @@ root_cifs = example_path['root_cif']
 root_dataset = example_path['root_dataset']
 downstream = example_path['downstream']
 
+train_fraction = 0.7
+test_fraction = 0.2
+
 # Run prepare data
-prepare_data(root_cifs, root_dataset, downstream=downstream)
+prepare_data(root_cifs, root_dataset, downstream=downstream, 
+             train_fraciton=train_fraction, test_fraciton=test_fraction)
 ```

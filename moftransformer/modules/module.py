@@ -284,8 +284,10 @@ class Module(LightningModule):
             for out in outputs:
                 logits += out["regression_logits"].tolist()
                 labels += out["regression_labels"].tolist()
-            r2 = r2_score(torch.FloatTensor(logits), torch.FloatTensor(labels))
-            self.log(f"test/r2_score", r2)
+
+            if len(logits) > 1:
+                r2 = r2_score(torch.FloatTensor(logits), torch.FloatTensor(labels))
+                self.log(f"test/r2_score", r2)
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)
