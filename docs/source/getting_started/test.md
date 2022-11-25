@@ -4,12 +4,23 @@ When you want to check the test after the training is finished, you can proceed 
 
 ## Example for test using python
 ```python
+from pathlib import Path
 import moftransformer
 from moftransformer.examples import example_path
 
-root_dataset = example_path['data_root']
+root_dataset = example_path['root_dataset']
 downstream = example_path['downstream']
-load_path = <fine_tuned_model_ckpt_file_saved_in_log_folder>
+
+# Get ckpt file
+log_dir = './logs/'    # same directory make from training
+seed = 0               # default seeds
+version = 0            # version for model. It increases with the number of trains
+checkpoint = 'last'    # Epochs where the model is stored. 
+
+load_path = Path(log_dir) / f'pretrained_mof_seed{seed}_from_/version_{version}/checkpoints/{checkpoint}.ckpt'
+
+if not load_path.exists():
+    raise ValueError(f'load_path does not exists. check path for .ckpt file : {load_path}')
 
 moftransformer.run(root_dataset, downstream, test_only=True,
                    load_path=load_path)
