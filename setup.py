@@ -7,6 +7,8 @@ try:
 except ImportError:
     raise EnvironmentError('Torch must be installed before install moftransformer')
 
+setup_requires = ['numpy~=1.22.3']
+
 with open("requirements.txt", "r") as f:
     install_requires = f.readlines()
 
@@ -34,6 +36,7 @@ setup(
                                      'assets/*.json', 'examples/dataset/*', 'examples/dataset/**/*',
                                      'examples/raw/*', 'examples/visualize/dataset/*', 'examples/visualize/dataset/test/*']},
     install_requires=install_requires,
+    setup_requires=setup_requires,
     extras_require=extras_require,
     scripts=[],
     url='https://hspark1212.github.io/MOFTransformer/',
@@ -41,3 +44,11 @@ setup(
     entry_points={'console_scripts':['moftransformer=moftransformer.cli.main:main']},
     python_requires='>=3.8',
 )
+
+
+try:
+    import numpy
+except (UserWarning, ImportWarning):
+    pass
+except ImportError:
+    os.system('pip install numpy')
