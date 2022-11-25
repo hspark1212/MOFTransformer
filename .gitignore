@@ -29,13 +29,12 @@ best_ckpt/
 
 # file
 demo.py
-model/config_YH.py
-model/config_HS.py
 moftransformer/database/coremof/
 moftransformer/database/hmof/
 moftransformer/database/qmof/
 moftransformer/database/finetuned/
-moftransformer/examples/dataset/
+moftransformer/config.py
+
 dft/
 figure/
 case_study/

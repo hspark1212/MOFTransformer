@@ -123,9 +123,6 @@ def ppn_1bar():
     mean = 3.79
     std = 5.32
 
-    devices = 2
-
-
 @ex.named_config
 def ppn_65bar():
     exp_name = "ppn_65bar"
@@ -136,5 +133,89 @@ def ppn_65bar():
     mean = 117.78
     std = 30.75
 
-    devices = 2
+"""
+in silico COF
+"""
+@ex.named_config
+def cof_lowbar_scratch():
+    load_path = ""
+    exp_name = "cof_lowbar_scratch"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "lowbar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 23.750
+    std = 17.166
 
+@ex.named_config
+def cof_lowbar():
+    exp_name = "cof_lowbar"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "lowbar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 23.750
+    std = 17.166
+
+@ex.named_config
+def cof_highbar_scratch():
+    load_path = ""
+    exp_name = "cof_highbar_scratch"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "highbar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 159.076
+    std = 38.164
+
+@ex.named_config
+def cof_highbar():
+    exp_name = "cof_highbar"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "highbar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 159.076
+    std = 38.164
+
+@ex.named_config
+def cof_logkh_scratch():
+    load_path = ""
+    exp_name = "cof_logkh_scratch"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "logkh"
+    max_epochs = 20
+    batch_size = 32
+    mean = -10.975
+    std = 0.563
+
+@ex.named_config
+def cof_logkh():
+    exp_name = "cof_logkh"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "logkh"
+    max_epochs = 20
+    batch_size = 32
+    mean = -10.975
+    std = 0.563
+
+@ex.named_config
+def cof_qst_scratch():
+    load_path = ""
+    exp_name = "cof_qst_scratch"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "qst"
+    max_epochs = 20
+    batch_size = 32
+    mean = -14.793
+    std = 4.542
+
+@ex.named_config
+def cof_qst():
+    exp_name = "cof_qst"
+    root_dataset = "transfer_learning/4_insilico_cof/dataset"
+    downstream = "qst"
+    max_epochs = 20
+    batch_size = 32
+    mean = -14.793
+    std = 4.542
