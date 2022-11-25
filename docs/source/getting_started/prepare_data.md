@@ -1,18 +1,20 @@
 # Prepare data
 
+`moftransformer` provides a `prepare_data` function that allows to generate input data of `MOFTransformer` (i.e., atom-wise graph embeddings and energy-grids) 
+The details are explained in the [Data Preparation](https://hspark1212.github.io/MOFTransformer/dataset.html) section.
 
-First, You should be download `GRIDAY` before run moftransformer.
-You can download moftransformer using [command-line](https://hspark1212.github.io/MOFTransformer/installation.html#installation-using-command-line)
+In order to run `prepare_data`, you need to install `GRIDAY` to calculate energy-grids from cif files.
+
+You can download GRIDAY using [command-line](https://hspark1212.github.io/MOFTransformer/installation.html#installation-using-command-line)
 or [python](https://hspark1212.github.io/MOFTransformer/installation.html#installation-using-python)
 
 ```bash
 $ moftransformer install-griday
 ```
 
-## example for running `prepare-data`
+## Example for running `prepare-data`
 
-To run MOFTransformer, The `.cif` data should be converted into `grid data` and `graph data`.
-A code that pre-processing 10 example cifs is shown as an example. \
+As an example, you can run `prepare_data` with 10 cif files in `moftransformer/examples/raw` directory
 (For more information, see [Dataset Preparation](https://hspark1212.github.io/MOFTransformer/dataset.html))
 
 ```python
