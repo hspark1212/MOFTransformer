@@ -1,6 +1,6 @@
 import os
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 __root_dir__ = os.path.dirname(__file__)
 
 from moftransformer import visualize, utils, modules, libs, gadgets, datamodules, assets

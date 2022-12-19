@@ -142,26 +142,25 @@ def make_float16_griddata(file_griddata):
 
 
 def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
+    # Before 1.1.1 version : num_grid = [str(round(cell)) for cell in structure.lattice.abc]
+    # After 1.1.1 version : num_grid = [30, 30, 30]
     global GRIDAY_PATH, FF_PATH
 
     eg_file = os.path.join(root_dataset, cif_id)
-
     random_str = str(np.random.rand()).encode()
     tmp_file = os.path.join(root_dataset, f"{hashlib.sha256(random_str).hexdigest()}.cssr")
-    # tmp_file = "{}/{}.cssr".format(, hashlib.sha256(random_str).hexdigest())
-
-    Cssr(structure).write_file(tmp_file)  # write_file
-    num_grid = [str(round(cell)) for cell in structure.lattice.abc]
-
-    proc = subprocess.Popen(
-        [GRIDAY_PATH, *num_grid, f'{FF_PATH}/UFF_Type.def', f'{FF_PATH}/UFF_FF.def', tmp_file, eg_file],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = proc.communicate()
 
     try:
-        os.remove(tmp_file)
-    except Exception as e:
-        print(e)
+        Cssr(structure).write_file(tmp_file)
+        num_grid = ['30', '30', '30']
+        proc = subprocess.Popen(
+            [GRIDAY_PATH, *num_grid, f'{FF_PATH}/UFF_Type.def', f'{FF_PATH}/UFF_FF.def', tmp_file, eg_file],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+    finally:
+        # remove temp_file
+        if os.path.exists(tmp_file):
+            os.remove(tmp_file)
 
     if err:
         eg_logger.info(f"{cif_id} energy grid failed {err}")
@@ -180,7 +179,6 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
         except Exception as e:
             print(e)
         return True
-
     else:
         eg_logger.info(f"{cif_id} energy grid failed to change to np16")
         return False
@@ -281,7 +279,18 @@ def _split_json(root_cifs:Path, root_dataset:Path, downstream:str):
             json.dump(split_json, f)
 
 
-def _make_prepared_data(cif:Path, root_dataset_total:Path, logger, eg_logger, **kwargs):
+def make_prepared_data(cif:Path, root_dataset_total:Path, logger=None, eg_logger=None, **kwargs):
+    if logger is None:
+        logger = get_logger(filename="prepare_data.log")
+    if eg_logger is None:
+        eg_logger = get_logger(filename="prepare_energy_grid.log")
+
+    if isinstance(cif, str):
+        cif = Path(cif)
+    if isinstance(root_dataset_total, str):
+        root_dataset_total = Path(root_dataset_total)
+
+    get_primitive = kwargs.get('get_primitive', 'True')
     max_num_atoms = kwargs.get('max_num_atoms', 1000)
     max_length = kwargs.get('max_length', 60.)
     min_length = kwargs.get('min_length', 30.)
@@ -293,6 +302,7 @@ def _make_prepared_data(cif:Path, root_dataset_total:Path, logger, eg_logger, **
     p_griddata = root_dataset_total / f"{cif_id}.griddata16"
     p_grid = root_dataset_total / f"{cif_id}.grid"
 
+    # Grid data and Graph data already exists
     if p_graphdata.exists() and p_griddata.exists() and p_grid.exists():
         logger.info(f"{cif_id} graph data already exists")
         eg_logger.info(f"{cif_id} energy grid already exists")
@@ -300,7 +310,7 @@ def _make_prepared_data(cif:Path, root_dataset_total:Path, logger, eg_logger, **
 
     # 0. check primitive cell and atom number < max_num_atoms
     try:
-        st = CifParser(str(cif), occupancy_tolerance=2.0).get_structures(primitive=True)[0]
+        st = CifParser(str(cif), occupancy_tolerance=2.0).get_structures(primitive=get_primitive)[0]
 
     except Exception as e:
         logger.info(f"{cif_id} failed : {e}")
@@ -346,7 +356,6 @@ def _make_prepared_data(cif:Path, root_dataset_total:Path, logger, eg_logger, **
         data = [cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count]
         with open(str(p_graphdata), "wb") as f:
             pickle.dump(data, f)
-
         return True
     else:
         return False
@@ -366,6 +375,7 @@ def prepare_data(root_cifs, root_dataset, downstream, **kwargs):
         - train_fraction : (float) fraction for train dataset. train_fraction + test_fraction must be smaller than 1 (default : 0.8)
         - test_fraction : (float) fraction for test dataset. train_fraction + test_fraction must be smaller than 1 (default : 0.1)
 
+        - get_primitive (bool) : If True, use primitive cell in graph embedding
         - max_num_atoms (int): max number atoms in primitive cell
         - max_length (float) : maximum length of supercell
         - min_length (float) : minimum length of supercell
@@ -396,7 +406,7 @@ def prepare_data(root_cifs, root_dataset, downstream, **kwargs):
 
     # make *.grid, *.griddata16, and *.graphdata file
     for cif in tqdm(root_cifs.glob('*.cif'), total=sum(1 for _ in root_cifs.glob('*.cif'))):
-        _make_prepared_data(cif, root_dataset_total, logger, eg_logger, **kwargs)
+        make_prepared_data(cif, root_dataset_total, logger, eg_logger, **kwargs)
 
     # automatically split data
     _split_dataset(root_dataset, **kwargs)

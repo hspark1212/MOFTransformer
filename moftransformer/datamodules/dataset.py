@@ -239,13 +239,17 @@ class Dataset(torch.utils.data.Dataset):
         batch_grid_data = dict_batch["grid_data"]
         batch_cell = dict_batch["cell"]
         new_grids = []
+
         for bi in range(batch_size):
             orig = batch_grid_data[bi].view(batch_cell[bi][::-1]).transpose(0, 2)
-            orig = interpolate(orig[None, None, :, :, :],
-                               size=[img_size, img_size, img_size],
-                               mode="trilinear",
-                               align_corners=True,
-                               )
+            if batch_cell[bi] == [30, 30, 30]:      # version >= 1.1.2
+                orig = orig[None, None, :, :, :]
+            else:
+                orig = interpolate(orig[None, None, :, :, :],
+                                   size=[img_size, img_size, img_size],
+                                   mode="trilinear",
+                                   align_corners=True,
+                                   )
             new_grids.append(orig)
         new_grids = torch.concat(new_grids, axis=0)
         dict_batch["grid"] = new_grids
@@ -257,11 +261,14 @@ class Dataset(torch.utils.data.Dataset):
             new_false_grids = []
             for bi in range(batch_size):
                 orig = batch_false_grid_data[bi].view(batch_false_cell[bi])
-                orig = interpolate(orig[None, None, :, :, :],
-                                   size=[img_size, img_size, img_size],
-                                   mode="trilinear",
-                                   align_corners=True,
-                                   )
+                if batch_cell[bi] == [30, 30, 30]:  # version >= 1.1.2
+                    orig = orig[None, None, :, :, :]
+                else:
+                    orig = interpolate(orig[None, None, :, :, :],
+                                       size=[img_size, img_size, img_size],
+                                       mode="trilinear",
+                                       align_corners=True,
+                                       )
                 new_false_grids.append(orig)
             new_false_grids = torch.concat(new_false_grids, axis=0)
             dict_batch["false_grid"] = new_false_grids
