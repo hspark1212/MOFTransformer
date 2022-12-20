@@ -18,11 +18,12 @@ from pymatgen.io.cif import CifParser
 from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.io.cssr import Cssr
 
+from ase.io import read
 from ase.neighborlist import natural_cutoffs
 from ase import neighborlist
+from ase.build import make_supercell
 
 from moftransformer import __root_dir__
-
 
 GRIDAY_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/scripts/grid_gen')
 FF_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/FF')
@@ -34,9 +35,9 @@ def get_logger(filename):
 
     formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
-    #stream_handler = logging.StreamHandler()
-    #stream_handler.setFormatter(formatter)
-    #logger.addHandler(stream_handler)
+    # stream_handler = logging.StreamHandler()
+    # stream_handler.setFormatter(formatter)
+    # logger.addHandler(stream_handler)
 
     file_handler = logging.FileHandler(filename)
     file_handler.setFormatter(formatter)
@@ -86,31 +87,41 @@ def get_unique_atoms(atoms):
     return final_unique_idx, final_unique_count
 
 
-def get_crystal_graph(st, radius=8, max_num_nbr=12):
-    atom_num = list(st.atomic_numbers)
+def get_crystal_graph(atoms, radius=8, max_num_nbr=12):
+    # when the cell lengths are smaller than radius, make supercell to be longer than the radius
+    scale_abc = []
+    for l in atoms.cell.cellpar()[:3]:
+        if l < radius:
+            scale_abc.append(math.ceil(radius / l))
+        else:
+            scale_abc.append(1)
 
-    all_nbrs = st.get_all_neighbors(radius)
-    all_nbrs = [sorted(nbrs, key=lambda x: x.nn_distance)[:max_num_nbr] for nbrs in all_nbrs]
+    # make supercell
+    m = np.zeros([3, 3])
+    np.fill_diagonal(m, scale_abc)
+    atoms = make_supercell(atoms, m)
 
+    dist_mat = atoms.get_all_distances(mic=True)
+    nbr_mat = np.where(dist_mat > 0, dist_mat, 1000)  # 1000 is mamium number
     nbr_idx = []
     nbr_dist = []
-    for nbrs in all_nbrs:
-        nbr_idx.extend(list(map(lambda x: x.index, nbrs)))
-        nbr_dist.extend(list(map(lambda x: x.nn_distance, nbrs)))
+    for row in nbr_mat:
+        idx = np.argsort(row)[:max_num_nbr]
+        nbr_idx.extend(idx)
+        nbr_dist.extend(row[idx])
 
     # get same-topo atoms
-    atoms = AseAtomsAdaptor().get_atoms(st)
     uni_idx, uni_count = get_unique_atoms(atoms)
 
     # convert to small size
-    atom_num = np.array(atom_num, dtype=np.int8)
+    atom_num = np.array(list(atoms.numbers), dtype=np.int8)
     nbr_idx = np.array(nbr_idx, dtype=np.int16)
     nbr_dist = np.array(nbr_dist, dtype=np.float32)
     uni_count = np.array(uni_count, dtype=np.int16)
     return atom_num, nbr_idx, nbr_dist, uni_idx, uni_count
 
 
-def calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01):
+def _calculate_scaling_matrix_for_orthogonal_supercell(cell_matrix, eps=0.01):
     """
     cell_matrix: contains lattice vector as column vectors.
                  e.g. cell_matrix[:, 0] = a.
@@ -141,7 +152,7 @@ def make_float16_griddata(file_griddata):
     return griddata
 
 
-def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
+def get_energy_grid(atoms, cif_id, root_dataset, eg_logger):
     # Before 1.1.1 version : num_grid = [str(round(cell)) for cell in structure.lattice.abc]
     # After 1.1.1 version : num_grid = [30, 30, 30]
     global GRIDAY_PATH, FF_PATH
@@ -151,6 +162,7 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
     tmp_file = os.path.join(root_dataset, f"{hashlib.sha256(random_str).hexdigest()}.cssr")
 
     try:
+        structure = AseAtomsAdaptor().get_structure(atoms)
         Cssr(structure).write_file(tmp_file)
         num_grid = ['30', '30', '30']
         proc = subprocess.Popen(
@@ -184,7 +196,7 @@ def get_energy_grid(structure, cif_id, root_dataset, eg_logger):
         return False
 
 
-def _split_dataset(root_dataset:Path, **kwargs):
+def _split_dataset(root_dataset: Path, **kwargs):
     """
     make train_{task}.json, test_{task}.json, and val_{task}.json from raw_{task}.json
     :param root_cifs: root for cif files
@@ -206,10 +218,10 @@ def _split_dataset(root_dataset:Path, **kwargs):
     test_fraction = kwargs.get('test_fraction', 0.1)
 
     # get directories
-    total_dir = root_dataset/'total'
+    total_dir = root_dataset / 'total'
     assert total_dir.exists()
 
-    split_dir = {split : root_dataset/split for split in ['train', 'test', 'val']}
+    split_dir = {split: root_dataset / split for split in ['train', 'test', 'val']}
     for direc in split_dir.values():
         direc.mkdir(exist_ok=True)
 
@@ -227,13 +239,14 @@ def _split_dataset(root_dataset:Path, **kwargs):
 
     # get number of split
     if train_fraction + test_fraction > 1:
-        raise ValueError(f'"train_fraction + test_fraction" must be smaller than 1.0, not {train_fraction + test_fraction}')
+        raise ValueError(
+            f'"train_fraction + test_fraction" must be smaller than 1.0, not {train_fraction + test_fraction}')
 
     n_total = len(cif_list.keys())
     n_train = int(n_total * train_fraction)
     n_test = int(n_total * test_fraction)
     n_val = n_total - n_train - n_test
-    n_split = {'train':n_train, 'test':n_test, 'val':n_val}
+    n_split = {'train': n_train, 'test': n_test, 'val': n_val}
 
     # remove already-divided values
     for split, direc in split_dir.items():
@@ -244,16 +257,17 @@ def _split_dataset(root_dataset:Path, **kwargs):
                 n_split[split] -= 1
 
     assert sum(n_split.values()) == len(cif_list), 'Error! contact with code writer!'
-    if not cif_list: # NO additional divided task
+    if not cif_list:  # NO additional divided task
         return
 
     for split, n in n_split.items():
-        if n < -n_total*threshold:
-            raise ValueError("{split} folder's cif number is larger than {split}_fraction. change argument {split}_fraction.")
+        if n < -n_total * threshold:
+            raise ValueError(
+                "{split} folder's cif number is larger than {split}_fraction. change argument {split}_fraction.")
 
     # random split index
     cif_name = sorted(list(cif_list.keys()))
-    split_idx = ['train']*n_split['train'] + ['test']*n_split['test'] + ['val']*n_split['val']
+    split_idx = ['train'] * n_split['train'] + ['test'] * n_split['test'] + ['val'] * n_split['val']
     np.random.seed(seed=seed)
     np.random.shuffle(split_idx)
 
@@ -263,23 +277,23 @@ def _split_dataset(root_dataset:Path, **kwargs):
         cifpath = cif_list[cif]
         for suffix in ['cif', 'graphdata', 'grid', 'griddata16']:
             src = getattr(cifpath, suffix)
-            dest = root_dataset/split
+            dest = root_dataset / split
             shutil.copy(src, dest)
 
 
-def _split_json(root_cifs:Path, root_dataset:Path, downstream:str):
-    with open(str(root_cifs/f'raw_{downstream}.json')) as f:
+def _split_json(root_cifs: Path, root_dataset: Path, downstream: str):
+    with open(str(root_cifs / f'raw_{downstream}.json')) as f:
         src = json.load(f)
 
     for split in ['train', 'test', 'val']:
-        cif_folder = root_dataset/split
+        cif_folder = root_dataset / split
         cif_list = [cif.stem for cif in cif_folder.glob('*.cif')]
-        split_json = {i:src[i] for i in cif_list if i in src}
-        with open(str(root_dataset/f'{split}_{downstream}.json'), 'w') as f:
+        split_json = {i: src[i] for i in cif_list if i in src}
+        with open(str(root_dataset / f'{split}_{downstream}.json'), 'w') as f:
             json.dump(split_json, f)
 
 
-def make_prepared_data(cif:Path, root_dataset_total:Path, logger=None, eg_logger=None, **kwargs):
+def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logger=None, **kwargs):
     if logger is None:
         logger = get_logger(filename="prepare_data.log")
     if eg_logger is None:
@@ -290,8 +304,9 @@ def make_prepared_data(cif:Path, root_dataset_total:Path, logger=None, eg_logger
     if isinstance(root_dataset_total, str):
         root_dataset_total = Path(root_dataset_total)
 
+    root_dataset_total.mkdir(exist_ok=True, parents=True)
+
     get_primitive = kwargs.get('get_primitive', 'True')
-    max_num_atoms = kwargs.get('max_num_atoms', 1000)
     max_length = kwargs.get('max_length', 60.)
     min_length = kwargs.get('min_length', 30.)
     max_num_nbr = kwargs.get('max_num_nbr', 12)
@@ -310,26 +325,21 @@ def make_prepared_data(cif:Path, root_dataset_total:Path, logger=None, eg_logger
 
     # 0. check primitive cell and atom number < max_num_atoms
     try:
-        st = CifParser(str(cif), occupancy_tolerance=2.0).get_structures(primitive=get_primitive)[0]
+        atoms = read(str(cif))
 
     except Exception as e:
         logger.info(f"{cif_id} failed : {e}")
         return False
 
-    if len(st.atomic_numbers) > max_num_atoms:
-        logger.info(f"{cif_id} failed : more than max_num_atoms in primitive cell")
-        return False
-
     # 1. get crystal graph
-    atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(st, radius=8, max_num_nbr=max_num_nbr)
+    atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(atoms, radius=8, max_num_nbr=max_num_nbr)
     if len(nbr_idx) < len(atom_num) * max_num_nbr:
         logger.info(f"{cif_id} failed : num_nbr is smaller than max_num_nbr. please make radius larger")
         return False
 
-    # 2. make orthogonal cell and supercell with min_length and max_length
-
+    # 2. make supercell with min_length and max_length
     scale_abc = []
-    for l in st.lattice.abc:
+    for l in atoms.cell.cellpar()[:3]:
         if l > max_length:
             logger.info(f"{cif_id} failed : supercell have more than max_length")
             return False
@@ -338,19 +348,20 @@ def make_prepared_data(cif:Path, root_dataset_total:Path, logger=None, eg_logger
         else:
             scale_abc.append(1)
 
-    assert len(scale_abc) == len(st.lattice.abc), 'Error! contact to code writer!'
-
-    st.make_supercell(scale_abc)
+    # make supercell
+    m = np.zeros([3, 3])
+    np.fill_diagonal(m, scale_abc)
+    atoms = make_supercell(atoms, m)
 
     # 3. calculate energy grid
-    eg_success = get_energy_grid(st, cif_id, root_dataset_total, eg_logger)
+    eg_success = get_energy_grid(atoms, cif_id, root_dataset_total, eg_logger)
 
     if eg_success:
-        logger.info(f"{cif_id} succeed : supercell length {st.lattice.abc}")
+        logger.info(f"{cif_id} succeed : supercell length {atoms.cell.cellpar()[:3]}")
 
         # save primitive files
-        p_primitive_cif = root_dataset_total / f'{cif_id}.cif'
-        st.to(fmt="cif", filename=str(p_primitive_cif))
+        save_cif_path = root_dataset_total / f'{cif_id}.cif'
+        atoms.write(filename=save_cif_path)
 
         # save graphdata file
         data = [cif_id, atom_num, nbr_idx, nbr_dist, uni_idx, uni_count]
