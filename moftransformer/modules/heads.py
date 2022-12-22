@@ -135,21 +135,3 @@ class MOCHead(nn.Module):
         x = self.fc(x)  # [B, graph_len, 1]
         x = x.squeeze(dim=-1)  # [B, graph_len]
         return x
-
-
-class BBPHead(nn.Module):
-    """
-    head for Building Block Prediction
-    """
-
-    def __init__(self, hid_dim):
-        super().__init__()
-        self.fc = nn.Linear(hid_dim, 862)
-
-    def forward(self, x):
-        """
-        :param x: output [B, hid_dim]
-        :return: [B, num_bbs]
-        """
-        x = self.fc(x)
-        return x

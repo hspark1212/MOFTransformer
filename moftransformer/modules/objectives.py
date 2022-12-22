@@ -16,7 +16,7 @@ def init_weights(module):
 
 
 def compute_regression(pl_module, batch, normalizer):
-    infer = pl_module.infer(batch, mask_grid=False)
+    infer = pl_module.infer(batch)
 
     logits = pl_module.regression_head(infer["cls_feats"]).squeeze(-1)  # [B]
     labels = torch.FloatTensor(batch["target"]).to(logits.device)  # [B]
@@ -46,7 +46,7 @@ def compute_regression(pl_module, batch, normalizer):
 
 
 def compute_classification(pl_module, batch):
-    infer = pl_module.infer(batch, mask_grid=False)
+    infer = pl_module.infer(batch)
 
     logits, binary = pl_module.classification_head(infer["cls_feats"])  # [B, output_dim]
     labels = torch.LongTensor(batch["target"]).to(logits.device)  # [B]
@@ -111,7 +111,7 @@ def compute_mpp(pl_module, batch):
 
 
 def compute_mtp(pl_module, batch):
-    infer = pl_module.infer(batch, mask_grid=False)
+    infer = pl_module.infer(batch)
     mtp_logits = pl_module.mtp_head(infer["cls_feats"])  # [B, hid_dim]
     mtp_labels = torch.LongTensor(batch["mtp"]).to(mtp_logits.device)  # [B]
 
@@ -137,7 +137,7 @@ def compute_mtp(pl_module, batch):
 
 
 def compute_vfp(pl_module, batch):
-    infer = pl_module.infer(batch, mask_grid=False)
+    infer = pl_module.infer(batch)
 
     vfp_logits = pl_module.vfp_head(infer["cls_feats"]).squeeze(-1)  # [B]
     vfp_labels = torch.FloatTensor(batch["vfp"]).to(vfp_logits.device)
@@ -183,7 +183,7 @@ def compute_ggm(pl_module, batch):
     batch = {k: v for k, v in batch.items()}
     batch["grid"] = ggm_images
 
-    infer = pl_module.infer(batch, mask_grid=False)
+    infer = pl_module.infer(batch)
     ggm_logits = pl_module.ggm_head(infer["cls_feats"])  # cls_feats
     ggm_loss = F.cross_entropy(ggm_logits, ggm_labels.long())
 
@@ -207,7 +207,13 @@ def compute_ggm(pl_module, batch):
 
 
 def compute_moc(pl_module, batch):
-    infer = pl_module.infer(batch, mask_grid=False)
+
+    if "bbc" in batch.keys():
+        task = "bbc"
+    else:
+        task = "moc"
+
+    infer = pl_module.infer(batch)
     moc_logits = pl_module.moc_head(
         infer["graph_feats"][:, 1:, :]).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
     moc_labels = infer["mo_labels"].to(moc_logits).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
@@ -224,47 +230,12 @@ def compute_moc(pl_module, batch):
 
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
-    loss = getattr(pl_module, f"{phase}_moc_loss")(ret["moc_loss"])
-    acc = getattr(pl_module, f"{phase}_moc_accuracy")(
+    loss = getattr(pl_module, f"{phase}_{task}_loss")(ret["moc_loss"])
+    acc = getattr(pl_module, f"{phase}_{task}_accuracy")(
         nn.Sigmoid()(ret["moc_logits"]), ret["moc_labels"].long()
     )
 
-    pl_module.log(f"moc/{phase}/loss", loss)
-    pl_module.log(f"moc/{phase}/accuracy", acc)
-
-    return ret
-
-
-def compute_bbp(pl_module, batch):
-    infer = pl_module.infer(batch, mask_grid=False)
-    bbp_logits = pl_module.bbp_head(infer["cls_feats"])  # [B, num_bbs]
-    # labels
-    batch_size, num_bbs = bbp_logits.shape
-    bbp_labels = torch.zeros([batch_size, num_bbs]).to(bbp_logits.device)  # [B, num_bbs]
-    for bi, bb in enumerate(batch["bbp"]):
-        for b in bb:
-            bbp_labels[bi][b] = 1
-    # flatten
-    bbp_logits = bbp_logits.flatten()
-    bbp_labels = bbp_labels.flatten()
-
-    bbp_loss = F.binary_cross_entropy_with_logits(input=bbp_logits,
-                                                  target=bbp_labels)
-
-    ret = {
-        "bbp_loss": bbp_loss,
-        "bbp_logits": bbp_logits,
-        "bbp_labels": bbp_labels,
-    }
-
-    # call update() loss and acc
-    phase = "train" if pl_module.training else "val"
-    loss = getattr(pl_module, f"{phase}_bbp_loss")(ret["bbp_loss"])
-    acc = getattr(pl_module, f"{phase}_bbp_accuracy")(
-        nn.Sigmoid()(ret["bbp_logits"]), ret["bbp_labels"].long()
-    )
-
-    pl_module.log(f"bbp/{phase}/loss", loss)
-    pl_module.log(f"bbp/{phase}/accuracy", acc)
+    pl_module.log(f"{task}/{phase}/loss", loss)
+    pl_module.log(f"{task}/{phase}/accuracy", acc)
 
     return ret
