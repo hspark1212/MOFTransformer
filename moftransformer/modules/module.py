@@ -75,13 +75,9 @@ class Module(LightningModule):
             self.vfp_head = heads.VFPHead(config["hid_dim"])
             self.vfp_head.apply(objectives.init_weights)
 
-        if config["loss_names"]["moc"] > 0:
+        if config["loss_names"]["moc"] > 0 or config["loss_names"]["bbc"] > 0:
             self.moc_head = heads.MOCHead(config["hid_dim"])
             self.moc_head.apply(objectives.init_weights)
-
-        if config["loss_names"]["bbp"] > 0:
-            self.bbp_head = heads.BBPHead(config["hid_dim"])
-            self.bbp_head.apply(objectives.init_weights)
 
         # ===================== Downstream =====================
         hid_dim = config["hid_dim"]
@@ -130,7 +126,12 @@ class Module(LightningModule):
         grid = batch["grid"]  # [B, C, H, W, D]
         volume = batch["volume"]  # list [B]
 
-        moc = batch.get("moc")  # if moc, [B]
+        if "moc" in batch.keys():
+            moc =  batch["moc"] # [B]
+        elif "bbc" in batch.keys():
+            moc = batch["bbc"] # [B]
+        else:
+            moc = None
 
         # get graph embeds
         (graph_embeds,  # [B, max_graph_len, hid_dim],
@@ -235,13 +236,9 @@ class Module(LightningModule):
         if "vfp" in self.current_tasks:
             ret.update(objectives.compute_vfp(self, batch))
 
-        # Metal Organic Classification
-        if "moc" in self.current_tasks:
+        # Metal Organic Classification (or Building Block Classfication)
+        if "moc" in self.current_tasks or "bbc" in self.current_tasks:
             ret.update(objectives.compute_moc(self, batch))
-
-        # Metal Organic Classification
-        if "bbp" in self.current_tasks:
-            ret.update(objectives.compute_bbp(self, batch))
 
         # regression
         if "regression" in self.current_tasks:

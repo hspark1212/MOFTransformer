@@ -13,7 +13,7 @@ def _loss_names(d):
         "mtp": 0,  # mof topology prediction
         "vfp": 0,  # (accessible) void fraction prediction
         "moc": 0,  # metal organic classification
-        "bbp": 0,  # building block prediction
+        "bbc": 0,  # building block classification
         "classification": 0,  # classification
         "regression": 0,  # regression
     }
@@ -25,7 +25,7 @@ def _loss_names(d):
 def config():
     """
     # prepare_data
-    max_num_atoms = 1000
+    max_num_atoms = 300
     min_length = 30
     max_length = 60
     radius = 8
@@ -112,6 +112,37 @@ def example():
     max_epochs = 20
     batch_size = 32
 
+"""
+pretraining
+"""
+
+@ex.named_config
+def mtp():
+    load_path = ""
+    exp_name = "test_mtp"
+    root_dataset = "/usr/data/pretrained_mof/ver4/dataset/"
+    loss_names = _loss_names({"mtp": 1})
+
+
+@ex.named_config
+def bbc():
+    load_path = ""
+    exp_name = "test_bbc"
+    root_dataset = "/usr/data/pretrained_mof/ver4/dataset/"
+    loss_names = _loss_names({"bbc": 1})
+
+
+@ex.named_config
+def moc():
+    load_path = ""
+    exp_name = "test_moc"
+    root_dataset = "/usr/data/pretrained_mof/ver4/dataset/"
+    loss_names = _loss_names({"moc": 1})
+
+
+"""
+fine-tuning (transfer learining)
+"""
 
 @ex.named_config
 def ppn_1bar():
@@ -219,3 +250,49 @@ def cof_qst():
     batch_size = 32
     mean = -14.793
     std = 4.542
+
+"""
+pcod zeolite
+"""
+
+@ex.named_config
+def zeo_qst_scratch():
+    load_path = ""
+    exp_name = "zeo_qst_scratch"
+    root_dataset = "/home/data/transfer_learning/2_pcod_zeolite/dataset"
+    downstream = "qst"
+    max_epochs = 20
+    batch_size = 32
+    mean = 19.052
+    std = 3.169
+
+@ex.named_config
+def zeo_qst():
+    exp_name = "zeo_qst"
+    root_dataset = "/home/data/transfer_learning/2_pcod_zeolite/dataset"
+    downstream = "qst"
+    max_epochs = 20
+    batch_size = 32
+    mean = 19.052
+    std = 3.169
+
+@ex.named_config
+def zeo_unitlesskh_scratch():
+    load_path = ""
+    exp_name = "zeo_unitlesskh_scratch"
+    root_dataset = "/home/data/transfer_learning/2_pcod_zeolite/dataset"
+    downstream = "unitlesskh"
+    max_epochs = 20
+    batch_size = 32
+    mean = 19.725
+    std = 12.317
+
+@ex.named_config
+def zeo_unitlesskh():
+    exp_name = "zeo_unitlesskh"
+    root_dataset = "/home/data/transfer_learning/2_pcod_zeolite/dataset"
+    downstream = "unitlesskh"
+    max_epochs = 20
+    batch_size = 32
+    mean = 19.725
+    std = 12.317

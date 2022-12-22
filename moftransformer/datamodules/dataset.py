@@ -48,7 +48,7 @@ class Dataset(torch.utils.data.Dataset):
         self.tasks = {}
 
         for task in tasks:
-            if task in ["mtp", "vfp", "moc", "bbp"]:
+            if task in ["mtp", "vfp", "moc", "bbc"]:
                 path_file = os.path.join(data_dir, f"{split}_{task}.json")
                 print(f"read {path_file}...")
                 assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
@@ -149,7 +149,7 @@ class Dataset(torch.utils.data.Dataset):
         file_graph = os.path.join(self.data_dir, self.split, f"{cif_id}.graphdata")
 
         graphdata = pickle.load(open(file_graph, "rb"))
-        # graphdata = ["cif_id", "atom_num", "nbr_idx", "nbr_dist", "uni_idx", "uni_count", "target"]
+        # graphdata = ["cif_id", "atom_num", "nbr_idx", "nbr_dist", "uni_idx", "uni_count"]
         atom_num = torch.LongTensor(graphdata[1].copy())
         nbr_idx = torch.LongTensor(graphdata[2].copy()).view(len(atom_num), -1)
         nbr_dist = torch.FloatTensor(graphdata[3].copy()).view(len(atom_num), -1)
