@@ -88,19 +88,6 @@ def get_unique_atoms(atoms):
 
 
 def get_crystal_graph(atoms, radius=8, max_num_nbr=12):
-    # when the cell lengths are smaller than radius, make supercell to be longer than the radius
-    scale_abc = []
-    for l in atoms.cell.cellpar()[:3]:
-        if l < radius:
-            scale_abc.append(math.ceil(radius / l))
-        else:
-            scale_abc.append(1)
-
-    # make supercell
-    m = np.zeros([3, 3])
-    np.fill_diagonal(m, scale_abc)
-    atoms = make_supercell(atoms, m)
-
     dist_mat = atoms.get_all_distances(mic=True)
     nbr_mat = np.where(dist_mat > 0, dist_mat, 1000)  # 1000 is mamium number
     nbr_idx = []
@@ -293,6 +280,25 @@ def _split_json(root_cifs: Path, root_dataset: Path, downstream: str):
             json.dump(split_json, f)
 
 
+def _make_supercell(atoms, cutoff):
+    """
+    make atoms into supercell when cell length is less than cufoff (min_length)
+    """
+    # when the cell lengths are smaller than radius, make supercell to be longer than the radius
+    scale_abc = []
+    for l in atoms.cell.cellpar()[:3]:
+        if l < cutoff:
+            scale_abc.append(math.ceil(cutoff / l))
+        else:
+            scale_abc.append(1)
+
+    # make supercell
+    m = np.zeros([3, 3])
+    np.fill_diagonal(m, scale_abc)
+    atoms = make_supercell(atoms, m)
+    return atoms
+
+
 def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logger=None, **kwargs):
     if logger is None:
         logger = get_logger(filename="prepare_data.log")
@@ -306,7 +312,6 @@ def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logg
 
     root_dataset_total.mkdir(exist_ok=True, parents=True)
 
-    get_primitive = kwargs.get('get_primitive', 'True')
     max_length = kwargs.get('max_length', 60.)
     min_length = kwargs.get('min_length', 30.)
     max_num_nbr = kwargs.get('max_num_nbr', 12)
@@ -323,43 +328,41 @@ def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logg
         eg_logger.info(f"{cif_id} energy grid already exists")
         return True
 
-    # 0. check primitive cell and atom number < max_num_atoms
+    # valid cif check
+    try:
+        CifParser(cif).get_structures()
+    except ValueError as e:
+        logger.info(f"{cif_id} failed : {e} (error when reading cif with pymatgen)")
+        return False
+
+    # read cif by ASE
     try:
         atoms = read(str(cif))
-
     except Exception as e:
         logger.info(f"{cif_id} failed : {e}")
         return False
 
     # 1. get crystal graph
+    atoms = _make_supercell(atoms, cutoff=8) # radius = 8
     atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(atoms, radius=8, max_num_nbr=max_num_nbr)
     if len(nbr_idx) < len(atom_num) * max_num_nbr:
         logger.info(f"{cif_id} failed : num_nbr is smaller than max_num_nbr. please make radius larger")
         return False
 
-    # 2. make supercell with min_length and max_length
-    scale_abc = []
-    for l in atoms.cell.cellpar()[:3]:
+    # 2. make supercell with min_length
+    atoms_eg = _make_supercell(atoms, cutoff=min_length)
+    for l in atoms_eg.cell.cellpar()[:3]:
         if l > max_length:
             logger.info(f"{cif_id} failed : supercell have more than max_length")
             return False
-        elif l < min_length:
-            scale_abc.append(math.ceil(min_length / l))
-        else:
-            scale_abc.append(1)
-
-    # make supercell
-    m = np.zeros([3, 3])
-    np.fill_diagonal(m, scale_abc)
-    atoms = make_supercell(atoms, m)
 
     # 3. calculate energy grid
-    eg_success = get_energy_grid(atoms, cif_id, root_dataset_total, eg_logger)
+    eg_success = get_energy_grid(atoms_eg, cif_id, root_dataset_total, eg_logger)
 
     if eg_success:
         logger.info(f"{cif_id} succeed : supercell length {atoms.cell.cellpar()[:3]}")
 
-        # save primitive files
+        # save cif files
         save_cif_path = root_dataset_total / f'{cif_id}.cif'
         atoms.write(filename=save_cif_path)
 
