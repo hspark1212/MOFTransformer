@@ -14,6 +14,7 @@ class InstallationError(Exception):
             return f"Installation Error : {self.error_message}"
         return "Installation Error"
 
+
 def _install_make():
     print ('=== Download gcc=9.5.0 =========================================================')
     ps = subprocess.run('conda install -c conda-forge gcc=9.5.0 -y'.split())
@@ -53,15 +54,19 @@ def _make_griday():
         raise InstallationError(f'GRIDAY is not installed. Please try again.')
 
 
-def install_griday():
+def install_griday(install_make=False):
     """
     Installation a GRIDAY which calculates the energy grid for prepare-data.py
     Original code : https://github.com/Sangwon91/GRIDAY.git
+    
+    :Param install_make : (bool) if True, install gcc, g++, and make
 
     :return: None
     """
-    _install_make()
-    _make_griday()
+
+    if install_make:
+        _install_make(install_gcc)
+    _make_griday(install_gcc)
 
 
 def uninstall_griday():
