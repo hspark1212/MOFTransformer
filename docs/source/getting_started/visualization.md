@@ -10,29 +10,38 @@ As such, we can analyze feature importance using attention scores from fine-tuni
 from visualize import PatchVisualizer
 ```
 
+
 ## Visualization 
 In this sectinon, you will analyze feature importance with the finetuned model we've provided. 
 you need to download the finetuned models (e.g. band gap, h<sub>2</sub> uptake) 
+```bash
+$ moftransformer download finetuned_model -o ./examples
+```
+
 please refer to dataset.md to download the ckpt files
 
 Here is an example to build `PatchVisualizer` with a cif file:
 ```python
-from visualize import PatchVisualizer
+from moftransformer.visualize import PatchVisualizer
+from moftransformer.examples import visualize_example_path
 
 model_path = "examples/finetuned_bandgap.ckpt" # or 'examples/finetuned_h2_uptake.ckpt'
-data_path = 'examples/visualize/dataset/'
+data_path = visualize_example_path
 cifname = 'MIBQAR01_FSR'
 
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
+vis.draw_graph()
+
 ```
 
 or You can build  `PatchVisualizer` with a directory that contains cif files.
 In this case, you can choose the cif file by index.
 ```python
-from visualize import PatchVisualizer
+from moftransformer.visualize import PatchVisualizer
+from moftransformer.examples import visualize_example_path
 
 model_path = "examples/finetuned_bandgap.ckpt" # or 'examples/finetuned_h2_uptake.ckpt'
-data_path = './examples/visualize/dataset/'
+data_path = visualize_example_path
 batch_id = 0
 
 vis = PatchVisualizer.from_index(0, model_path, data_path)

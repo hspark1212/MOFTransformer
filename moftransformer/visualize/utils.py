@@ -22,6 +22,7 @@ def get_model_and_datamodule(model_path, data_root, downstream=''):
     _config['visualize'] = True
     _config["per_gpu_batchsize"] = 1
     _config["data_root"] = data_root
+    _config["root_dataset"] = data_root
     _config["load_path"] = model_path
     _config["test_only"] = True
     _config["use_transformer"] = True
@@ -61,7 +62,6 @@ def get_batch_from_cif_id(data_iter, cif_id):
             raise ValueError(f'There are no {cif_id} in dataset')
         else:
             batch_id = batch["cif_id"][0]
-            print(batch_id)
             if batch_id == cif_id:
                 return batch
 
