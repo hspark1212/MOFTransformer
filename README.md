@@ -93,23 +93,34 @@ import moftransformer
 from moftransformer.examples import example_path
 
 # data root and downstream from example
-data_root = example_path['root_dataset']
+root_dataset = example_path['root_dataset']
 downstream = example_path['downstream']
 log_dir = './logs/'
 
-moftransformer.run(data_root, downstream, log_dir=log_dir, 
+# kwargs (optional)
+max_epochs = 10
+batch_size = 8
+
+moftransformer.run(root_dataset, downstream, log_dir=log_dir, 
                    max_epochs=max_epochs, batch_size=batch_size,)
 ```
 which will run in about 35 seconds.
 
 
 3. Visualize analysis of feature importance for the fine-tuned model.
+
+download finetuned-bandgap model before visualize.
+```bash
+moftransformer download finetuned_model -o ./examples
+```
+
 ```python
 %matplotlib widget
-from visualize import PatchVisualizer
+from moftransformer.visualize import PatchVisualizer
+from moftransformer.examples import visualize_example_path
 
 model_path = "examples/finetuned_bandgap.ckpt" # or 'examples/finetuned_h2_uptake.ckpt'
-data_path = 'examples/visualize/dataset/'
+data_path = visualize_example_path
 cifname = 'MIBQAR01_FSR'
 
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
@@ -145,7 +156,6 @@ vis.draw_graph()
 </p>
 
 ```python
-vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
 <p align="center">
