@@ -24,6 +24,14 @@
 
 ## [Install](https://hspark1212.github.io/MOFTransformer/installation.html)
 
+### OS and hardware requirements
+The package development version is tested on following systems:
+
+Linux : Ubuntu 20.04, 22.04
+
+For optimal performance, we recommaned a computer with GPUs
+
+
 ### Depedencies
 ```
 python>=3.8
@@ -34,6 +42,7 @@ Given that MOFTransformer is based on pytorch, please install pytorch (>= 1.10.0
 ```
 $ pip install moftransformer
 ```
+which should install in about 50 seconds.
 
 ### Download the pretrained model (ckpt file)
 - you can download the pretrained model with 1 M hMOFs in [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506)
@@ -49,23 +58,51 @@ $ moftransformer download qmof
 ```
 
 ## [Getting Started](https://hspark1212.github.io/MOFTransformer/tutorial.html)
-1. At first, you download dataset of hMOFs (20,000 MOFs) as an example.
+
+1. At first, you can run `prepare_data` with 10 cifs in `moftransformer/examples/raw` directory.
+
+In order to run `prepare_data`, you need to install `GRIDAY` to calculate energy grid.
+You can download GRIDAY using command-line.
+
+```bash
+$ moftransformer install-griday
 ```
-$ moftransformer download hmof
+
+Example for running `prepare-data`
+
+```python
+from moftransformer.examples import example_path
+from moftransformer.utils import prepare_data
+
+# Get example path
+root_cifs = example_path['root_cif']
+root_dataset = example_path['root_dataset']
+downstream = example_path['downstream']
+
+train_fraction = 0.7
+test_fraction = 0.2
+
+# Run prepare data
+prepare_data(root_cifs, root_dataset, downstream=downstream, 
+             train_fraciton=train_fraction, test_fraciton=test_fraction)
 ```
+
 2. Fine-tune the pretrained MOFTransformer.
 ```python
 import moftransformer
 from moftransformer.examples import example_path
 
 # data root and downstream from example
-data_root = example_path['data_root']
+data_root = example_path['root_dataset']
 downstream = example_path['downstream']
 log_dir = './logs/'
 
 moftransformer.run(data_root, downstream, log_dir=log_dir, 
                    max_epochs=max_epochs, batch_size=batch_size,)
 ```
+which will run in about 35 seconds.
+
+
 3. Visualize analysis of feature importance for the fine-tuned model.
 ```python
 %matplotlib widget
