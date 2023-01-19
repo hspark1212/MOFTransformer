@@ -60,7 +60,7 @@ class MTPHead(nn.Module):
 
     def __init__(self, hid_dim):
         super().__init__()
-        self.fc = nn.Linear(hid_dim, 1100)  # num_topology : 1100
+        self.fc = nn.Linear(hid_dim, 1397)  # len(assets/topology.json)
 
     def forward(self, x):
         x = self.fc(x)

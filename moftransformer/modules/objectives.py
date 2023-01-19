@@ -122,7 +122,7 @@ def compute_mtp(pl_module, batch):
         "mtp_logits": mtp_logits,
         "mtp_labels": mtp_labels,
     }
-
+    
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_mtp_loss")(ret["mtp_loss"])
