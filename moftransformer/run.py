@@ -275,4 +275,5 @@ def main(_config):
         trainer.fit(model, datamodule=dm)
         trainer.test(model, datamodule=dm)
     else:
+        model.hparams["phase"] = "test"
         trainer.test(model, datamodule=dm)

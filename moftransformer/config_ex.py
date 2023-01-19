@@ -35,7 +35,7 @@ def config():
     # model
     exp_name = "pretrained_mof"
     seed = 0
-    loss_names = _loss_names({"regression":1})
+    loss_names = _loss_names({"regression": 1})
 
     # graph seeting
     # max_atom_len = 1000  # number of maximum atoms in primitive cell
@@ -84,7 +84,7 @@ def config():
     log_dir = "logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    accelerator='gpu'
+    accelerator = 'gpu'
     devices = 1
     num_nodes = 1
 
@@ -112,9 +112,11 @@ def example():
     max_epochs = 20
     batch_size = 32
 
+
 """
 pretraining
 """
+
 
 @ex.named_config
 def mtp_bbc_vfp():
@@ -124,19 +126,11 @@ def mtp_bbc_vfp():
     loss_names = _loss_names({"mtp": 1, "bbc": 1, "vfp": 1})
     per_gpu_batchsize = 4
 
+
 """
 fine-tuning (transfer learining)
 """
-@ex.named_config
-def ppn_1bar_scratch():
-    load_path = ""
-    exp_name = "ppn_1bar_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
-    downstream = "1bar"
-    max_epochs = 20
-    batch_size = 32
-    mean = 3.79
-    std = 5.32
+
 
 @ex.named_config
 def ppn_1bar():
@@ -147,17 +141,6 @@ def ppn_1bar():
     batch_size = 32
     mean = 3.79
     std = 5.32
-
-@ex.named_config
-def ppn_65bar_scratch():
-    load_path = ""
-    exp_name = "ppn_65bar_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
-    downstream = "65bar"
-    max_epochs = 20
-    batch_size = 32
-    mean = 117.78
-    std = 30.75
 
 
 @ex.named_config
@@ -170,19 +153,11 @@ def ppn_65bar():
     mean = 117.78
     std = 30.75
 
+
 """
 in silico COF
 """
-@ex.named_config
-def cof_lowbar_scratch():
-    load_path = ""
-    exp_name = "cof_lowbar_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
-    downstream = "lowbar"
-    max_epochs = 20
-    batch_size = 32
-    mean = 23.750
-    std = 17.166
+
 
 @ex.named_config
 def cof_lowbar():
@@ -194,16 +169,6 @@ def cof_lowbar():
     mean = 23.750
     std = 17.166
 
-@ex.named_config
-def cof_highbar_scratch():
-    load_path = ""
-    exp_name = "cof_highbar_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
-    downstream = "highbar"
-    max_epochs = 20
-    batch_size = 32
-    mean = 159.076
-    std = 38.164
 
 @ex.named_config
 def cof_highbar():
@@ -215,16 +180,6 @@ def cof_highbar():
     mean = 159.076
     std = 38.164
 
-@ex.named_config
-def cof_logkh_scratch():
-    load_path = ""
-    exp_name = "cof_logkh_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
-    downstream = "logkh"
-    max_epochs = 20
-    batch_size = 32
-    mean = -10.975
-    std = 0.563
 
 @ex.named_config
 def cof_logkh():
@@ -236,16 +191,6 @@ def cof_logkh():
     mean = -10.975
     std = 0.563
 
-@ex.named_config
-def cof_qst_scratch():
-    load_path = ""
-    exp_name = "cof_qst_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
-    downstream = "qst"
-    max_epochs = 20
-    batch_size = 32
-    mean = -14.793
-    std = 4.542
 
 @ex.named_config
 def cof_qst():
@@ -257,20 +202,11 @@ def cof_qst():
     mean = -14.793
     std = 4.542
 
+
 """
 pcod zeolite
 """
 
-@ex.named_config
-def zeo_qst_scratch():
-    load_path = ""
-    exp_name = "zeo_qst_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/2_pcod_zeolite/dataset"
-    downstream = "qst"
-    max_epochs = 20
-    batch_size = 32
-    mean = 19.052
-    std = 3.169
 
 @ex.named_config
 def zeo_qst():
@@ -282,16 +218,6 @@ def zeo_qst():
     mean = 19.052
     std = 3.169
 
-@ex.named_config
-def zeo_unitlesskh_scratch():
-    load_path = ""
-    exp_name = "zeo_unitlesskh_scratch"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/2_pcod_zeolite/dataset"
-    downstream = "unitlesskh"
-    max_epochs = 20
-    batch_size = 32
-    mean = 19.725
-    std = 12.317
 
 @ex.named_config
 def zeo_unitlesskh():
@@ -302,3 +228,115 @@ def zeo_unitlesskh():
     batch_size = 32
     mean = 19.725
     std = 12.317
+
+
+"""
+mof downstream
+"""
+
+@ex.named_config
+def mof_raspa_1bar():
+    exp_name = "mof_raspa_1bar"
+    # root_dataset = ##
+    downstream = "raspa_1bar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 487.866
+    std = 63.504
+
+@ex.named_config
+def mof_diffusivity_log():
+    exp_name = "mof_diffusivity_log"
+    # root_dataset = ##
+    downstream = "diffusivity_log"
+    max_epochs = 20
+    batch_size = 32
+    mean = -8.306
+    std = 1.490
+
+@ex.named_config
+def mof_bandgap():
+    exp_name = "mof_bandgap"
+    # root_dataset = ##
+    downstream = "bandgap"
+    max_epochs = 20
+    batch_size = 32
+    mean = 2.086
+    std = 1.131
+
+@ex.named_config
+def mof_n2uptake():
+    exp_name = "mof_n2uptake"
+    # root_dataset = ##
+    downstream = "n2uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 0.3999
+    std = 0.337
+
+@ex.named_config
+def mof_o2uptake():
+    exp_name = "mof_o2uptake"
+    # root_dataset = ##
+    downstream = "o2uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 0.387
+    std = 0.241
+
+@ex.named_config
+def mof_n2diffusivity_dilute():
+    exp_name = "mof_n2diffusivity_dilute"
+    # root_dataset = ##
+    downstream = "n2diffusivity_dilute"
+    max_epochs = 20
+    batch_size = 32
+    mean = 0.000187
+    std = 0.000176
+
+@ex.named_config
+def mof_o2diffusivity_dilute():
+    exp_name = "mof_o2diffusivity_dilute"
+    # root_dataset = ##
+    downstream = "o2diffusivity_dilute"
+    max_epochs = 20
+    batch_size = 32
+    mean = 0.000185
+    std = 0.000162
+
+
+@ex.named_config
+def mof_henry_co2():
+    exp_name = "mof_henry_co2"
+    # root_dataset = ##
+    downstream = "henry_co2"
+    max_epochs = 20
+    batch_size = 32
+    mean = -3.554
+    std = 1.120
+
+
+@ex.named_config
+def mof_tsr():
+    # thermal stability regression
+    exp_name = "mof_tsr"
+    # root_dataset = ##
+    downstream = "tsr"
+    max_epochs = 20
+    batch_size = 32
+    mean = 361.322
+    std = 88.122
+
+
+@ex.named_config
+def mof_ssc():
+    # solvent stability classification
+    exp_name = "mof_ssc"
+    # root_dataset = ##
+    downstream = "ssc"
+    max_epochs = 20
+    batch_size = 32
+    mean = 0.592
+    std = 0.491
+    loss_names = _loss_names({"classification": 1})
+    n_classes = 2

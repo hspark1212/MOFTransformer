@@ -111,3 +111,14 @@ def example():
     downstream = "example"
     max_epochs = 20
     batch_size = 32
+
+@ex.named_config
+def ppn_1bar():
+    load_path = ""
+    exp_name = "ppn_1bar"
+    root_dataset = "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
+    downstream = "1bar"
+    max_epochs = 20
+    batch_size = 32
+    mean = 3.79
+    std = 5.32
