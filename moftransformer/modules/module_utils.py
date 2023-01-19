@@ -12,7 +12,7 @@ from moftransformer.gadgets.my_metrics import Accuracy, Scalar
 
 
 def set_metrics(pl_module):
-    for split in ["train", "val", "test"]:
+    for split in ["train", "val"]:
         for k, v in pl_module.hparams.config["loss_names"].items():
             if v < 1:
                 continue
