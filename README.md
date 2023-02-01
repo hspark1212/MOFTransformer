@@ -31,7 +31,6 @@ Linux : Ubuntu 20.04, 22.04
 
 For optimal performance, we recommaned a computer with GPUs
 
-
 ### Depedencies
 ```
 python>=3.8
