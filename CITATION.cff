@@ -1,0 +1,20 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: MOFTransformer
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Hyunsoo
+    family-names: Park
+    email: hspark8@kaist.ac.kr
+    affiliation: KAIST
+    orcid: 'https://orcid.org/0000-0001-9388-173X'
+  - given-names: Yeonghun
+    family-names: Kang
+    orcid: 'https://orcid.org/0000-0001-5191-5735'
+    affiliation: KAIST
+    email: dudgns1675@kaist.ac.kr
