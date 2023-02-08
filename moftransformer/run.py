@@ -269,10 +269,10 @@ def main(_config):
         log_every_n_steps=log_every_n_steps,
         resume_from_checkpoint=_config["resume_from"],
         val_check_interval=_config["val_check_interval"],
+        deterministic=True,
     )
 
     if not _config["test_only"]:
         trainer.fit(model, datamodule=dm)
-        trainer.test(model, datamodule=dm)
     else:
         trainer.test(model, datamodule=dm)
