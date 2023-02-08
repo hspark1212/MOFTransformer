@@ -235,10 +235,10 @@ mof downstream
 """
 
 @ex.named_config
-def mof_raspa_1bar():
-    exp_name = "mof_raspa_1bar"
+def mof_raspa_100bar():
+    exp_name = "mof_raspa_100bar"
     # root_dataset = ##
-    downstream = "raspa_1bar"
+    downstream = "raspa_100bar"
     max_epochs = 20
     batch_size = 32
     mean = 487.866
@@ -340,3 +340,56 @@ def mof_ssc():
     std = 0.491
     loss_names = _loss_names({"classification": 1})
     n_classes = 2
+
+"""
+downstream example (H2 uptake)
+"""
+@ex.named_config
+def mof_h2_uptake():
+    exp_name = "mof_h2_uptake"
+    # root_dataset = ##
+    downstream = "h2_uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 488.029
+    std = 62.690
+
+@ex.named_config
+def cof_h2_uptake():
+    exp_name = "cof_h2_uptake"
+    # root_dataset = ##
+    downstream = "h2_uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 485.978
+    std = 80.930
+
+@ex.named_config
+def ppn_h2_uptake():
+    exp_name = "ppn_h2_uptake"
+    # root_dataset = ##
+    downstream = "h2_uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 465.196
+    std = 117.529
+
+@ex.named_config
+def zeo_h2_uptake():
+    exp_name = "zeo_h2_uptake"
+    # root_dataset = ##
+    downstream = "h2_uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 141.136
+    std = 137.923
+
+@ex.named_config
+def total_h2_uptake():
+    exp_name = "total_h2_uptake"
+    # root_dataset = ##
+    downstream = "h2_uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 141.136
+    std = 137.923
