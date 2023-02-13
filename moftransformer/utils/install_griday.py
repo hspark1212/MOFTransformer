@@ -63,10 +63,9 @@ def install_griday(install_make=False):
 
     :return: None
     """
-
     if install_make:
-        _install_make(install_gcc)
-    _make_griday(install_gcc)
+        _install_make()
+    _make_griday()
 
 
 def uninstall_griday():
