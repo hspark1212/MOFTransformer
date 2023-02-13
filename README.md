@@ -29,7 +29,7 @@ The package development version is tested on following systems:
 
 Linux : Ubuntu 20.04, 22.04
 
-For optimal performance, we recommaned a computer with GPUs
+For optimal performance, we recommend running with GPUs
 
 ### Depedencies
 ```
