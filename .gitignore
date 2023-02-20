@@ -38,6 +38,9 @@ moftransformer/config.py
 dft/
 figure/
 case_study/
+data/
+test/
+tmp/
 
 # baseline_model
 baseline_model/*/*.csv

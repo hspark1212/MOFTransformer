@@ -24,9 +24,10 @@ def compute_regression(pl_module, batch, normalizer):
 
     # normalize encode if config["mean"] and config["std], else pass
     labels = normalizer.encode(labels)
-
     loss = F.mse_loss(logits, labels)
     ret = {
+        "cif_ids": infer["cif_id"],
+        "cls_feats": infer["cls_feats"],
         "regression_loss": loss,
         "regression_logits": normalizer.decode(logits),
         "regression_labels": normalizer.decode(labels),
@@ -58,6 +59,8 @@ def compute_classification(pl_module, batch):
         loss = F.cross_entropy(logits, labels)
 
     ret = {
+        "cif_ids": infer["cif_id"],
+        "cls_feats": infer["cls_feats"],
         "classification_loss": loss,
         "classification_logits": logits,
         "classification_labels": labels,
@@ -122,7 +125,7 @@ def compute_mtp(pl_module, batch):
         "mtp_logits": mtp_logits,
         "mtp_labels": mtp_labels,
     }
-    
+
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
     loss = getattr(pl_module, f"{phase}_mtp_loss")(ret["mtp_loss"])
