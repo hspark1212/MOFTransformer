@@ -35,7 +35,7 @@ def config():
     # model
     exp_name = "pretrained_mof"
     seed = 0
-    loss_names = _loss_names({"regression":1})
+    loss_names = _loss_names({"regression": 1})
 
     # graph seeting
     # max_atom_len = 1000  # number of maximum atoms in primitive cell
@@ -84,7 +84,7 @@ def config():
     log_dir = "logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    accelerator='gpu'
+    accelerator = 'gpu'
     devices = 1
     num_nodes = 1
 
@@ -112,13 +112,23 @@ def example():
     max_epochs = 20
     batch_size = 32
 
+
 @ex.named_config
-def ppn_1bar():
-    load_path = ""
-    exp_name = "ppn_1bar"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
-    downstream = "1bar"
+def test():
+    exp_name = "example"
+    loss_names = _loss_names({"regression": 0})
+    root_dataset = "moftransformer/examples/dataset"
+    downstream = "example"
     max_epochs = 20
     batch_size = 32
-    mean = 3.79
-    std = 5.32
+
+
+@ex.named_config
+def total_h2_uptake():
+    exp_name = "total_h2_uptake"
+    # root_dataset = ##
+    downstream = "h2_uptake"
+    max_epochs = 20
+    batch_size = 32
+    mean = 423.251
+    std = 136.293

@@ -381,8 +381,8 @@ def zeo_h2_uptake():
     downstream = "h2_uptake"
     max_epochs = 20
     batch_size = 32
-    mean = 141.136
-    std = 137.923
+    mean = 259.878
+    std = 112.928
 
 @ex.named_config
 def total_h2_uptake():
@@ -391,5 +391,29 @@ def total_h2_uptake():
     downstream = "h2_uptake"
     max_epochs = 20
     batch_size = 32
-    mean = 141.136
-    std = 137.923
+    mean = 423.251
+    std = 136.293
+
+"""
+curated COF few shot
+"""
+@ex.named_config
+def ccof_bandgap():
+    exp_name = "ccof_bandgap"
+    # root_dataset = ##
+    downstream = "ccof_bandgap"
+    max_epochs = 20
+    batch_size = 32
+    mean = 1.587
+    std = 0.507
+
+
+@ex.named_config
+def qmof_bandgap():
+    exp_name = "qmof_bandgap"
+    # root_dataset = ##
+    downstream = "qmof_bandgap"
+    max_epochs = 20
+    batch_size = 32
+    mean = 2.086
+    std = 1.131
