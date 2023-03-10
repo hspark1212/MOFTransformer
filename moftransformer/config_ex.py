@@ -384,15 +384,59 @@ def zeo_h2_uptake():
     mean = 259.878
     std = 112.928
 
+"""
+downstream example (H2 working capacity)
+"""
 @ex.named_config
-def total_h2_uptake():
-    exp_name = "total_h2_uptake"
+def mof_h2_wc():
+    exp_name = "mof_h2_wc"
     # root_dataset = ##
-    downstream = "h2_uptake"
+    downstream = "h2_wc"
     max_epochs = 20
     batch_size = 32
-    mean = 423.251
-    std = 136.293
+    mean = 320.019
+    std = 87.993
+
+@ex.named_config
+def cof_h2_wc():
+    exp_name = "cof_h2_wc"
+    # root_dataset = ##
+    downstream = "h2_wc"
+    max_epochs = 20
+    batch_size = 32
+    mean = 326.740
+    std = 84.470
+
+@ex.named_config
+def ppn_h2_wc():
+    exp_name = "ppn_h2_wc"
+    # root_dataset = ##
+    downstream = "h2_wc"
+    max_epochs = 20
+    batch_size = 32
+    mean = 300.407
+    std = 116.746
+
+@ex.named_config
+def zeo_h2_wc():
+    exp_name = "zeo_h2_wc"
+    # root_dataset = ##
+    downstream = "h2_wc"
+    max_epochs = 20
+    batch_size = 32
+    mean = 28.667
+    std = 25.660
+
+
+@ex.named_config
+def total_h2_wc():
+    exp_name = "total_h2_wc"
+    # root_dataset = ##
+    downstream = "h2_wc"
+    max_epochs = 20
+    batch_size = 32
+    mean = 241.300
+    std = 152.052
 
 """
 curated COF few shot
@@ -404,8 +448,8 @@ def ccof_bandgap():
     downstream = "ccof_bandgap"
     max_epochs = 20
     batch_size = 32
-    mean = 1.587
-    std = 0.507
+    mean = 1.619
+    std = 0.557
 
 
 @ex.named_config

@@ -198,7 +198,7 @@ class Dataset(torch.utils.data.Dataset):
         return ret
 
     @staticmethod
-    def collate(batch, img_size):
+        def collate(batch, img_size):
         """
         collate batch
         Args:
@@ -222,12 +222,12 @@ class Dataset(torch.utils.data.Dataset):
 
         crystal_atom_idx = []
         base_idx = 0
-
-        for bi in range(batch_size):
-            n_i = len(batch_atom_num[bi])
+        for i, nbr_idx in enumerate(batch_nbr_idx):
+            n_i = nbr_idx.shape[0]
             crystal_atom_idx.append(
                 torch.arange(n_i) + base_idx
             )
+            nbr_idx += base_idx
             base_idx += n_i
 
         dict_batch["atom_num"] = torch.cat(batch_atom_num, dim=0)

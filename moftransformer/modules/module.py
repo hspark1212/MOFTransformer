@@ -269,7 +269,7 @@ class Module(LightningModule):
     def test_step(self, batch, batch_idx):
         module_utils.set_task(self)
         output = self(batch)
-        output = {k : (v.cpu() if torch.is_tensor(v) else v ) for k, v in output.items()} # update cpu for memory
+        output = {k : (v.cpu() if torch.is_tensor(v) else v) for k, v in output.items()} # update cpu for memory
         return output
 
     def test_epoch_end(self, outputs):

@@ -115,10 +115,10 @@ def example():
 
 @ex.named_config
 def test():
-    exp_name = "example"
+    exp_name = "test"
     loss_names = _loss_names({"regression": 0})
     root_dataset = "moftransformer/examples/dataset"
-    downstream = "example"
+    downstream = ""
     max_epochs = 20
     batch_size = 32
 
@@ -132,3 +132,25 @@ def total_h2_uptake():
     batch_size = 32
     mean = 423.251
     std = 136.293
+
+
+@ex.named_config
+def total_h2_wc():
+    exp_name = "total_h2_wc"
+    # root_dataset = ##
+    downstream = "h2_wc"
+    max_epochs = 20
+    batch_size = 32
+    mean = 241.300
+    std = 152.052
+
+
+@ex.named_config
+def qmof_bandgap():
+    exp_name = "qmof_bandgap"
+    # root_dataset = ##
+    downstream = "qmof_bandgap"
+    max_epochs = 20
+    batch_size = 32
+    mean = 2.086
+    std = 1.131
