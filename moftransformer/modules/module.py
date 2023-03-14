@@ -8,7 +8,8 @@ from moftransformer.modules.vision_transformer_3d import VisionTransformer3D
 
 from moftransformer.modules.module_utils import Normalizer
 
-from torchmetrics.functional import r2_score
+import numpy as np
+from sklearn.metrics import r2_score
 
 
 class Module(LightningModule):
@@ -284,7 +285,7 @@ class Module(LightningModule):
                 labels += out["regression_labels"].tolist()
 
             if len(logits) > 1:
-                r2 = r2_score(torch.FloatTensor(logits), torch.FloatTensor(labels))
+                r2 = r2_score(np.array(logits), np.array(labels))
                 self.log(f"test/r2_score", r2)
 
     def configure_optimizers(self):

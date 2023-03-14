@@ -16,3 +16,4 @@ google-auth
 jupyter-client
 smmap<6
 emmet-core
+scikit-learn

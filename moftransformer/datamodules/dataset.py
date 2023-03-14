@@ -198,7 +198,7 @@ class Dataset(torch.utils.data.Dataset):
         return ret
 
     @staticmethod
-        def collate(batch, img_size):
+    def collate(batch, img_size):
         """
         collate batch
         Args:
