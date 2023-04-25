@@ -41,6 +41,7 @@ case_study/
 data/
 test/
 tmp/
+embedding
 
 # baseline_model
 baseline_model/*/*.csv

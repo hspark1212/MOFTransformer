@@ -17,3 +17,6 @@ jupyter-client
 smmap<6
 emmet-core
 scikit-learn
+
+# For reproducing PMTransformer
+torch==1.12.1+cu113

@@ -285,7 +285,7 @@ class Module(LightningModule):
                 labels += out["regression_labels"].tolist()
 
             if len(logits) > 1:
-                r2 = r2_score(np.array(logits), np.array(labels))
+                r2 = r2_score(np.array(labels), np.array(logits))
                 self.log(f"test/r2_score", r2)
 
     def configure_optimizers(self):
