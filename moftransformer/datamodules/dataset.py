@@ -38,7 +38,9 @@ class Dataset(torch.utils.data.Dataset):
         else:
             path_file = os.path.join(data_dir, f"{split}.json")
         print(f"read {path_file}...")
-        assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
+
+        if not os.path.isfile(path_file):
+            raise FileNotFoundError(f"{path_file} doesn't exist. Check 'root_dataset' in config")
 
         dict_target = json.load(open(path_file, "r"))
         self.cif_ids, self.targets = zip(*dict_target.items())

@@ -49,12 +49,18 @@ parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
+parser.add_argument('--load-file', default='', type=str, metavar='PATH',
+                    help='path to load file which start from (default: none)')
+
 
 ### NEW argument ###
 parser.add_argument('--downstream', type=str, default='')
 parser.add_argument('--gpu', default='0', type=str, help='set gpu')
 parser.add_argument('-o', '--outdir', default='output', type=str,
                     metavar='N', help='output_dir (default: output)')
+
+parser.add_argument('--mean', default=None)
+parser.add_argument('--std', default=None)
 
 train_group = parser.add_mutually_exclusive_group()
 train_group.add_argument('--train-size', default=None, type=int, metavar='N',
@@ -100,6 +106,7 @@ def main():
     test_dataset = LoadGraphData(*args.data_options, split='test',
                                  downstream=args.downstream)
     dataset = train_dataset
+    print ('len_dataset : ', len(train_dataset), len(val_dataset), len(test_dataset))
 
     collate_fn = collate_pool
 
@@ -118,6 +125,9 @@ def main():
     if args.task == 'classification':
         normalizer = Normalizer(torch.zeros(2))
         normalizer.load_state_dict({'mean': 0., 'std': 1.})
+    elif args.mean and args.std:
+        normalizer = Normalizer(torch.zeros(2))
+        normalizer.load_state_dict({'mean': float(args.mean), 'std': float(args.std)})
     else:
         if len(dataset) < 500:
             warnings.warn('Dataset has less than 500 data points. '
@@ -177,6 +187,19 @@ def main():
                   .format(args.resume, checkpoint['epoch']))
         else:
             print("=> no checkpoint found at '{}'".format(args.resume))
+
+    if args.load_file:
+        if os.path.isfile(args.load_file):
+            print("=> loading checkpoint '{}'".format(args.load_file))
+            checkpoint = torch.load(args.load_file)
+            #args.start_epoch = checkpoint['epoch']
+            #best_mae_error = checkpoint['best_mae_error']
+            model.load_state_dict(checkpoint['state_dict'])
+            #optimizer.load_state_dict(checkpoint['optimizer'])
+            #normalizer.load_state_dict(checkpoint['normalizer'])
+            print("=> loaded from '{}'".format(args.load_file))
+        else:
+            print("=> no checkpoint found at '{}'".format(args.load_file))
 
     scheduler = MultiStepLR(optimizer, milestones=args.lr_milestones,
                             gamma=0.1)
@@ -423,6 +446,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, csv_name='tes
                     f1=fscores, auc=auc_scores))
 
     if test:
+        print (len(test_preds))
         star_label = '**'
         import csv
         with open(os.path.join(args.outdir, csv_name), 'w') as f:

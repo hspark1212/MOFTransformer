@@ -427,21 +427,18 @@ class CIFData(Dataset):
 class LoadGraphData(Dataset):
     """ 
     Load CIFDATA dataset from "CIF_NAME.graphdata"
-    
-
-
     """
-
     def __init__(self, path_file, split, downstream, radius=8, dmin=0, step=0.2, ):
         path_file = Path(path_file)
         assert path_file.exists(), str(path_file)
 
         target_file = path_file / f'{split}_{downstream}.json'
         assert target_file.exists(), f'{str(target_file)} not exists'
-
+        
         with open(target_file) as f:
             self.targets = json.load(f)
-
+        
+        print ('len_target', len(self.targets))
         file_list = (path_file / split).glob('*.graphdata')
         self.data = [file for file in file_list if file.stem in self.targets.keys()]
 
@@ -457,7 +454,7 @@ class LoadGraphData(Dataset):
         with open(self.data[idx], 'rb') as f:
             data = pickle.load(f)
 
-        cif_id, atom_num, nbr_idx, nbr_dist, _, _, _ = data
+        cif_id, atom_num, nbr_idx, nbr_dist, *_ = data
         target = self.targets[cif_id]
 
         target = torch.FloatTensor([target])

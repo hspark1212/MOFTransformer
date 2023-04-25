@@ -1,9 +1,12 @@
+import os
 import argparse
 from collections import Counter
 import numpy as np
 from pathlib import Path
 import pandas as pd
 import json
+import copy
+import pickle
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score, mean_absolute_error
@@ -35,6 +38,18 @@ parser.add_argument(
 )
 parser.add_argument(
     '--output', '-o', type=str, default=None, help='(str) Output File'
+)
+parser.add_argument(
+    '--outdir', type=str, default=None, help='(str) Model save directory'
+)
+
+parser.add_argument(
+    '--load-model', type=str, default=None, help='(str) Model Load'
+)
+
+
+parser.add_argument(
+    '--test-only', action='store_true'
 )
 
 args = parser.parse_args()
@@ -96,7 +111,7 @@ def main():
         df = df.replace(metal, i)
 
     x_train, y_train = get_data(df, 'train')
-    # x_val, y_val = get_data(df, 'val') # Validation
+    x_val, y_val = get_data(df, 'val') # Validation
     x_test, y_test = get_data(df, 'test')
 
     mean = args.mean
@@ -109,9 +124,37 @@ def main():
     xs_train = x_scaler.fit_transform(x_train)
     ys_train = y_scaler.transform(y_train)
 
-    model = RandomForestRegressor()
-    model.fit(xs_train, ys_train)
-    test_r2, test_mae = predict(x_test, y_test, model, x_scaler, y_scaler)
+    best_r2 = 0
+    best_model = None
+    
+    if args.load_model:
+        if not os.path.exists(args.load_model):
+            raise ValueError('model does not exists!')
+
+        with open(args.load_model, 'rb') as f:
+            load_model = pickle.load(f)
+
+        load_model.fit(xs_train, ys_train)
+        best_model = load_model
+
+    else:
+        for n_estimators in [10, 20, 30, 50, 100, 200, 300, 500, 1000]:
+            model = RandomForestRegressor(n_estimators=n_estimators)
+            model.fit(xs_train, ys_train)
+
+            r2, mae = predict(x_val, y_val, model, x_scaler, y_scaler)
+            if r2 > best_r2:
+                best_r2 = r2
+                best_model = copy.deepcopy(model)
+
+    test_r2, test_mae = predict(x_test, y_test, best_model, x_scaler, y_scaler)
+
+    if args.outdir:
+        save_path = Path(args.outdir)
+        save_path.mkdir(exist_ok=True, parents=True)
+        with open(save_path/'best_model.pickle', 'wb') as f:
+            pickle.dump(best_model, f)
+
 
     with open(args.output, 'a') as f:
         f.write(f"Model:{args.path}\tDownstream:{args.downstream}\tR2:{test_r2}\tMAE:{test_mae}\n")
