@@ -169,6 +169,7 @@ def get_energy_grid(atoms, cif_id, root_dataset, eg_logger):
 
     if os.path.exists(eg_file + ".griddata"):
         grid_data = make_float16_griddata(eg_file + ".griddata")
+        print (len(grid_data))
         path_save = os.path.join(root_dataset, f"{cif_id}.griddata16")
         pickle.dump(grid_data, open(path_save, "wb"))
         eg_logger.info(f"{cif_id} energy grid changed to np16")

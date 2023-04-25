@@ -270,12 +270,17 @@ class Module(LightningModule):
         module_utils.set_task(self)
         output = self(batch)
         output = {k : (v.cpu() if torch.is_tensor(v) else v ) for k, v in output.items()} # update cpu for memory
+
+        print (output.keys())
         return output
 
     def test_epoch_end(self, outputs):
         module_utils.epoch_wrapup(self)
 
         # calculate r2 score when regression
+
+        print ('test ###:#:#:#:#:#', outputs)
+
         if "regression_logits" in outputs[0].keys():
             logits = []
             labels = []

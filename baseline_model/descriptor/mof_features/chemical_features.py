@@ -238,7 +238,7 @@ def gather_features_main(directory, outputname):
     if directory[-1] != "/":
         directory += "/"
     for cif in cif_files:
-        new_line = cif + ", "
+        new_line = cif[:-4] + ", "
         file_dir = directory + cif
         atom_dict = get_atom_dict(file_dir)
         unsaturation = get_total_degree_of_unsaturation(atom_dict)
@@ -258,7 +258,10 @@ def gather_features_main(directory, outputname):
         new_line += ", " + str(unsaturation) + ", " + str(metalic_perct) + ", "
 
         if "O" in atom_dict:
-            oxygen_to_metal = atom_dict["O"] / get_metal_count(atom_dict)
+            try:
+                oxygen_to_metal = atom_dict["O"] / get_metal_count(atom_dict)
+            except ZeroDivisionError:
+                oxygen_to_metal = atom_dict["O"]
             if "N" in atom_dict:
                 nitrogen_to_oxygen = atom_dict["N"] / atom_dict["O"]
             else:

@@ -1,5 +1,7 @@
 import copy
 import math
+import ase.io
+from ase.build import make_supercell
 from itertools import product
 from functools import lru_cache
 from pathlib import Path
@@ -73,7 +75,7 @@ def get_primitive_structure(path_cif, tolerance=2.0):
 
 
 @lru_cache
-def get_structure(path_cif, make_supercell=False, dtype='pymatgen', *,
+def get_structure(path_cif, make_supercell=False, dtype='ase', *,
                   max_length=60, min_length=30):
     """
     get primitive structure from path_cif
@@ -84,37 +86,47 @@ def get_structure(path_cif, make_supercell=False, dtype='pymatgen', *,
     :param min_length: <int/float> min p_lattice length of structure file (Å)
     :return: <pymatgen.Structure> structure file from path cif
     """
-    st = get_primitive_structure(path_cif, tolerance=2.0)
+    try:
+        CifParser(path_cif).get_structures()
+    except ValueError as e:   
+        raise ValueError(f'{path_cif} failed : (read pymatgen) {e}')
+
+    atoms = ase.io.read(path_cif)
 
     if make_supercell:
-        st = get_supercell_structure(st, max_length, min_length)
+        atoms = get_supercell_structure(atoms, max_length, min_length)
+    else:
+        atoms = get_supercell_structure(atoms, max_length, 8)
 
-    if type == 'pymatgen':
-        return st
-    elif type != 'ase':
-        return AseAtomsAdaptor().get_atoms(st)
+    if dtype == 'pymatgen':
+        return AseAtomsAdaptor().get_structure(atoms)
+    elif dtype == 'ase':
+        return atoms
     else:
         raise TypeError(f'type must be ase or pymatgen, not {dtype}')
 
 
-def get_supercell_structure(st, max_length=60, min_length=30):
+def get_supercell_structure(atoms, max_length=60, min_length=30):
     """
-    get supercell structure from <pymatgen.Structure>
-    :param st: <pymatgen.Structure> structure file
+    get supercell atoms from <ase.Atoms>
+    :param atoms: <ase.Atoms> object
     :param max_length: <int/float> max p_lattice length of structure file (Å)
     :param min_length: <int/float> min p_lattice length of structure file (Å)
     :return: <ase.Atoms or pymatgen.Structure> structure type.
     """
     scale_abc = []
-    for l in st.lattice.abc:
+    for l in atoms.cell.cellpar()[:3]:
         if l > max_length:
             raise ValueError(f"primitive p_lattice is larger than max_length {max_length}")
         elif l < min_length:
             scale_abc.append(math.ceil(min_length / l))
         else:
             scale_abc.append(1)
-    st.make_supercell(scale_abc)
-    return st
+
+    m = np.zeros([3,3])
+    np.fill_diagonal(m, scale_abc)
+    atoms = make_supercell(atoms, m)
+    return atoms
 
 
 def cuboid_data(position, color=None, num_patches=(6, 6, 6), lattice=None):
