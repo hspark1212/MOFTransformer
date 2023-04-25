@@ -107,7 +107,7 @@ def config():
 @ex.named_config
 def example():
     exp_name = "example"
-    root_dataset = "moftransformer/examples/dataset"
+    root_dataset = "examples/dataset"
     downstream = "example"
     max_epochs = 20
     batch_size = 32
@@ -117,7 +117,7 @@ def example():
 def test():
     exp_name = "test"
     loss_names = _loss_names({"regression": 0})
-    root_dataset = "moftransformer/examples/dataset"
+    root_dataset = "examples/dataset"
     downstream = ""
     max_epochs = 20
     batch_size = 32
