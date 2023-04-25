@@ -277,9 +277,6 @@ class Module(LightningModule):
         module_utils.epoch_wrapup(self)
 
         # calculate r2 score when regression
-
-        print ('test ###:#:#:#:#:#', outputs)
-
         if "regression_logits" in outputs[0].keys():
             logits = []
             labels = []
