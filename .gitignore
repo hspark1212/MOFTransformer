@@ -36,7 +36,7 @@ moftransformer/database/finetuned/
 moftransformer/config.py
 
 dft/
-figure/
+figures/
 case_study/
 data/
 test/

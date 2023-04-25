@@ -10,7 +10,7 @@
   <a href="https://doi.org/10.6084/m9.figshare.21155506.v2">
      <img alt="Figshare" src="https://img.shields.io/badge/Figshare-v2-blue.svg?style=plastic&logo=figshare">
  </a>
- <a href="https://chemrxiv.org/engage/chemrxiv/article-details/634fbf8a4a18764f58e9fda5">
+ <a href="https://doi.org/10.1038/s42256-023-00628-2">
      <img alt="DOI" src="https://img.shields.io/badge/DOI-doi-organge.svg?style=plastic">
  </a>
  <a href="https://pypi.org/project/moftransformer/">
@@ -175,3 +175,8 @@ vis.draw_grid()
 1. [Prediction of O2/N2 Selectivity in Metal−Organic Frameworks via High-Throughput Computational Screening and Machine Learning](https://pubs.acs.org/doi/abs/10.1021/acsami.1c18521)
 2. [Understanding the diversity of the metal-organic framework ecosystem](https://www.nature.com/articles/s41467-020-17755-8)
 3. [Using Machine Learning and Data Mining to Leverage Community Knowledge for the Engineering of Stable Metal–Organic Frameworks](https://pubs.acs.org/doi/10.1021/jacs.1c07217)
+
+## Citation
+If you want to cite the MOFTransformer and the pre-training and fine-tuning dataset, please refer to the publication:
+
+Y. Kang, H. Park, B. Smit, J. Kim. "A multi-modal pre-training transformer for universal transfer learning in metal–organic frameworks", *Nature Machine Intelligence*, **(2023)** DOI: [https://doi.org/10.1038/s42256-023-00628-2](https://doi.org/10.1038/s42256-023-00628-2)

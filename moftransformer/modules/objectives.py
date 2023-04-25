@@ -26,7 +26,7 @@ def compute_regression(pl_module, batch, normalizer):
     labels = normalizer.encode(labels)
     loss = F.mse_loss(logits, labels)
     ret = {
-        "cif_ids": infer["cif_id"],
+        "cif_id": infer["cif_id"],
         "cls_feats": infer["cls_feats"],
         "regression_loss": loss,
         "regression_logits": normalizer.decode(logits),

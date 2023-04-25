@@ -8,7 +8,8 @@ from moftransformer.modules.vision_transformer_3d import VisionTransformer3D
 
 from moftransformer.modules.module_utils import Normalizer
 
-from torchmetrics.functional import r2_score
+import numpy as np
+from sklearn.metrics import r2_score
 
 
 class Module(LightningModule):
@@ -269,9 +270,7 @@ class Module(LightningModule):
     def test_step(self, batch, batch_idx):
         module_utils.set_task(self)
         output = self(batch)
-        output = {k : (v.cpu() if torch.is_tensor(v) else v ) for k, v in output.items()} # update cpu for memory
-
-        print (output.keys())
+        output = {k : (v.cpu() if torch.is_tensor(v) else v) for k, v in output.items()} # update cpu for memory
         return output
 
     def test_epoch_end(self, outputs):
@@ -289,7 +288,7 @@ class Module(LightningModule):
                 labels += out["regression_labels"].tolist()
 
             if len(logits) > 1:
-                r2 = r2_score(torch.FloatTensor(logits), torch.FloatTensor(labels))
+                r2 = r2_score(np.array(logits), np.array(labels))
                 self.log(f"test/r2_score", r2)
 
     def configure_optimizers(self):
