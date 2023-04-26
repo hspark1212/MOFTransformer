@@ -1,9 +1,9 @@
 Getting Started
 ===============
 
-Welcome to the MOFTransformer tutorial.
+Welcome to the tutorial.
 
-In this section, you will learn about training, visualization with MOFTransformer.
+In this section, you will learn about preparing dataset, fine-tuning, test, visualization of attentsion scores.
 
 .. toctree::
    :titlesonly:

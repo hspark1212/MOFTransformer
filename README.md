@@ -2,15 +2,15 @@
 
 <p align="center">
  <a href="https://hspark1212.github.io/MOFTransformer/">
-     <img alt="Docs" src="https://img.shields.io/badge/Docs-v1.1.3-brightgreen.svg?style=plastic">
+     <img alt="Docs" src="https://img.shields.io/badge/Docs-v2.0.0-brightgreen.svg?style=plastic">
  </a>
   <a href="https://pypi.org/project/moftransformer/">
-     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v1.1.3-blue.svg?style=plastic&logo=PyPI">
+     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v2.0.0-blue.svg?style=plastic&logo=PyPI">
  </a>
   <a href="https://doi.org/10.6084/m9.figshare.21155506.v2">
      <img alt="Figshare" src="https://img.shields.io/badge/Figshare-v2-blue.svg?style=plastic&logo=figshare">
  </a>
- <a href="https://doi.org/10.1038/s42256-023-00628-2">
+ <a href="https://doi.org/10.5281/zenodo.7593333">
      <img alt="DOI" src="https://img.shields.io/badge/DOI-doi-organge.svg?style=plastic">
  </a>
  <a href="https://pypi.org/project/moftransformer/">
@@ -18,108 +18,64 @@
  </a>
 </p>
 
-# [MOFTransformer](https://hspark1212.github.io/MOFTransformer/index.html)
+# [PMTransformer (MOFTransformer)](https://hspark1212.github.io/MOFTransformer/index.html)
 
- This package provides universal transfer learing for metal-organic frameworks(MOFs) to construct structure-property relationships. `MOFTransformer` obtains state-of-the-art performance to predict accross various properties that include gas adsorption, diffusion, electronic properties regardless of gas types. Beyond its universal transfer learning capabilityies, it provides feature importance analysis from its attentions scores to capture chemical intution.
+ This package provides a universal transfer learning model, `PMTransformer` (Porous Materials Transformer), which obtains the state-of-the-art performance in predicting various properties of porous materials. The PMTRansformer was pre-trainied with 1.9 million hypothetical porous materials including Metal-Organic Frameworks (MOFs), Covalent-Organic Frameworks (COFs), Porous Polymer Networks (PPNs), and zeolites. By fine-tuning the pre-trained `PMTransformer`, you can easily obtain machine learning models to accurately predict various properties of porous materials .
+ 
+ NOTE: From version 2.0.0, the default pre-training model has been changed from `MOFTransformer` to `PMTransformer`, which was pre-trained with a larger dataset, containing other porous materials as well as MOFs. The `PMTransformer` outperforms the `MOFTransformer` in predicting various properties of porous materials.
 
 ## [Install](https://hspark1212.github.io/MOFTransformer/installation.html)
-
-### OS and hardware requirements
-The package development version is tested on following systems:
-
-Linux : Ubuntu 20.04, 22.04
-
-For optimal performance, we recommend running with GPUs
 
 ### Depedencies
 ```
 python>=3.8
 ```
-Given that MOFTransformer is based on pytorch, please install pytorch (>= 1.10.0) according to your environments.
+Given that MOFTransformer is based on pytorch, please install pytorch (>= 1.12.0) according to your environments.
 
 ### Installation using PIP 
 ```
 $ pip install moftransformer
 ```
-which should install in about 50 seconds.
 
-### Download the pretrained model (ckpt file)
-- you can download the pretrained model with 1 M hMOFs in [figshare](https://figshare.com/articles/dataset/MOFTransformer/21155506)
+### Download the pretrained models (ckpt file)
+- you can download the pretrained models (`PMTransformer.ckpt` and `MOFTransformer.ckpt`) [figshare](#TODO:update)
+
 or you can download with a command line:
 ```
 $ moftransformer download pretrain_model
 ```
-### (Optional) Download dataset for CoREMOF, QMOF
-- we've provide the dataset of MOFTransformer (i.e., atom-based graph embeddings and energy-grid embeddings) for CoREMOF, QMOF
+### (Optional) Download pre-embeddings for CoREMOF, QMOF
+- we've provide the pre-embeddings (i.e., atom-based graph embeddings and energy-grid embeddings), inputs of `PMTransformer`, for CoREMOF, QMOF database.
 ```
 $ moftransformer download coremof
 $ moftransformer download qmof
 ```
 
 ## [Getting Started](https://hspark1212.github.io/MOFTransformer/tutorial.html)
-
-1. At first, you can run `prepare_data` with 10 cifs in `moftransformer/examples/raw` directory.
-
-In order to run `prepare_data`, you need to install `GRIDAY` to calculate energy grid.
-You can download GRIDAY using command-line.
-
-```bash
-$ moftransformer install-griday
+1. At first, you download dataset of hMOFs (20,000 MOFs) as an example.
 ```
-
-Example for running `prepare-data`
-
-```python
-from moftransformer.examples import example_path
-from moftransformer.utils import prepare_data
-
-# Get example path
-root_cifs = example_path['root_cif']
-root_dataset = example_path['root_dataset']
-downstream = example_path['downstream']
-
-train_fraction = 0.7
-test_fraction = 0.2
-
-# Run prepare data
-prepare_data(root_cifs, root_dataset, downstream=downstream, 
-             train_fraciton=train_fraction, test_fraciton=test_fraction)
+$ moftransformer download hmof
 ```
-
 2. Fine-tune the pretrained MOFTransformer.
 ```python
 import moftransformer
 from moftransformer.examples import example_path
 
 # data root and downstream from example
-root_dataset = example_path['root_dataset']
+data_root = example_path['data_root']
 downstream = example_path['downstream']
 log_dir = './logs/'
 
-# kwargs (optional)
-max_epochs = 10
-batch_size = 8
-
-moftransformer.run(root_dataset, downstream, log_dir=log_dir, 
+moftransformer.run(data_root, downstream, log_dir=log_dir, 
                    max_epochs=max_epochs, batch_size=batch_size,)
 ```
-which will run in about 35 seconds.
-
-
 3. Visualize analysis of feature importance for the fine-tuned model.
-
-download finetuned-bandgap model before visualize.
-```bash
-moftransformer download finetuned_model -o ./examples
-```
-
 ```python
 %matplotlib widget
-from moftransformer.visualize import PatchVisualizer
-from moftransformer.examples import visualize_example_path
+from visualize import PatchVisualizer
 
 model_path = "examples/finetuned_bandgap.ckpt" # or 'examples/finetuned_h2_uptake.ckpt'
-data_path = visualize_example_path
+data_path = 'examples/visualize/dataset/'
 cifname = 'MIBQAR01_FSR'
 
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
@@ -127,9 +83,14 @@ vis.draw_graph() # or vis.draw_grid()
 ```
 
 ## [Architecture](https://hspark1212.github.io/MOFTransformer/introduction.html)
-`MOFTransformer`is a multi-modal Transformer pre-trained with 1 million hypothetical MOFs so that it efficiently capture both local and global feeatures of MOFs.
+It is a multi-modal pre-training Transformer encoder which is designed to capture both local and global features of porous materials. 
 
-- `MOFformer` takes two different representations as input
+The pre-traning tasks are as follows:
+(1) Topology Prediction
+(2) Void Fraction Prediction
+(3) Building Block Classification
+ 
+It takes two different representations as input
   - Atom-based Graph Embedding : CGCNN w/o pooling layer -> local features
   - Energy-grid Embedding : 1D flatten patches of 3D energy grid -> global features
   
@@ -155,6 +116,7 @@ vis.draw_graph()
 </p>
 
 ```python
+vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
 vis.draw_grid()
 ```
 <p align="center">
@@ -162,21 +124,26 @@ vis.draw_grid()
 </p>
 
 ## Universal Transfer Learning
-| Property                                 | MOFTransformer | Original Paper | Number of Data | Remarks          | Reference |
-|------------------------------------------|----------------|----------------|----------------|------------------|-----------|
-|N<sub>2</sub> uptake                     | R2: 0.78       | R2: 0.71       | 5,286          | CoRE MOF         | 1         |
-|O<sub>2</sub> uptake                     | R2: 0.83       | R2: 0.74       | 5,286          | CoRE MOF         | 1         |
-|N<sub>2</sub> diffusivity                | R2: 0.77       | R2: 0.76       | 5,286          | CoRE MOF         | 1         |
-|O<sub>2</sub> diffusivity                | R2: 0.78       | R2: 0.74       | 5,286          | CoRE MOF         | 1         |
-|CO<sub>2</sub> Henry coefficient         | MAE : 0.30     | MAE : 0.42     | 8,183          | CoRE MOF         | 2         |
-|Solvent removal stability classification | ACC : 0.76     | ACC : 0.76     | 2,148          | Text-mining data | 3         |
-|Thermal stability regression             | R2 : 0.44      | R2 : 0.46      | 3,098          | Text-mining data | 3         |
-### Reference
-1. [Prediction of O2/N2 Selectivity in Metal−Organic Frameworks via High-Throughput Computational Screening and Machine Learning](https://pubs.acs.org/doi/abs/10.1021/acsami.1c18521)
-2. [Understanding the diversity of the metal-organic framework ecosystem](https://www.nature.com/articles/s41467-020-17755-8)
-3. [Using Machine Learning and Data Mining to Leverage Community Knowledge for the Engineering of Stable Metal–Organic Frameworks](https://pubs.acs.org/doi/10.1021/jacs.1c07217)
 
-## Citation
-If you want to cite the MOFTransformer and the pre-training and fine-tuning dataset, please refer to the publication:
+Comparison of mean absolute error (MAE) values for various baseline models, scratch, MOFTransformer, and PMTransformer on different properties of MOFs, COFs, PPNs, and zeolites. The bold values indicate the lowest MAE value for each property. The details of information can be found in [PMTransformer paper]()
 
-Y. Kang, H. Park, B. Smit, J. Kim. "A multi-modal pre-training transformer for universal transfer learning in metal–organic frameworks", *Nature Machine Intelligence*, **(2023)** DOI: [https://doi.org/10.1038/s42256-023-00628-2](https://doi.org/10.1038/s42256-023-00628-2)
+| Material | Property | Number of Dataset | Energy histogram | Descriptor-based ML | CGCNN | Scratch | MOFTransformer | PMTransformer |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| MOF | H<sub>2</sub> Uptake (100 bar) | 20,000 | 9.183 | 9.456 | 32.864 | 7.018 | 6.377 | **5.963** |
+| MOF | H<sub>2</sub> diffusivity (dilute) | 20,000 | 0.644 | 0.398 | 0.6600 | 0.391 | 0.367 | 0.**366** |
+| MOF | Band-gap | 20.373 | 0.913 | 0.590 | 0.290 | 0.271 | 0.224 | **0.216** |
+| MOF | N<sub>2</sub> uptake (1 bar) | 5,286 | 0.178 | 0.115 | 0.108 | 0.102 | 0.071 | **0.069** |
+| MOF | O<sub>2</sub> uptake (1 bar) | 5,286 | 0.162 | 0.076 | 0.083 | 0.071 | **0.051** | 0.053 |
+| MOF | N<sub>2</sub> diffusivity (1 bar) | 5,286 | 7.82e-5 | 5.22e-5 | 7.19e-5 | 5.82e-05 | **4.52e-05** | 4.53e-05 |
+| MOF | O<sub>2</sub> diffusivity (1 bar) | 5,286 | 7.14e-5 | 4.59e-5 | 6.56e-5 | 5.00e-05 | 4.04e-05 | **3.99e-05** |
+| MOF | CO<sub>2</sub> Henry coefficient | 8,183 | 0.737 | 0.468 | 0.426 | 0.362 | 0.295 | **0.288** |
+| MOF | Thermal stability | 3,098 | 68.74 | 49.27 | 52.38 | 52.557 | 45.875 | **45.766** |
+| COF | CH<sub>4</sub> uptake (65bar) | 39,304 | 5.588 | 4.630 | 15.31 | 2.883 | 2.268 | **2.126** |
+| COF | CH<sub>4</sub> uptake (5.8bar) | 39,304 | 3.444 | 1.853 | 5.620 | 1.255 | **0.999** | 1.009 | 
+| COF | CO<sub>2</sub> heat of adsorption | 39,304 | 2.101 | 1.341 | 1.846 | 1.058 | 0.874 | **0.842** |
+| COF | CO<sub>2</sub> log KH | 39,304 | 0.242 | 0.169 | 0.238 | 0.134 | 0.108 | **0.103** |
+| PPN | CH<sub>4</sub> uptake (65bar) | 17,870 | 6.260 | 4.233 | 9.731 | 3.748 | 3.187 | **2.995** | 
+| PPN | CH<sub>4</sub> uptake (1bar) | 17,870  | 1.356	| 0.563	| 1.525	| 0.602	| 0.493	| **0.461** | 
+| Zeolite | CH<sub>4</sub>  KH (unitless) | 99,204	| 8.032	| 6.268	| 6.334	| 4.286	| 4.103	| **3.998** |
+| Zeolite | CH<sub>4</sub>  Heat of adsorption | 99,204	| 1.612	|1.033	| 1.603	| 0.670	| 0.647	|**0.639** |
+

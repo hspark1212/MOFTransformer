@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import sys
 import os
 import copy
@@ -9,17 +10,21 @@ from moftransformer.config import ex
 from moftransformer.config import config as _config
 from moftransformer.datamodules.datamodule import Datamodule
 from moftransformer.modules.module import Module
-from moftransformer.utils.validation import get_valid_config, get_num_devices, ConfigurationError
+from moftransformer.utils.validation import (
+    get_valid_config,
+    get_num_devices,
+    ConfigurationError,
+)
 
 warnings.filterwarnings(
     "ignore", ".*Trying to infer the `batch_size` from an ambiguous collection.*"
 )
 
 
-_IS_INTERACTIVE = hasattr(sys, 'ps1')
+_IS_INTERACTIVE = hasattr(sys, "ps1")
 
 
-def run(root_dataset, downstream=None, log_dir='logs/', *, test_only=False, **kwargs):
+def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kwargs):
     """
     Train or predict MOFTransformer.
 
@@ -194,13 +199,13 @@ def run(root_dataset, downstream=None, log_dir='logs/', *, test_only=False, **kw
     config = _config()
     for key in kwargs.keys():
         if key not in config:
-            raise ConfigurationError(f'{key} is not in configuration.')
+            raise ConfigurationError(f"{key} is not in configuration.")
 
     config.update(kwargs)
-    config['root_dataset'] = root_dataset
-    config['downstream'] = downstream
-    config['log_dir'] = log_dir
-    config['test_only'] = test_only
+    config["root_dataset"] = root_dataset
+    config["downstream"] = downstream
+    config["log_dir"] = log_dir
+    config["test_only"] = test_only
 
     main(config)
 
@@ -233,16 +238,16 @@ def main(_config):
     callbacks = [checkpoint_callback, lr_callback]
 
     num_device = get_num_devices(_config)
-    print ('num_device', num_device)
+    print("num_device", num_device)
 
     # gradient accumulation
     if num_device == 0:
         accumulate_grad_batches = _config["batch_size"] // (
-                _config["per_gpu_batchsize"] * _config["num_nodes"]
+            _config["per_gpu_batchsize"] * _config["num_nodes"]
         )
     else:
         accumulate_grad_batches = _config["batch_size"] // (
-                _config["per_gpu_batchsize"] * num_device * _config["num_nodes"]
+            _config["per_gpu_batchsize"] * num_device * _config["num_nodes"]
         )
 
     max_steps = _config["max_steps"] if _config["max_steps"] is not None else None
@@ -252,10 +257,10 @@ def main(_config):
     else:
         strategy = "ddp"
 
-    log_every_n_steps=10
+    log_every_n_steps = 10
 
     trainer = pl.Trainer(
-        accelerator=_config['accelerator'],
+        accelerator=_config["accelerator"],
         devices=_config["devices"],
         num_nodes=_config["num_nodes"],
         precision=_config["precision"],

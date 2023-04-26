@@ -1,5 +1,7 @@
+# MOFTransformer version 2.0.0
 from pathlib import Path
 import os
+
 
 class CLICommand:
     """
@@ -11,12 +13,13 @@ class CLICommand:
 
     @staticmethod
     def add_arguments(parser):
-        parser.add_argument('args', nargs='*')
+        parser.add_argument("args", nargs="*")
 
     @staticmethod
     def run(args):
         from moftransformer import __root_dir__
-        run_path = Path(__root_dir__)/'run.py'
+
+        run_path = Path(__root_dir__) / "run.py"
         config = args.args
-        print (config)
+        print(config)
         os.system(f"python {run_path} with {' '.join(config)}")

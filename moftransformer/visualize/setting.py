@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
@@ -8,9 +9,15 @@ DEFAULT_VIEW_INIT = (0, 0)
 
 
 def get_default_cbar_kwargs(figsize):
-    return {'num_ticks': 6, 'decimals': 4, 'labelpad': figsize[0] * 2,
-            'labelsize': figsize[0] * 1.5, 'fontsize': figsize[0],
-            'fraction': 0.1, 'shrink': 0.5}
+    return {
+        "num_ticks": 6,
+        "decimals": 4,
+        "labelpad": figsize[0] * 2,
+        "labelsize": figsize[0] * 1.5,
+        "fontsize": figsize[0],
+        "fraction": 0.1,
+        "shrink": 0.5,
+    }
 
 
 def get_fig_ax(**kwargs):
@@ -23,13 +30,13 @@ def get_fig_ax(**kwargs):
         show_colorbar : <bool> If True, colorbar are visible. (default : True)
     :return: <matplotlib.figure>, <matplotlib.axes>, <matplotlib.cmap>
     """
-    figsize = kwargs.get('figsize', DEFAULT_FIGSIZE)
-    view_init = kwargs.get('view_init', DEFAULT_VIEW_INIT)
-    show_axis = kwargs.get('axis', False)
+    figsize = kwargs.get("figsize", DEFAULT_FIGSIZE)
+    view_init = kwargs.get("view_init", DEFAULT_VIEW_INIT)
+    show_axis = kwargs.get("axis", False)
 
     # Set default setting
     fig = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(projection='3d')
+    ax = fig.add_subplot(projection="3d")
     ax.view_init(*view_init)
     ax.set_proj_type("ortho")
     ax.grid(visible=False)
@@ -42,9 +49,9 @@ def get_fig_ax(**kwargs):
 def set_fig_ax(ax, **kwargs):
     if not kwargs:
         return
-    if view_init := kwargs.get('view_init'):  # view_init
+    if view_init := kwargs.get("view_init"):  # view_init
         ax.view_init(*view_init)
-    if show_axis := kwargs.get('show_axis'):  # show axis
+    if show_axis := kwargs.get("show_axis"):  # show axis
         if show_axis:
             ax.set_axis_on()
         else:
@@ -68,7 +75,7 @@ def get_cmap(cmap=None):
         custom_cmap = ListedColormap(cmap)
         return custom_cmap
     else:
-        raise TypeError(f'cmap must be str, ListedColormap, or None, not {type(cmap)}')
+        raise TypeError(f"cmap must be str, ListedColormap, or None, not {type(cmap)}")
 
 
 def set_axes_equal(ax, scale_factor=1):

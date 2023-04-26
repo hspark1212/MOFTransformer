@@ -1,20 +1,21 @@
 MOFTransformer
 ===============
 
-MOFTransformer is a python library for transfer learning of metal-organic frameworks (MOFs).
-it provides tools for fine-tuning, pre-training, feature importance analysis with MOFTransformer.
+.. note::
+   From version 2.0.0, the default pre-training model has been changed from MOFTransformer to PMTransformer. 
 
-.. image:: assets/fig1.jpg
-   :width: 800
-
+MOFTransformer (or PMTransformer) is a Python library that focuses on structure-property relationships in porous materials including Metal-Organic Frameworks (MOFs), Covalent-Organic Frameworks (COFs), Porous Polymer Networks (PPNs), and zeolites 
+The multi-modal pre-trianing Transformer showcases remarkable transfer learning capabilities across various properties of porous materials.
+With MOFTrasformer, there is no need to develop and train machine learning models to predict different properties for different applications from scratch. 
+The library provides tools for fine-tuning, pre-training, and feature importance analysis using attention scores.
 
 
 Features
 --------
-- we provide `a ckpt file <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ of MOFTransformer pre-trained with 1 million hypothetical MOFs.
-- By fine-tuning the pretraining model, it ensures high-performance of transfer learning across various properties.
-- we provide `the pre-calculated atom-based embeddings and energy-grid embedding <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ for CoRE MOF, QMOF database.
-- You can easily visualize feature importance analysis from attention scores of the fine-tuning models.
+- The library provides a pre-trained PMTransformer `ckpt file <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ with 1.9 million hypothetical porous materials. we provide  of PMTransformer pre-trained with 1.9 million hypothetical porous materials.
+- With fine-tuning, the pre-training model allows for high-performance machine learning models to predict properties of porous materials.
+- `The pre-embeddings <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ (i.e., atom-based embeddings and energy-grid embeddings) for CoRE MOF, QMOF databases are available.
+- Feature importance analysis can be easily visualized from attention scores of the fine-tuning models.
 
 
 **atom-base graph embedding**

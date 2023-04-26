@@ -60,3 +60,6 @@ dist/
 
 # trasfer_learning
 transfer_learning/
+
+# vscode
+.vscode/

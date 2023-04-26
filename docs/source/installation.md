@@ -6,10 +6,9 @@
 - Numpy
 
 
-
 ## 2. Installation
 
-Given that MOFTransformer is based on pytorch, please install [pytorch](https://pytorch.org/get-started/locally/) (>= 1.10.0) according to your environments.
+Given that `MOFTransformer` is based on pytorch, please install [pytorch](https://pytorch.org/get-started/locally/) (>= 1.12.0) according to your environments.
 
 ### Installation using PIP
 
@@ -32,11 +31,10 @@ $ pip install -e .
 You can download various data needed for MOFTransformer. \
 (URL : https://figshare.com/articles/dataset/MOFTransformer/21155506)\
 There are five data that you can download
-1) Pre-trained model (MTP & MOC &VFP)
-2) Fine-tuned model (h2 uptake and band gap)
-3) Database which contain graph-data and grid-data for CoREMOF (~20,000)
-4) Database which contain graph-data and grid-data for QMOF (~20,000)
-5) Database which contain graph-data and grid-data for hMOF (~1M)
+1) Pre-trained models (ckpt files of `PMTransformer`, `MOFTransformer`)
+2) Fine-tuned models (h2 uptake and band gap)
+3) The pre-embeddings for CoREMOF database
+4) The pre-embeddings for QMOF database
 
 
 ### Download using command-line
@@ -45,14 +43,12 @@ You can download the file through the following command.
 $ moftransformer download [target] (--outdir outdir) (--remove_tarfile)
 ```
 Each argument is as follows:
-- target : One or more of the `pretrain_model`, `finetuned_model`, `coremof`, `qmof`, and `hmof`
+- target : One or more of the `pretrain_model`, `finetuned_model`, `coremof`, `qmof`
 - outdir (--outdir, -o) : (optional) Directory to save model or dataset.
   - default `pretrain_model` : [moftransformer_dir]/database/pretrained_model.ckpt
   - default `finetuned_model` : [moftransformer_dir]/database/finetuend_model/
   - default `coremof` : [moftransformer_dir]/database/coremof/
   - default `qmof` : [moftransformer_dir]/database/qmof/
-  - default `hmof` : [moftransformer_dir]/database/hmof/
-- remove_tarfile (--remove_tarfile, -r) : (optional) If activate, remove the downloaded tar.gz file
 
 
 ```bash
@@ -64,9 +60,6 @@ $ moftransformer download coremof
 
 # download graph-data and graph-data for QMOF (optional)
 $ moftransformer download qmof
-
-# download graph-data and graph-data for hMOF (optional)
-$ moftransformer download hmof
 
 # download fine-tuned model (optional)
 $ mofransformer download finetuned_model
@@ -91,8 +84,6 @@ download_pretrain_model()
 download_coremof()
 # download qmof
 download_qmof()
-# download hmof
-download_hmof()
 # download finetuned_model
 download_finetuned_model()
 ```

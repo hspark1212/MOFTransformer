@@ -1,25 +1,20 @@
 # Dataset Preparation
 
 ## 1. Introduction
-
-`MOFTransformer` takes both atom-wise graph embeddings and energy-grid embeddings to capture local and global features,
-respectively.
+![0_best_mae](assets/fig4.jpg)
+`MOFTransformer` takes both atom-wise graph embeddings and energy-grid embeddings to capture local and global features,respectively. Both of embeddings are generated from the cif files of MOFs.
 
 (1) atom-wise graph embeddings
 
-Tha atom-wise graph embeddings are taken from the modified [CGCNN](https://github.com/txie-93/cgcnn.git) by removing pooling layer and adding topologically unique
-atom selection.
+Tha atom-wise graph embeddings are taken from the modified [CGCNN](https://github.com/txie-93/cgcnn.git) by removing pooling layer and adding opologically unique atom selection.
 
 (2) energy-grid embeddings
 
-The 3D energy grids are calculated by [GRIDAY](https://github.com/Sangwon91/GRIDAY.git) with the united atom model of
-methane molecule using UFF.
+The 3D energy grids are calculated using [GRIDAY](https://github.com/Sangwon91/GRIDAY.git) with the united atom model of methane molecule using UFF.
 
 ## 2.Generate custom dataset
 
-From cif files, `moftransformer/utils/prepare_data` file will generate inputs of MOFTranformer which are the atom-wise graph embeddings and
-enery-grid embeddings.
-You need to prepare `cif files` and `raw_{downstream}.json files` in `root_cifs` directory.
+To generate inputs for MOFTransformer from CIF files, use the `moftransformer/utils/prepare_data` file to generate atom-wise graph embeddings and energy-grid embeddings. You will need to prepare CIF files and `raw_{downstream}.json` files in a root_cifs directory.
 
 - `root_cif`: A directory that contains `.cif` and `.json` file.
 - `downstream` : name of user-specific downstream task (e.g. band_gap, gas_uptake, etc).
@@ -55,7 +50,6 @@ prepare_data(root_cifs, root_dataset, downstream="example")
 # multiple tasks (contain several json files in root_cif)
 prepare_data(root_cifs, root_dataset, downstream=["example1", "example2", ...])
 ```
-
 
 `prepare_data` will generate the atom-wise graph embeddings and energy-grid embeddings in `root_dataset`
 directory.

@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import os
 import random
 import json
@@ -11,13 +12,13 @@ from torch.nn.functional import interpolate
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(
-            self,
-            data_dir: str,
-            split: str,
-            nbr_fea_len: int,
-            draw_false_grid=True,
-            downstream="",
-            tasks=[],
+        self,
+        data_dir: str,
+        split: str,
+        nbr_fea_len: int,
+        draw_false_grid=True,
+        downstream="",
+        tasks=[],
     ):
         """
         Dataset for pretrained MOF.
@@ -40,7 +41,9 @@ class Dataset(torch.utils.data.Dataset):
         print(f"read {path_file}...")
 
         if not os.path.isfile(path_file):
-            raise FileNotFoundError(f"{path_file} doesn't exist. Check 'root_dataset' in config")
+            raise FileNotFoundError(
+                f"{path_file} doesn't exist. Check 'root_dataset' in config"
+            )
 
         dict_target = json.load(open(path_file, "r"))
         self.cif_ids, self.targets = zip(*dict_target.items())
@@ -53,18 +56,22 @@ class Dataset(torch.utils.data.Dataset):
             if task in ["mtp", "vfp", "moc", "bbc"]:
                 path_file = os.path.join(data_dir, f"{split}_{task}.json")
                 print(f"read {path_file}...")
-                assert os.path.isfile(path_file), f"{path_file} doesn't exist in {data_dir}"
+                assert os.path.isfile(
+                    path_file
+                ), f"{path_file} doesn't exist in {data_dir}"
 
                 dict_task = json.load(open(path_file, "r"))
                 cif_ids, t = zip(*dict_task.items())
                 self.tasks[task] = list(t)
-                assert self.cif_ids == cif_ids, print("order of keys is different in the json file")
+                assert self.cif_ids == cif_ids, print(
+                    "order of keys is different in the json file"
+                )
 
     def __len__(self):
         return len(self.cif_ids)
 
     @staticmethod
-    def make_grid_data(grid_data, emin=-5000., emax=5000, bins=101):
+    def make_grid_data(grid_data, emin=-5000.0, emax=5000, bins=101):
         """
         make grid_data within range (emin, emax) and
         make bins with logit function
@@ -88,7 +95,7 @@ class Dataset(torch.utils.data.Dataset):
         b_ = np.cos(angle_b * np.pi / 180)
         c_ = np.cos(angle_c * np.pi / 180)
 
-        v = a * b * c * np.sqrt(1 - a_ ** 2 - b_ ** 2 - c_ ** 2 + 2 * a_ * b_ * c_)
+        v = a * b * c * np.sqrt(1 - a_**2 - b_**2 - c_**2 + 2 * a_ * b_ * c_)
 
         return v.item() / (60 * 60 * 60)  # normalized volume
 
@@ -113,7 +120,6 @@ class Dataset(torch.utils.data.Dataset):
         return cell, volume, grid_data
 
     def get_grid_data(self, cif_id, draw_false_grid=False):
-
         cell, volume, grid_data = self.get_raw_grid_data(cif_id)
         ret = {
             "cell": cell,
@@ -129,7 +135,7 @@ class Dataset(torch.utils.data.Dataset):
                 {
                     "false_cell": cell,
                     "fale_volume": volume,
-                    "false_grid_data": grid_data
+                    "false_grid_data": grid_data,
                 }
             )
         return ret
@@ -142,10 +148,11 @@ class Dataset(torch.utils.data.Dataset):
         """
 
         assert dmin < dmax
-        _filter = np.linspace(dmin, dmax, num_step)  # = np.arange(dmin, dmax + step, step) with step = 0.2
+        _filter = np.linspace(
+            dmin, dmax, num_step
+        )  # = np.arange(dmin, dmax + step, step) with step = 0.2
 
-        return np.exp(-(distances[..., np.newaxis] - _filter) ** 2 /
-                      var ** 2).float()
+        return np.exp(-((distances[..., np.newaxis] - _filter) ** 2) / var**2).float()
 
     def get_graph(self, cif_id):
         file_graph = os.path.join(self.data_dir, self.split, f"{cif_id}.graphdata")
@@ -156,7 +163,9 @@ class Dataset(torch.utils.data.Dataset):
         nbr_idx = torch.LongTensor(graphdata[2].copy()).view(len(atom_num), -1)
         nbr_dist = torch.FloatTensor(graphdata[3].copy()).view(len(atom_num), -1)
 
-        nbr_fea = torch.FloatTensor(self.get_gaussian_distance(nbr_dist, num_step=self.nbr_fea_len, dmax=8))
+        nbr_fea = torch.FloatTensor(
+            self.get_gaussian_distance(nbr_dist, num_step=self.nbr_fea_len, dmax=8)
+        )
 
         uni_idx = graphdata[4]
         uni_count = graphdata[5]
@@ -172,16 +181,11 @@ class Dataset(torch.utils.data.Dataset):
     def get_tasks(self, index):
         ret = dict()
         for task, value in self.tasks.items():
-            ret.update(
-                {
-                    task: value[index]
-                }
-            )
+            ret.update({task: value[index]})
 
         return ret
 
     def __getitem__(self, index):
-
         ret = dict()
         cif_id = self.cif_ids[index]
         target = self.targets[index]
@@ -226,9 +230,7 @@ class Dataset(torch.utils.data.Dataset):
         base_idx = 0
         for i, nbr_idx in enumerate(batch_nbr_idx):
             n_i = nbr_idx.shape[0]
-            crystal_atom_idx.append(
-                torch.arange(n_i) + base_idx
-            )
+            crystal_atom_idx.append(torch.arange(n_i) + base_idx)
             nbr_idx += base_idx
             base_idx += n_i
 
@@ -244,20 +246,20 @@ class Dataset(torch.utils.data.Dataset):
 
         for bi in range(batch_size):
             orig = batch_grid_data[bi].view(batch_cell[bi][::-1]).transpose(0, 2)
-            if batch_cell[bi] == [30, 30, 30]:      # version >= 1.1.2
+            if batch_cell[bi] == [30, 30, 30]:  # version >= 1.1.2
                 orig = orig[None, None, :, :, :]
             else:
-                orig = interpolate(orig[None, None, :, :, :],
-                                   size=[img_size, img_size, img_size],
-                                   mode="trilinear",
-                                   align_corners=True,
-                                   )
+                orig = interpolate(
+                    orig[None, None, :, :, :],
+                    size=[img_size, img_size, img_size],
+                    mode="trilinear",
+                    align_corners=True,
+                )
             new_grids.append(orig)
         new_grids = torch.concat(new_grids, axis=0)
         dict_batch["grid"] = new_grids
 
         if "false_grid_data" in dict_batch.keys():
-
             batch_false_grid_data = dict_batch["false_grid_data"]
             batch_false_cell = dict_batch["false_cell"]
             new_false_grids = []
@@ -266,11 +268,12 @@ class Dataset(torch.utils.data.Dataset):
                 if batch_cell[bi] == [30, 30, 30]:  # version >= 1.1.2
                     orig = orig[None, None, :, :, :]
                 else:
-                    orig = interpolate(orig[None, None, :, :, :],
-                                       size=[img_size, img_size, img_size],
-                                       mode="trilinear",
-                                       align_corners=True,
-                                       )
+                    orig = interpolate(
+                        orig[None, None, :, :, :],
+                        size=[img_size, img_size, img_size],
+                        mode="trilinear",
+                        align_corners=True,
+                    )
                 new_false_grids.append(orig)
             new_false_grids = torch.concat(new_false_grids, axis=0)
             dict_batch["false_grid"] = new_false_grids

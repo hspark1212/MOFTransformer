@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule
@@ -111,11 +112,11 @@ class Module(LightningModule):
             self.load_state_dict(state_dict, strict=False)
             print(f"load model : {config['load_path']}")
 
-    def infer(self,
-              batch,
-              mask_grid=False,
-              ):
-
+    def infer(
+        self,
+        batch,
+        mask_grid=False,
+    ):
         cif_id = batch["cif_id"]
         atom_num = batch["atom_num"]  # [N']
         nbr_idx = batch["nbr_idx"]  # [N', M]
@@ -128,17 +129,18 @@ class Module(LightningModule):
         volume = batch["volume"]  # list [B]
 
         if "moc" in batch.keys():
-            moc =  batch["moc"] # [B]
+            moc = batch["moc"]  # [B]
         elif "bbc" in batch.keys():
-            moc = batch["bbc"] # [B]
+            moc = batch["bbc"]  # [B]
         else:
             moc = None
 
         # get graph embeds
-        (graph_embeds,  # [B, max_graph_len, hid_dim],
-         graph_masks,  # [B, max_graph_len],
-         mo_labels,  # if moc: [B, max_graph_len], else: None
-         ) = self.graph_embeddings(
+        (
+            graph_embeds,  # [B, max_graph_len, hid_dim],
+            graph_masks,  # [B, max_graph_len],
+            mo_labels,  # if moc: [B, max_graph_len], else: None
+        ) = self.graph_embeddings(
             atom_num=atom_num,
             nbr_idx=nbr_idx,
             nbr_fea=nbr_fea,
@@ -152,14 +154,17 @@ class Module(LightningModule):
         cls_embeds = self.cls_embeddings(cls_tokens[:, None, None])  # [B, 1, hid_dim]
         cls_mask = torch.ones(len(crystal_atom_idx), 1).to(graph_masks)  # [B, 1]
 
-        graph_embeds = torch.cat([cls_embeds, graph_embeds], dim=1)  # [B, max_graph_len+1, hid_dim]
+        graph_embeds = torch.cat(
+            [cls_embeds, graph_embeds], dim=1
+        )  # [B, max_graph_len+1, hid_dim]
         graph_masks = torch.cat([cls_mask, graph_masks], dim=1)  # [B, max_graph_len+1]
 
         # get grid embeds
-        (grid_embeds,  # [B, max_grid_len+1, hid_dim]
-         grid_masks,  # [B, max_grid_len+1]
-         grid_labels,  # [B, grid+1, C] if mask_image == True
-         ) = self.transformer.visual_embed(
+        (
+            grid_embeds,  # [B, max_grid_len+1, hid_dim]
+            grid_masks,  # [B, max_grid_len+1]
+            grid_labels,  # [B, grid+1, C] if mask_image == True
+        ) = self.transformer.visual_embed(
             grid,
             max_image_len=self.max_grid_len,
             mask_it=mask_grid,
@@ -170,17 +175,25 @@ class Module(LightningModule):
         volume_embeds = self.volume_embeddings(volume[:, None, None])  # [B, 1, hid_dim]
         volume_mask = torch.ones(volume.shape[0], 1).to(grid_masks)
 
-        grid_embeds = torch.cat([grid_embeds, volume_embeds], dim=1)  # [B, max_grid_len+2, hid_dim]
+        grid_embeds = torch.cat(
+            [grid_embeds, volume_embeds], dim=1
+        )  # [B, max_grid_len+2, hid_dim]
         grid_masks = torch.cat([grid_masks, volume_mask], dim=1)  # [B, max_grid_len+2]
 
         # add token_type_embeddings
-        graph_embeds = graph_embeds \
-                       + self.token_type_embeddings(torch.zeros_like(graph_masks, device=self.device).long())
-        grid_embeds = grid_embeds \
-                      + self.token_type_embeddings(torch.ones_like(grid_masks, device=self.device).long())
+        graph_embeds = graph_embeds + self.token_type_embeddings(
+            torch.zeros_like(graph_masks, device=self.device).long()
+        )
+        grid_embeds = grid_embeds + self.token_type_embeddings(
+            torch.ones_like(grid_masks, device=self.device).long()
+        )
 
-        co_embeds = torch.cat([graph_embeds, grid_embeds], dim=1)  # [B, final_max_len, hid_dim]
-        co_masks = torch.cat([graph_masks, grid_masks], dim=1)  # [B, final_max_len, hid_dim]
+        co_embeds = torch.cat(
+            [graph_embeds, grid_embeds], dim=1
+        )  # [B, final_max_len, hid_dim]
+        co_masks = torch.cat(
+            [graph_masks, grid_masks], dim=1
+        )  # [B, final_max_len, hid_dim]
 
         x = co_embeds
 
@@ -193,8 +206,8 @@ class Module(LightningModule):
 
         x = self.transformer.norm(x)
         graph_feats, grid_feats = (
-            x[:, :graph_embeds.shape[1]],
-            x[:, graph_embeds.shape[1]:],
+            x[:, : graph_embeds.shape[1]],
+            x[:, graph_embeds.shape[1] :],
         )  # [B, max_graph_len, hid_dim], [B, max_grid_len+2, hid_dim]
 
         cls_feats = self.pooler(x)  # [B, hid_dim]
@@ -270,7 +283,9 @@ class Module(LightningModule):
     def test_step(self, batch, batch_idx):
         module_utils.set_task(self)
         output = self(batch)
-        output = {k : (v.cpu() if torch.is_tensor(v) else v) for k, v in output.items()} # update cpu for memory
+        output = {
+            k: (v.cpu() if torch.is_tensor(v) else v) for k, v in output.items()
+        }  # update cpu for memory
         return output
 
     def test_epoch_end(self, outputs):
