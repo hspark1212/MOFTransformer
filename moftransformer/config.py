@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import os
 from sacred import Experiment
 from moftransformer import __root_dir__
@@ -67,7 +68,9 @@ def config():
     optim_type = "adamw"  # adamw, adam, sgd (momentum=0.9)
     learning_rate = 1e-4
     weight_decay = 1e-2
-    decay_power = 1  # default polynomial decay, [cosine, constant, constant_with_warmup]
+    decay_power = (
+        1  # default polynomial decay, [cosine, constant, constant_with_warmup]
+    )
     max_epochs = 100
     max_steps = -1  # num_data * max_epoch // batch_size (accumulate_grad_batches)
     warmup_steps = 0.05  # int or float ( max_steps * warmup_steps)
@@ -84,7 +87,7 @@ def config():
     log_dir = "logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    accelerator = 'gpu'
+    accelerator = "gpu"
     devices = 1
     num_nodes = 1
 

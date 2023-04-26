@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import os
 from sacred import Experiment
 from moftransformer import __root_dir__
@@ -67,7 +68,9 @@ def config():
     optim_type = "adamw"  # adamw, adam, sgd (momentum=0.9)
     learning_rate = 1e-4
     weight_decay = 1e-2
-    decay_power = 1  # default polynomial decay, [cosine, constant, constant_with_warmup]
+    decay_power = (
+        1  # default polynomial decay, [cosine, constant, constant_with_warmup]
+    )
     max_epochs = 100
     max_steps = -1  # num_data * max_epoch // batch_size (accumulate_grad_batches)
     warmup_steps = 0.05  # int or float ( max_steps * warmup_steps)
@@ -84,7 +87,7 @@ def config():
     log_dir = "logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    accelerator = 'gpu'
+    accelerator = "gpu"
     devices = 1
     num_nodes = 1
 
@@ -135,7 +138,9 @@ fine-tuning (transfer learining)
 @ex.named_config
 def ppn_1bar():
     exp_name = "ppn_1bar"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
+    )
     downstream = "1bar"
     max_epochs = 20
     batch_size = 32
@@ -146,7 +151,9 @@ def ppn_1bar():
 @ex.named_config
 def ppn_65bar():
     exp_name = "ppn_65bar"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/0_insilico_ppn/dataset"
+    )
     downstream = "65bar"
     max_epochs = 20
     batch_size = 32
@@ -162,7 +169,9 @@ in silico COF
 @ex.named_config
 def cof_lowbar():
     exp_name = "cof_lowbar"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    )
     downstream = "lowbar"
     max_epochs = 20
     batch_size = 32
@@ -173,7 +182,9 @@ def cof_lowbar():
 @ex.named_config
 def cof_highbar():
     exp_name = "cof_highbar"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    )
     downstream = "highbar"
     max_epochs = 20
     batch_size = 32
@@ -184,7 +195,9 @@ def cof_highbar():
 @ex.named_config
 def cof_logkh():
     exp_name = "cof_logkh"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    )
     downstream = "logkh"
     max_epochs = 20
     batch_size = 32
@@ -195,7 +208,9 @@ def cof_logkh():
 @ex.named_config
 def cof_qst():
     exp_name = "cof_qst"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/1_insilico_cof/dataset"
+    )
     downstream = "qst"
     max_epochs = 20
     batch_size = 32
@@ -211,7 +226,9 @@ pcod zeolite
 @ex.named_config
 def zeo_qst():
     exp_name = "zeo_qst"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/2_pcod_zeolite/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/2_pcod_zeolite/dataset"
+    )
     downstream = "qst"
     max_epochs = 20
     batch_size = 32
@@ -222,7 +239,9 @@ def zeo_qst():
 @ex.named_config
 def zeo_unitlesskh():
     exp_name = "zeo_unitlesskh"
-    root_dataset = "/usr/data/transfer_learning/downstream_public/2_pcod_zeolite/dataset"
+    root_dataset = (
+        "/usr/data/transfer_learning/downstream_public/2_pcod_zeolite/dataset"
+    )
     downstream = "unitlesskh"
     max_epochs = 20
     batch_size = 32
@@ -234,6 +253,7 @@ def zeo_unitlesskh():
 mof downstream
 """
 
+
 @ex.named_config
 def mof_raspa_100bar():
     exp_name = "mof_raspa_100bar"
@@ -243,6 +263,7 @@ def mof_raspa_100bar():
     batch_size = 32
     mean = 487.866
     std = 63.504
+
 
 @ex.named_config
 def mof_diffusivity_log():
@@ -254,6 +275,7 @@ def mof_diffusivity_log():
     mean = -8.306
     std = 1.490
 
+
 @ex.named_config
 def mof_bandgap():
     exp_name = "mof_bandgap"
@@ -263,6 +285,7 @@ def mof_bandgap():
     batch_size = 32
     mean = 2.086
     std = 1.131
+
 
 @ex.named_config
 def mof_n2uptake():
@@ -274,6 +297,7 @@ def mof_n2uptake():
     mean = 0.3999
     std = 0.337
 
+
 @ex.named_config
 def mof_o2uptake():
     exp_name = "mof_o2uptake"
@@ -284,6 +308,7 @@ def mof_o2uptake():
     mean = 0.387
     std = 0.241
 
+
 @ex.named_config
 def mof_n2diffusivity_dilute():
     exp_name = "mof_n2diffusivity_dilute"
@@ -293,6 +318,7 @@ def mof_n2diffusivity_dilute():
     batch_size = 32
     mean = 0.000187
     std = 0.000176
+
 
 @ex.named_config
 def mof_o2diffusivity_dilute():
@@ -341,9 +367,12 @@ def mof_ssc():
     loss_names = _loss_names({"classification": 1})
     n_classes = 2
 
+
 """
 downstream example (H2 uptake)
 """
+
+
 @ex.named_config
 def mof_h2_uptake():
     exp_name = "mof_h2_uptake"
@@ -353,6 +382,7 @@ def mof_h2_uptake():
     batch_size = 32
     mean = 488.029
     std = 62.690
+
 
 @ex.named_config
 def cof_h2_uptake():
@@ -364,6 +394,7 @@ def cof_h2_uptake():
     mean = 485.978
     std = 80.930
 
+
 @ex.named_config
 def ppn_h2_uptake():
     exp_name = "ppn_h2_uptake"
@@ -373,6 +404,7 @@ def ppn_h2_uptake():
     batch_size = 32
     mean = 465.196
     std = 117.529
+
 
 @ex.named_config
 def zeo_h2_uptake():
@@ -384,9 +416,12 @@ def zeo_h2_uptake():
     mean = 259.878
     std = 112.928
 
+
 """
 downstream example (H2 working capacity)
 """
+
+
 @ex.named_config
 def mof_h2_wc():
     exp_name = "mof_h2_wc"
@@ -396,6 +431,7 @@ def mof_h2_wc():
     batch_size = 32
     mean = 320.019
     std = 87.993
+
 
 @ex.named_config
 def cof_h2_wc():
@@ -407,6 +443,7 @@ def cof_h2_wc():
     mean = 326.740
     std = 84.470
 
+
 @ex.named_config
 def ppn_h2_wc():
     exp_name = "ppn_h2_wc"
@@ -416,6 +453,7 @@ def ppn_h2_wc():
     batch_size = 32
     mean = 300.407
     std = 116.746
+
 
 @ex.named_config
 def zeo_h2_wc():
@@ -438,9 +476,12 @@ def total_h2_wc():
     mean = 241.300
     std = 152.052
 
+
 """
 curated COF few shot
 """
+
+
 @ex.named_config
 def ccof_bandgap():
     exp_name = "ccof_bandgap"

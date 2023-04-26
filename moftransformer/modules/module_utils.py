@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import torch
 
 from torch.optim import AdamW
@@ -60,9 +61,11 @@ def epoch_wrapup(pl_module):
             value = -value
         else:
             value = getattr(pl_module, f"{phase}_{loss_name}_accuracy").compute()
-            pl_module.log(f"{loss_name}/{phase}/accuracy_epoch",
-                          value,
-                          batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],)
+            pl_module.log(
+                f"{loss_name}/{phase}/accuracy_epoch",
+                value,
+                batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
+            )
             getattr(pl_module, f"{phase}_{loss_name}_accuracy").reset()
             pl_module.log(
                 f"{loss_name}/{phase}/loss_epoch",
@@ -103,7 +106,7 @@ def set_schedule(pl_module):
                 p
                 for n, p in pl_module.named_parameters()
                 if not any(nd in n for nd in no_decay)  # not within no_decay
-                   and not any(bb in n for bb in head_names)  # not within head_names
+                and not any(bb in n for bb in head_names)  # not within head_names
             ],
             "weight_decay": wd,
             "lr": lr,
@@ -113,7 +116,7 @@ def set_schedule(pl_module):
                 p
                 for n, p in pl_module.named_parameters()
                 if any(nd in n for nd in no_decay)  # within no_decay
-                   and not any(bb in n for bb in head_names)  # not within head_names
+                and not any(bb in n for bb in head_names)  # not within head_names
             ],
             "weight_decay": 0.0,
             "lr": lr,
@@ -123,7 +126,7 @@ def set_schedule(pl_module):
                 p
                 for n, p in pl_module.named_parameters()
                 if not any(nd in n for nd in no_decay)  # not within no_decay
-                   and any(bb in n for bb in head_names)  # within head_names
+                and any(bb in n for bb in head_names)  # within head_names
             ],
             "weight_decay": wd,
             "lr": lr * lr_mult,
@@ -141,8 +144,9 @@ def set_schedule(pl_module):
     ]
 
     if optim_type == "adamw":
-        optimizer = AdamW(optimizer_grouped_parameters, lr=lr, eps=1e-8, betas=(0.9, 0.98)
-                          )
+        optimizer = AdamW(
+            optimizer_grouped_parameters, lr=lr, eps=1e-8, betas=(0.9, 0.98)
+        )
     elif optim_type == "adam":
         optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=lr)
     elif optim_type == "sgd":
@@ -157,8 +161,10 @@ def set_schedule(pl_module):
     if isinstance(pl_module.hparams.config["warmup_steps"], float):
         warmup_steps = int(max_steps * warmup_steps)
 
-    print(f"max_epochs: {pl_module.trainer.max_epochs} | max_steps: {max_steps} | warmup_steps : {warmup_steps} "
-          f"| weight_decay : {wd} | decay_power : {decay_power}")
+    print(
+        f"max_epochs: {pl_module.trainer.max_epochs} | max_steps: {max_steps} | warmup_steps : {warmup_steps} "
+        f"| weight_decay : {wd} | decay_power : {decay_power}"
+    )
 
     if decay_power == "cosine":
         scheduler = get_cosine_schedule_with_warmup(
@@ -166,11 +172,11 @@ def set_schedule(pl_module):
             num_warmup_steps=warmup_steps,
             num_training_steps=max_steps,
         )
-    elif decay_power == 'constant':
+    elif decay_power == "constant":
         scheduler = get_constant_schedule(
             optimizer,
         )
-    elif decay_power == 'constant_with_warmup':
+    elif decay_power == "constant_with_warmup":
         scheduler = get_constant_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,

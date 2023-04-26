@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -49,7 +50,9 @@ def compute_regression(pl_module, batch, normalizer):
 def compute_classification(pl_module, batch):
     infer = pl_module.infer(batch)
 
-    logits, binary = pl_module.classification_head(infer["cls_feats"])  # [B, output_dim]
+    logits, binary = pl_module.classification_head(
+        infer["cls_feats"]
+    )  # [B, output_dim]
     labels = torch.LongTensor(batch["target"]).to(logits.device)  # [B]
     assert len(labels.shape) == 1
     if binary:
@@ -68,7 +71,9 @@ def compute_classification(pl_module, batch):
 
     # call update() loss and acc
     phase = "train" if pl_module.training else "val"
-    loss = getattr(pl_module, f"{phase}_classification_loss")(ret["classification_loss"])
+    loss = getattr(pl_module, f"{phase}_classification_loss")(
+        ret["classification_loss"]
+    )
     acc = getattr(pl_module, f"{phase}_classification_accuracy")(
         ret["classification_logits"], ret["classification_labels"]
     )
@@ -83,10 +88,12 @@ def compute_mpp(pl_module, batch):
     infer = pl_module.infer(batch, mask_grid=True)
 
     mpp_logits = pl_module.mpp_head(infer["grid_feats"])  # [B, max_image_len+2, bins]
-    mpp_logits = mpp_logits[:, :-1, :]  # ignore volume embedding, [B, max_image_len+1, bins]
+    mpp_logits = mpp_logits[
+        :, :-1, :
+    ]  # ignore volume embedding, [B, max_image_len+1, bins]
     mpp_labels = infer["grid_labels"]  # [B, max_image_len+1, C=1]
 
-    mask = mpp_labels != -100.  # [B, max_image_len, 1]
+    mask = mpp_labels != -100.0  # [B, max_image_len, 1]
 
     # masking
     mpp_logits = mpp_logits[mask.squeeze(-1)]  # [mask, bins]
@@ -170,9 +177,9 @@ def compute_vfp(pl_module, batch):
 def compute_ggm(pl_module, batch):
     pos_len = len(batch["grid"]) // 2
     neg_len = len(batch["grid"]) - pos_len
-    ggm_labels = torch.cat(
-        [torch.ones(pos_len), torch.zeros(neg_len)]
-    ).to(pl_module.device)
+    ggm_labels = torch.cat([torch.ones(pos_len), torch.zeros(neg_len)]).to(
+        pl_module.device
+    )
 
     ggm_images = []
     for i, (bti, bfi) in enumerate(zip(batch["grid"], batch["false_grid"])):
@@ -210,7 +217,6 @@ def compute_ggm(pl_module, batch):
 
 
 def compute_moc(pl_module, batch):
-
     if "bbc" in batch.keys():
         task = "bbc"
     else:
@@ -218,12 +224,16 @@ def compute_moc(pl_module, batch):
 
     infer = pl_module.infer(batch)
     moc_logits = pl_module.moc_head(
-        infer["graph_feats"][:, 1:, :]).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
-    moc_labels = infer["mo_labels"].to(moc_logits).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
+        infer["graph_feats"][:, 1:, :]
+    ).flatten()  # [B, max_graph_len] -> [B * max_graph_len]
+    moc_labels = (
+        infer["mo_labels"].to(moc_logits).flatten()
+    )  # [B, max_graph_len] -> [B * max_graph_len]
     mask = moc_labels != -100
 
-    moc_loss = F.binary_cross_entropy_with_logits(input=moc_logits[mask],
-                                                  target=moc_labels[mask])  # [B * max_graph_len]
+    moc_loss = F.binary_cross_entropy_with_logits(
+        input=moc_logits[mask], target=moc_labels[mask]
+    )  # [B * max_graph_len]
 
     ret = {
         "moc_loss": moc_loss,

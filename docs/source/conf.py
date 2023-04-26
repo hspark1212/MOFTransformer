@@ -9,7 +9,7 @@
 project = "MOFTransformer"
 copyright = "2022, Yeonghun Kang, Hyunsoo Park"
 author = "Yeonghun Kang, Hyunsoo Park"
-release = "1.1.2"
+release = "2.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

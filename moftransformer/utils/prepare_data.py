@@ -25,15 +25,17 @@ from ase.build import make_supercell
 
 from moftransformer import __root_dir__
 
-GRIDAY_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/scripts/grid_gen')
-FF_PATH = os.path.join(__root_dir__, 'libs/GRIDAY/FF')
+GRIDAY_PATH = os.path.join(__root_dir__, "libs/GRIDAY/scripts/grid_gen")
+FF_PATH = os.path.join(__root_dir__, "libs/GRIDAY/FF")
 
 
 def get_logger(filename):
     logger = logging.getLogger(filename)
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter(
+        fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
 
     # stream_handler = logging.StreamHandler()
     # stream_handler.setFormatter(formatter)
@@ -49,7 +51,9 @@ def get_logger(filename):
 def get_unique_atoms(atoms):
     # get graph
     cutoff = natural_cutoffs(atoms)
-    neighbor_list = neighborlist.NeighborList(cutoff, self_interaction=True, bothways=True)
+    neighbor_list = neighborlist.NeighborList(
+        cutoff, self_interaction=True, bothways=True
+    )
     neighbor_list.update(atoms)
     matrix = neighbor_list.get_connectivity_matrix()
 
@@ -73,7 +77,9 @@ def get_unique_atoms(atoms):
 
     arr = np.vstack(arr).transpose()
 
-    uni, unique_idx, unique_count = np.unique(arr, axis=0, return_index=True, return_counts=True)
+    uni, unique_idx, unique_count = np.unique(
+        arr, axis=0, return_index=True, return_counts=True
+    )
 
     # sort
     final_uni = uni[np.argsort(-unique_count)].tolist()
@@ -146,15 +152,26 @@ def get_energy_grid(atoms, cif_id, root_dataset, eg_logger):
 
     eg_file = os.path.join(root_dataset, cif_id)
     random_str = str(np.random.rand()).encode()
-    tmp_file = os.path.join(root_dataset, f"{hashlib.sha256(random_str).hexdigest()}.cssr")
+    tmp_file = os.path.join(
+        root_dataset, f"{hashlib.sha256(random_str).hexdigest()}.cssr"
+    )
 
     try:
         structure = AseAtomsAdaptor().get_structure(atoms)
         Cssr(structure).write_file(tmp_file)
-        num_grid = ['30', '30', '30']
+        num_grid = ["30", "30", "30"]
         proc = subprocess.Popen(
-            [GRIDAY_PATH, *num_grid, f'{FF_PATH}/UFF_Type.def', f'{FF_PATH}/UFF_FF.def', tmp_file, eg_file],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            [
+                GRIDAY_PATH,
+                *num_grid,
+                f"{FF_PATH}/UFF_Type.def",
+                f"{FF_PATH}/UFF_FF.def",
+                tmp_file,
+                eg_file,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         out, err = proc.communicate()
     finally:
         # remove temp_file
@@ -199,27 +216,27 @@ def _split_dataset(root_dataset: Path, **kwargs):
     :return:
     """
     # get argument from kwargs
-    seed = kwargs.get('seed', 42)
-    threshold = kwargs.get('threshold', 0.01)
-    train_fraction = kwargs.get('train_fraction', 0.8)
-    test_fraction = kwargs.get('test_fraction', 0.1)
+    seed = kwargs.get("seed", 42)
+    threshold = kwargs.get("threshold", 0.01)
+    train_fraction = kwargs.get("train_fraction", 0.8)
+    test_fraction = kwargs.get("test_fraction", 0.1)
 
     # get directories
-    total_dir = root_dataset / 'total'
+    total_dir = root_dataset / "total"
     assert total_dir.exists()
 
-    split_dir = {split: root_dataset / split for split in ['train', 'test', 'val']}
+    split_dir = {split: root_dataset / split for split in ["train", "test", "val"]}
     for direc in split_dir.values():
         direc.mkdir(exist_ok=True)
 
     # get success prepare-data list
     cif_list = {}
-    CifPath = namedtuple('CifPath', ['cif', 'graphdata', 'grid', 'griddata16'])
-    for cif in total_dir.glob('*.cif'):
+    CifPath = namedtuple("CifPath", ["cif", "graphdata", "grid", "griddata16"])
+    for cif in total_dir.glob("*.cif"):
         cif_id = cif.stem
-        graphdata = cif.with_suffix('.graphdata')
-        grid = cif.with_suffix('.grid')
-        griddata = cif.with_suffix('.griddata16')
+        graphdata = cif.with_suffix(".graphdata")
+        grid = cif.with_suffix(".grid")
+        griddata = cif.with_suffix(".griddata16")
 
         if cif.exists() and graphdata.exists() and grid.exists() and griddata.exists():
             cif_list[cif_id] = CifPath(cif, graphdata, grid, griddata)
@@ -227,34 +244,40 @@ def _split_dataset(root_dataset: Path, **kwargs):
     # get number of split
     if train_fraction + test_fraction > 1:
         raise ValueError(
-            f'"train_fraction + test_fraction" must be smaller than 1.0, not {train_fraction + test_fraction}')
+            f'"train_fraction + test_fraction" must be smaller than 1.0, not {train_fraction + test_fraction}'
+        )
 
     n_total = len(cif_list.keys())
     n_train = int(n_total * train_fraction)
     n_test = int(n_total * test_fraction)
     n_val = n_total - n_train - n_test
-    n_split = {'train': n_train, 'test': n_test, 'val': n_val}
+    n_split = {"train": n_train, "test": n_test, "val": n_val}
 
     # remove already-divided values
     for split, direc in split_dir.items():
-        split_cifs = {cif.stem for cif in direc.glob('*.cif')}
+        split_cifs = {cif.stem for cif in direc.glob("*.cif")}
         for cif in split_cifs:
             if cif in cif_list:
                 del cif_list[cif]
                 n_split[split] -= 1
 
-    assert sum(n_split.values()) == len(cif_list), 'Error! contact with code writer!'
+    assert sum(n_split.values()) == len(cif_list), "Error! contact with code writer!"
     if not cif_list:  # NO additional divided task
         return
 
     for split, n in n_split.items():
         if n < -n_total * threshold:
             raise ValueError(
-                "{split} folder's cif number is larger than {split}_fraction. change argument {split}_fraction.")
+                "{split} folder's cif number is larger than {split}_fraction. change argument {split}_fraction."
+            )
 
     # random split index
     cif_name = sorted(list(cif_list.keys()))
-    split_idx = ['train'] * n_split['train'] + ['test'] * n_split['test'] + ['val'] * n_split['val']
+    split_idx = (
+        ["train"] * n_split["train"]
+        + ["test"] * n_split["test"]
+        + ["val"] * n_split["val"]
+    )
     np.random.seed(seed=seed)
     np.random.shuffle(split_idx)
 
@@ -262,21 +285,21 @@ def _split_dataset(root_dataset: Path, **kwargs):
 
     for cif, split in zip(cif_name, split_idx):
         cifpath = cif_list[cif]
-        for suffix in ['cif', 'graphdata', 'grid', 'griddata16']:
+        for suffix in ["cif", "graphdata", "grid", "griddata16"]:
             src = getattr(cifpath, suffix)
             dest = root_dataset / split
             shutil.copy(src, dest)
 
 
 def _split_json(root_cifs: Path, root_dataset: Path, downstream: str):
-    with open(str(root_cifs / f'raw_{downstream}.json')) as f:
+    with open(str(root_cifs / f"raw_{downstream}.json")) as f:
         src = json.load(f)
 
-    for split in ['train', 'test', 'val']:
+    for split in ["train", "test", "val"]:
         cif_folder = root_dataset / split
-        cif_list = [cif.stem for cif in cif_folder.glob('*.cif')]
+        cif_list = [cif.stem for cif in cif_folder.glob("*.cif")]
         split_json = {i: src[i] for i in cif_list if i in src}
-        with open(str(root_dataset / f'{split}_{downstream}.json'), 'w') as f:
+        with open(str(root_dataset / f"{split}_{downstream}.json"), "w") as f:
             json.dump(split_json, f)
 
 
@@ -299,7 +322,9 @@ def _make_supercell(atoms, cutoff):
     return atoms
 
 
-def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logger=None, **kwargs):
+def make_prepared_data(
+    cif: Path, root_dataset_total: Path, logger=None, eg_logger=None, **kwargs
+):
     if logger is None:
         logger = get_logger(filename="prepare_data.log")
     if eg_logger is None:
@@ -312,9 +337,10 @@ def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logg
 
     root_dataset_total.mkdir(exist_ok=True, parents=True)
 
-    max_length = kwargs.get('max_length', 60.)
-    min_length = kwargs.get('min_length', 30.)
-    max_num_nbr = kwargs.get('max_num_nbr', 12)
+    max_length = kwargs.get("max_length", 60.0)
+    min_length = kwargs.get("min_length", 30.0)
+    max_num_nbr = kwargs.get("max_num_nbr", 12)
+    max_num_atoms = kwargs.get("max_num_atoms", 300)
 
     cif_id: str = cif.stem
 
@@ -343,10 +369,20 @@ def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logg
         return False
 
     # 1. get crystal graph
-    atoms = _make_supercell(atoms, cutoff=8) # radius = 8
-    atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(atoms, radius=8, max_num_nbr=max_num_nbr)
+    atoms = _make_supercell(atoms, cutoff=8)  # radius = 8
+    atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(
+        atoms, radius=8, max_num_nbr=max_num_nbr
+    )
     if len(nbr_idx) < len(atom_num) * max_num_nbr:
-        logger.info(f"{cif_id} failed : num_nbr is smaller than max_num_nbr. please make radius larger")
+        logger.info(
+            f"{cif_id} failed : num_nbr is smaller than max_num_nbr. please make radius larger"
+        )
+        return False
+
+    if len(uni_idx) > max_num_atoms:
+        logger.info(
+            f"{cif_id} failed : The number of topologically unique atoms is larget than max_num_atoms ({max_num_atoms})"
+        )
         return False
 
     # 2. make supercell with min_length
@@ -363,7 +399,7 @@ def make_prepared_data(cif: Path, root_dataset_total: Path, logger=None, eg_logg
         logger.info(f"{cif_id} succeed : supercell length {atoms.cell.cellpar()[:3]}")
 
         # save cif files
-        save_cif_path = root_dataset_total / f'{cif_id}.cif'
+        save_cif_path = root_dataset_total / f"{cif_id}.cif"
         atoms.write(filename=save_cif_path)
 
         # save graphdata file
@@ -396,12 +432,14 @@ def prepare_data(root_cifs, root_dataset, downstream, **kwargs):
         - max_num_nbr (int) : maximum number of neighbors when calculating graph
     """
     if not os.path.exists(GRIDAY_PATH):
-        raise ImportError('GRIDAY must be installed. \n'
-                          'Run the following code in bash, \n\n'
-                          '$ moftransformer install-griday\n\n'
-                          'or run the following code on Python\n\n'
-                          '>>> from moftransformer.utils import install_griday\n'
-                          '>>> install_griday()')
+        raise ImportError(
+            "GRIDAY must be installed. \n"
+            "Run the following code in bash, \n\n"
+            "$ moftransformer install-griday\n\n"
+            "or run the following code on Python\n\n"
+            ">>> from moftransformer.utils import install_griday\n"
+            ">>> install_griday()"
+        )
 
     # set logger
     logger = get_logger(filename="prepare_data.log")
@@ -412,14 +450,16 @@ def prepare_data(root_cifs, root_dataset, downstream, **kwargs):
     root_dataset = Path(root_dataset)
 
     if not root_cifs.exists():
-        raise ValueError(f'{root_cifs} does not exists.')
+        raise ValueError(f"{root_cifs} does not exists.")
 
     # make prepare_data in 'total' directory
-    root_dataset_total = Path(root_dataset) / 'total'
+    root_dataset_total = Path(root_dataset) / "total"
     root_dataset_total.mkdir(exist_ok=True, parents=True)
 
     # make *.grid, *.griddata16, and *.graphdata file
-    for cif in tqdm(root_cifs.glob('*.cif'), total=sum(1 for _ in root_cifs.glob('*.cif'))):
+    for cif in tqdm(
+        root_cifs.glob("*.cif"), total=sum(1 for _ in root_cifs.glob("*.cif"))
+    ):
         make_prepared_data(cif, root_dataset_total, logger, eg_logger, **kwargs)
 
     # automatically split data
@@ -432,4 +472,4 @@ def prepare_data(root_cifs, root_dataset, downstream, **kwargs):
         for single_downstream in downstream:
             _split_json(root_cifs, root_dataset, single_downstream)
     else:
-        raise TypeError(f'task must be str or Iterable, not {type(downstream)}')
+        raise TypeError(f"task must be str or Iterable, not {type(downstream)}")

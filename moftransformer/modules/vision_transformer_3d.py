@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 """ Vision Transformer (ViT) in PyTorch
 
 A PyTorch implement of Vision Transformers as described in
@@ -30,12 +31,12 @@ from timm.models.layers import DropPath, trunc_normal_
 
 class Mlp(nn.Module):
     def __init__(
-            self,
-            in_features,
-            hidden_features=None,
-            out_features=None,
-            act_layer=nn.GELU,
-            drop=0.0,
+        self,
+        in_features,
+        hidden_features=None,
+        out_features=None,
+        act_layer=nn.GELU,
+        drop=0.0,
     ):
         super().__init__()
         out_features = out_features or in_features
@@ -56,19 +57,19 @@ class Mlp(nn.Module):
 
 class Attention(nn.Module):
     def __init__(
-            self,
-            dim,
-            num_heads=8,
-            qkv_bias=False,
-            qk_scale=None,
-            attn_drop=0.0,
-            proj_drop=0.0,
+        self,
+        dim,
+        num_heads=8,
+        qkv_bias=False,
+        qk_scale=None,
+        attn_drop=0.0,
+        proj_drop=0.0,
     ):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
         # NOTE scale factor was wrong in my original version, can set manually to be compat with prev weights
-        self.scale = qk_scale or head_dim ** -0.5
+        self.scale = qk_scale or head_dim**-0.5
 
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -80,8 +81,10 @@ class Attention(nn.Module):
         assert C % self.num_heads == 0
         qkv = (
             self.qkv(x)  # [B, N, 3*C]
-                .reshape(B, N, 3, self.num_heads, C // self.num_heads)  # [B, N, 3, num_heads, C//num_heads]
-                .permute(2, 0, 3, 1, 4)  # [3, B, num_heads, N, C//num_heads]
+            .reshape(
+                B, N, 3, self.num_heads, C // self.num_heads
+            )  # [B, N, 3, num_heads, C//num_heads]
+            .permute(2, 0, 3, 1, 4)  # [3, B, num_heads, N, C//num_heads]
         )
         q, k, v = (
             qkv[0],  # [B, num_heads, N, C//num_heads]
@@ -96,7 +99,9 @@ class Attention(nn.Module):
         attn = attn.softmax(dim=-1)  # [B, num_heads, N, N]
         attn = self.attn_drop(attn)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)  # [B, num_heads, N, C//num_heads] -> [B, N, C]
+        x = (
+            (attn @ v).transpose(1, 2).reshape(B, N, C)
+        )  # [B, num_heads, N, C//num_heads] -> [B, N, C]
         x = self.proj(x)
         x = self.proj_drop(x)
         return x, attn
@@ -104,17 +109,17 @@ class Attention(nn.Module):
 
 class Block(nn.Module):
     def __init__(
-            self,
-            dim,
-            num_heads,
-            mlp_ratio=4.0,
-            qkv_bias=False,
-            qk_scale=None,
-            drop=0.0,
-            attn_drop=0.0,
-            drop_path=0.0,
-            act_layer=nn.GELU,
-            norm_layer=nn.LayerNorm,
+        self,
+        dim,
+        num_heads,
+        mlp_ratio=4.0,
+        qkv_bias=False,
+        qk_scale=None,
+        drop=0.0,
+        attn_drop=0.0,
+        drop_path=0.0,
+        act_layer=nn.GELU,
+        norm_layer=nn.LayerNorm,
     ):
         super().__init__()
         self.norm1 = norm_layer(dim)
@@ -145,27 +150,31 @@ class Block(nn.Module):
 
 
 class PatchEmbed3D(nn.Module):
-    """ Image to Patch Embedding for 3D"""
+    """Image to Patch Embedding for 3D"""
 
     def __init__(
-            self,
-            img_size,  # minimum of H or W ex. 384
-            patch_size,  # p -> length of fixed patch ex. 32
-            in_chans=1,
-            embed_dim=768,
-            no_patch_embed_bias=False,
+        self,
+        img_size,  # minimum of H or W ex. 384
+        patch_size,  # p -> length of fixed patch ex. 32
+        in_chans=1,
+        embed_dim=768,
+        no_patch_embed_bias=False,
     ):
         super().__init__()
 
         assert img_size % patch_size == 0
-        num_patches = (img_size ** 3) // (patch_size ** 3)
+        num_patches = (img_size**3) // (patch_size**3)
         self.img_size = img_size  # default: 30
         self.patch_size = patch_size  # default: 5
         self.num_patches = num_patches
 
         self.proj = nn.Sequential(
-            Rearrange('b c (h p1) (w p2) (d p3) -> b (h w d) (p1 p2 p3 c)',
-                      p1=patch_size, p2=patch_size, p3=patch_size),
+            Rearrange(
+                "b c (h p1) (w p2) (d p3) -> b (h w d) (p1 p2 p3 c)",
+                p1=patch_size,
+                p2=patch_size,
+                p3=patch_size,
+            ),
             nn.Linear(patch_size * patch_size * patch_size * in_chans, embed_dim),
         )
 
@@ -175,30 +184,30 @@ class PatchEmbed3D(nn.Module):
 
 
 class VisionTransformer3D(nn.Module):
-    """ Vision Transformer
+    """Vision Transformer
 
     A PyTorch impl of : `An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale`  -
         https://arxiv.org/abs/2010.11929
     """
 
     def __init__(
-            self,
-            img_size,
-            patch_size,
-            in_chans,
-            embed_dim,
-            depth=12,
-            num_heads=12,
-            mlp_ratio=4.0,
-            qkv_bias=True,
-            qk_scale=None,
-            drop_rate=0.0,
-            attn_drop_rate=0.0,
-            drop_path_rate=0.0,
-            norm_layer=None,
-            add_norm_before_transformer=False,
-            mpp_ratio=0.15,
-            config=None,
+        self,
+        img_size,
+        patch_size,
+        in_chans,
+        embed_dim,
+        depth=12,
+        num_heads=12,
+        mlp_ratio=4.0,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.0,
+        attn_drop_rate=0.0,
+        drop_path_rate=0.0,
+        norm_layer=None,
+        add_norm_before_transformer=False,
+        mpp_ratio=0.15,
+        config=None,
     ):
         """
         Args:
@@ -294,15 +303,17 @@ class VisionTransformer3D(nn.Module):
 
         labels = (
             (img_patch.long().flatten(start_dim=2, end_dim=4))  # [B, C, ph*pw*pd]
-                .permute(0, 2, 1)
-                .contiguous()
+            .permute(0, 2, 1)
+            .contiguous()
         )  # [B, ph*pw*pd, C]
 
         # We sample a few tokens in each sequence for MLM training (with probability `self.mlm_probability`)
         # probability_matrix = torch.full(labels.shape[:-1], 0.15)  # [B, ph*pw*pd]
         probability_matrix = torch.full(labels.shape[:-1], mpp_ratio)  # [B, ph*pw*pd]
         masked_indices = torch.bernoulli(probability_matrix).bool()
-        labels[~masked_indices] = -100  # We only compute loss on masked tokens [B, ph*pw*pd, C]
+        labels[
+            ~masked_indices
+        ] = -100  # We only compute loss on masked tokens [B, ph*pw*pd, C]
         """
         # 80% of the time, we replace masked input tokens with tokenizer.mask_token ([MASK])
         indices_replaced = (
@@ -332,10 +343,12 @@ class VisionTransformer3D(nn.Module):
 
         # mpp
         if mask_it:
-            x, label = self.mask_tokens(_x, x, self.patch_size,
-                                        self.mpp_ratio)  # [B, ph*pw*pd, emb_dim], [B, ph*pw*pd, C]
+            x, label = self.mask_tokens(
+                _x, x, self.patch_size, self.mpp_ratio
+            )  # [B, ph*pw*pd, emb_dim], [B, ph*pw*pd, C]
             label = torch.cat(
-                [torch.full((label.shape[0], 1, self.in_chans), -100).to(label), label], dim=1,
+                [torch.full((label.shape[0], 1, self.in_chans), -100).to(label), label],
+                dim=1,
             )  # [B, max_len+1, C]
 
         # cls tokens

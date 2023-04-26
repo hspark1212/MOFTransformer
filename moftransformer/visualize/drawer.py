@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import numpy as np
 from itertools import combinations
 from matplotlib import pyplot as plt
@@ -9,18 +10,26 @@ from moftransformer.visualize.utils import plot_cube
 
 
 def draw_colorbar(fig, ax, cmap, minatt, maxatt, **cbar_kwargs):
-    norm = Normalize(0., 1.)
+    norm = Normalize(0.0, 1.0)
     smap = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    cbar = fig.colorbar(smap, ax=ax, fraction=cbar_kwargs['fraction'], shrink=cbar_kwargs['shrink'])
-    cbar.ax.tick_params(labelsize=cbar_kwargs['fontsize'])
-    ticks_loc = np.linspace(0, 1, cbar_kwargs['num_ticks'])
-    ticks_label = np.round(np.linspace(minatt, maxatt, cbar_kwargs['num_ticks']),
-                           decimals=cbar_kwargs['decimals'])
+    cbar = fig.colorbar(
+        smap, ax=ax, fraction=cbar_kwargs["fraction"], shrink=cbar_kwargs["shrink"]
+    )
+    cbar.ax.tick_params(labelsize=cbar_kwargs["fontsize"])
+    ticks_loc = np.linspace(0, 1, cbar_kwargs["num_ticks"])
+    ticks_label = np.round(
+        np.linspace(minatt, maxatt, cbar_kwargs["num_ticks"]),
+        decimals=cbar_kwargs["decimals"],
+    )
     cbar.ax.yaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
     cbar.ax.set_yticklabels(ticks_label)
 
-    cbar.ax.set_ylabel('Attention score', rotation=270, labelpad=cbar_kwargs['labelpad'],
-                       fontdict={"size": cbar_kwargs['labelsize']})
+    cbar.ax.set_ylabel(
+        "Attention score",
+        rotation=270,
+        labelpad=cbar_kwargs["labelpad"],
+        fontdict={"size": cbar_kwargs["labelsize"]},
+    )
 
 
 def draw_line(ax, pos1, pos2, **kwargs):
@@ -82,8 +91,14 @@ def draw_atoms(ax, atoms, atomic_scale):
 
 
 def draw_heatmap_grid(ax, positions, colors, lattice, num_patches, alpha=0.5, **kwargs):
-    cubes = plot_cube(positions, colors, lattice=lattice,
-                      num_patches=num_patches, edgecolor=None, alpha=alpha)
+    cubes = plot_cube(
+        positions,
+        colors,
+        lattice=lattice,
+        num_patches=num_patches,
+        edgecolor=None,
+        alpha=alpha,
+    )
     ax.add_collection3d(cubes, **kwargs)
 
 
@@ -99,7 +114,7 @@ def draw_heatmap_graph(ax, atoms, uni_idx, colors, atomic_scale, alpha):
             zs=uni_coords[:, 2],
             color=colors[i],
             s=atomic_scale,
-            marker='o',
+            marker="o",
             linewidth=0,
             alpha=alpha,
         )

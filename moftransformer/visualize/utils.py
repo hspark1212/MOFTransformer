@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 import copy
 import math
 import ase.io
@@ -19,23 +20,23 @@ from moftransformer.config import config
 
 
 @lru_cache
-def get_model_and_datamodule(model_path, data_root, downstream=''):
+def get_model_and_datamodule(model_path, data_root, downstream=""):
     _config = config()
-    _config['visualize'] = True
+    _config["visualize"] = True
     _config["per_gpu_batchsize"] = 1
     _config["data_root"] = data_root
     _config["root_dataset"] = data_root
     _config["load_path"] = model_path
     _config["test_only"] = True
     _config["use_transformer"] = True
-    _config["log_dir"] = 'result_visualization'
+    _config["log_dir"] = "result_visualization"
     _config["downstream"] = downstream
 
-    pl.seed_everything(_config['seed'])
+    pl.seed_everything(_config["seed"])
     model = Module(_config)
     model.setup("test")
     model.eval()
-    model.to('cpu')
+    model.to("cpu")
 
     dm = Datamodule(_config)
     dm.setup("test")
@@ -61,7 +62,7 @@ def get_batch_from_cif_id(data_iter, cif_id):
         try:
             batch = next(iter_)
         except StopIteration:
-            raise ValueError(f'There are no {cif_id} in dataset')
+            raise ValueError(f"There are no {cif_id} in dataset")
         else:
             batch_id = batch["cif_id"][0]
             if batch_id == cif_id:
@@ -70,13 +71,16 @@ def get_batch_from_cif_id(data_iter, cif_id):
 
 @lru_cache
 def get_primitive_structure(path_cif, tolerance=2.0):
-    st, = CifParser(path_cif, occupancy_tolerance=tolerance).get_structures(primitive=True)
+    (st,) = CifParser(path_cif, occupancy_tolerance=tolerance).get_structures(
+        primitive=True
+    )
     return st
 
 
 @lru_cache
-def get_structure(path_cif, make_supercell=False, dtype='ase', *,
-                  max_length=60, min_length=30):
+def get_structure(
+    path_cif, make_supercell=False, dtype="ase", *, max_length=60, min_length=30
+):
     """
     get primitive structure from path_cif
     :param path_cif: <str> path for cif file
@@ -88,8 +92,8 @@ def get_structure(path_cif, make_supercell=False, dtype='ase', *,
     """
     try:
         CifParser(path_cif).get_structures()
-    except ValueError as e:   
-        raise ValueError(f'{path_cif} failed : (read pymatgen) {e}')
+    except ValueError as e:
+        raise ValueError(f"{path_cif} failed : (read pymatgen) {e}")
 
     atoms = ase.io.read(path_cif)
 
@@ -98,12 +102,12 @@ def get_structure(path_cif, make_supercell=False, dtype='ase', *,
     else:
         atoms = get_supercell_structure(atoms, max_length, 8)
 
-    if dtype == 'pymatgen':
+    if dtype == "pymatgen":
         return AseAtomsAdaptor().get_structure(atoms)
-    elif dtype == 'ase':
+    elif dtype == "ase":
         return atoms
     else:
-        raise TypeError(f'type must be ase or pymatgen, not {dtype}')
+        raise TypeError(f"type must be ase or pymatgen, not {dtype}")
 
 
 def get_supercell_structure(atoms, max_length=60, min_length=30):
@@ -117,13 +121,15 @@ def get_supercell_structure(atoms, max_length=60, min_length=30):
     scale_abc = []
     for l in atoms.cell.cellpar()[:3]:
         if l > max_length:
-            raise ValueError(f"primitive p_lattice is larger than max_length {max_length}")
+            raise ValueError(
+                f"primitive p_lattice is larger than max_length {max_length}"
+            )
         elif l < min_length:
             scale_abc.append(math.ceil(min_length / l))
         else:
             scale_abc.append(1)
 
-    m = np.zeros([3,3])
+    m = np.zeros([3, 3])
     np.fill_diagonal(m, scale_abc)
     atoms = make_supercell(atoms, m)
     return atoms
@@ -141,7 +147,7 @@ def cuboid_data(position, color=None, num_patches=(6, 6, 6), lattice=None):
     if isinstance(num_patches, (tuple, list)):
         num_patches = np.array(num_patches)
     elif not isinstance(num_patches, np.ndarray):
-        raise TypeError(f'num_patches must be tuple or list, not {type(num_patches)}')
+        raise TypeError(f"num_patches must be tuple or list, not {type(num_patches)}")
 
     bound = np.array([[0, 1] for _ in range(3)]) + np.array(position)[:, np.newaxis]
     vertex = np.array(list(product(*bound)))
@@ -153,7 +159,7 @@ def cuboid_data(position, color=None, num_patches=(6, 6, 6), lattice=None):
         plane_ls.append(plane1)
         plane_ls.append(plane2)
 
-    plane_ls = np.array(plane_ls).astype('float')
+    plane_ls = np.array(plane_ls).astype("float")
     plane_ls[:, [0, 1], :] = plane_ls[:, [1, 0], :]
 
     color_ls = np.repeat(color[np.newaxis, :], 6, axis=0)
@@ -172,12 +178,15 @@ def plot_cube(positions, colors, lattice, num_patches=(6, 6, 6), **kwargs):
     :return: <matplotlib.Poly3DCollection> cuboid matplotlib object
     """
 
-    data = [cuboid_data(pos, color, num_patches=num_patches, lattice=lattice)
-            for pos, color in zip(positions, colors)]
+    data = [
+        cuboid_data(pos, color, num_patches=num_patches, lattice=lattice)
+        for pos, color in zip(positions, colors)
+    ]
     plain_ls, color_ls = zip(*data)
 
-    return Poly3DCollection(np.concatenate(plain_ls),
-                            facecolors=np.concatenate(color_ls), **kwargs)
+    return Poly3DCollection(
+        np.concatenate(plain_ls), facecolors=np.concatenate(color_ls), **kwargs
+    )
 
 
 def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
@@ -189,7 +198,9 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     :param skip_cls: <bool> If True, class token is ignored.
     :return: <np.ndarray> heatmap graph, heatmap grid
     """
-    attn_weights = torch.stack(out["attn_weights"])  # [num_layers, B, num_heads, max_len, max_len]
+    attn_weights = torch.stack(
+        out["attn_weights"]
+    )  # [num_layers, B, num_heads, max_len, max_len]
     att_mat = attn_weights[:, batch_idx]  # [num_layers, num_heads, max_len, max_len]
 
     # Average the attention weights across all heads.
@@ -200,7 +211,9 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
     residual_att = torch.eye(att_mat.size(1))
     aug_att_mat = att_mat + residual_att
 
-    aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(-1)  # [num_layers, max_len, max_len]
+    aug_att_mat = aug_att_mat / aug_att_mat.sum(dim=-1).unsqueeze(
+        -1
+    )  # [num_layers, max_len, max_len]
     aug_att_mat = aug_att_mat.detach().numpy()  # prevent from memory leakage
 
     # Recursively multiply the weight matrices
@@ -221,8 +234,8 @@ def get_heatmap(out, batch_idx, graph_len=300, skip_cls=True):
         heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
     else:
         v_ = v[0]
-        cost_graph = v_[:graph_len + 1]  # / v_.max()
-        cost_grid = v_[graph_len + 1:]  # / v_.max()
+        cost_graph = v_[: graph_len + 1]  # / v_.max()
+        cost_grid = v_[graph_len + 1 :]  # / v_.max()
         heatmap_graph = cost_graph[1:]  # omit cls token
         heatmap_grid = cost_grid[1:-1].reshape(6, 6, 6)  # omit cls + volume tokens
 
@@ -243,10 +256,6 @@ def scaler(value, min_att, max_att):
         value[value < min_att] = min_att
         return (value - min_att) / (max_att - min_att)
     elif isinstance(value, Iterable):
-        return scaler(np.array(list(value), dtype='float'), min_att, max_att)
+        return scaler(np.array(list(value), dtype="float"), min_att, max_att)
     else:
-        raise TypeError(f'value must be float, list, or np.array, not {type(value)}')
-
-
-
-
+        raise TypeError(f"value must be float, list, or np.array, not {type(value)}")

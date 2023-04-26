@@ -1,3 +1,4 @@
+# MOFTransformer version 2.0.0
 class CLICommand:
     """
     Install package <GIRDAY> which calculated energy-grid.
@@ -11,4 +12,5 @@ class CLICommand:
     @staticmethod
     def run(args):
         from moftransformer.utils import uninstall_griday
+
         uninstall_griday()

@@ -1,5 +1,6 @@
+# MOFTransformer version 2.0.0
 wget
-pytorch-lightning==1.7.0
+pytorch-lightning>=1.7.0
 torchmetrics>=0.6.0
 transformers>=4.12.5
 timm>=0.4.12
@@ -17,6 +18,3 @@ jupyter-client
 smmap<6
 emmet-core
 scikit-learn
-
-# For reproducing PMTransformer
-torch==1.12.1+cu113
