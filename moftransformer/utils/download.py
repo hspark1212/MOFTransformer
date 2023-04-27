@@ -50,19 +50,20 @@ def download_pretrain_model(
     else:
         direc = Path(direc)
 
-    if not direc.suffix:
-        if not direc.exists():
-            direc.mkdir(parents=True, exist_ok=True)
-        direc = direc / "pretrained_model.ckpt"
-    elif direc.suffix == ".ckpt":
-        if not direc.parent.exists():
-            direc.parent.mkdir(parents=True, exist_ok=True)
-    else:
-        raise ValueError(f"direc must be path for directory or ~.ckpt, not {direc}")
+    if not direc.is_dir():
+        raise ValueError(f"direc must be path for directory, not {direc}")
+    if not direc.exists():
+        direc.mkdir(parents=True, exist_ok=True)
 
-    link = "https://figshare.com/ndownloader/files/37511767"
-    name = "pretrain_model"
-    _download_file(link, direc, name)
+    # download pmtransformer
+    link = "https://figshare.com/ndownloader/files/40298992"
+    name = "pmtransformer"
+    _download_file(link, direc / 'pmtransformer.ckpt', name)
+
+    # download moftransformer
+    link ="https://figshare.com/ndownloader/files/40298269"
+    name = 'moftransformer'
+    _download_file(link, direc / 'moftransformer.ckpt', name)
 
 
 def download_finetuned_model(
@@ -80,10 +81,12 @@ def download_finetuned_model(
         else:
             raise ValueError(f"direc must be path for directory, not {direc}")
 
+    # download band-gap model
     link = "https://figshare.com/ndownloader/files/37621520"
     name = "finetuned_bandgap"
     _download_file(link, direc / "finetuned_bandgap.ckpt", name)
 
+    # download uptake model
     link = "https://figshare.com/ndownloader/files/37622693"
     name = "finetuned_h2_uptake"
     _download_file(link, direc / "finetuned_h2_uptake.ckpt", name)
