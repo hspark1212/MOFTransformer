@@ -1,11 +1,8 @@
 # MOFTransformer version 2.0.0
 import sys
 import warnings
-from pytorch_lightning.trainer.connectors.accelerator_connector import (
-    AcceleratorConnector,
-)
+from moftransformer.database import DEFAULT_PMTRANSFORMER_PATH, DEFAULT_MOFTRANSFORMER_PATH
 
-from moftransformer.config import _loss_names
 
 _IS_INTERACTIVE = hasattr(sys, "ps1")
 
@@ -30,18 +27,68 @@ def _set_loss_names(loss_name):
     return _loss_names(d)
 
 
+def _loss_names(d):
+    ret = {
+        "ggm": 0,  # graph grid matching
+        "mpp": 0,  # masked patch prediction
+        "mtp": 0,  # mof topology prediction
+        "vfp": 0,  # (accessible) void fraction prediction
+        "moc": 0,  # metal organic classification
+        "bbc": 0,  # building block classification
+        "classification": 0,  # classification
+        "regression": 0,  # regression
+    }
+    ret.update(d)
+    return ret
+
+
+def _set_load_path(path):
+    if path == 'pmtransformer':
+        return DEFAULT_PMTRANSFORMER_PATH
+    if path == 'moftransformer':
+        return DEFAULT_MOFTRANSFORMER_PATH
+    elif not path:
+        return ""
+    else:
+        return path
+
+
 def get_num_devices(_config):
     if isinstance(devices := _config["devices"], list):
         devices = len(devices)
     elif isinstance(devices, int):
         pass
     elif devices == "auto" or devices is None:
-        accelerator = AcceleratorConnector(accelerator=_config["accelerator"])
-        devices = accelerator.auto_device_count()
+        devices = _get_auto_device(_config)
     else:
         raise ConfigurationError(
             f'devices must be int, list, and "auto", not {devices}'
         )
+    return devices
+
+
+def _get_auto_device(_config):
+    try:
+        from pytorch_lightning.trainer.connectors.accelerator_connector import (
+            AcceleratorConnector,
+        )
+        accelerator = AcceleratorConnector(accelerator=_config["accelerator"]).accelerator
+        devices = accelerator.auto_device_count()
+
+    except ImportError:
+        accelerator = _config['accelerator']
+        if accelerator == 'cpu':
+            from pytorch_lightning.accelerators.cpu import CPUAccelerator as Accelerator
+        elif accelerator in ['gpu', 'cuda']:
+            from pytorch_lightning.accelerators.cuda import CUDAAccelerator as Accelerator
+        elif accelerator == 'tpu':
+            from pytorch_lightning.accelerators.tpu import TPUAccelerator as Accelerator
+        elif accelerator == 'hpu':
+            from pytorch_lightning.accelerators.hpu import HPUAccelerator as Accelerator
+        elif accelerator == 'ipu':
+            from pytorch_lightning.accelerators.ipu import IPUAccelerator as Accelerator
+
+        devices = Accelerator().auto_device_count()
 
     return devices
 
@@ -77,6 +124,9 @@ def _check_valid_num_gpus(_config):
 def get_valid_config(_config):
     # set loss_name to dictionary
     _config["loss_names"] = _set_loss_names(_config["loss_names"])
+
+    # set load_path to directory
+    _config["load_path"] = _set_load_path(_config["load_path"])
 
     # check_valid_num_gpus
     _check_valid_num_gpus(_config)

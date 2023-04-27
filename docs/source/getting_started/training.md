@@ -21,7 +21,7 @@ You can train the model using the function `run` in `moftransformer` python libr
 - kwargs : configuration for MOFTransformer
 
 
-### Example for training MOFTransformer:
+### Example for training PMTransformer (MOFTransformer):
 ```python
 import moftransformer
 from moftransformer.examples import example_path
@@ -30,12 +30,13 @@ from moftransformer.examples import example_path
 root_dataset = example_path['root_dataset']
 downstream = example_path['downstream']
 log_dir = './logs/'
+# load_path = "pmtransformer" (default)
 
 # kwargs (optional)
 max_epochs = 10
 batch_size = 8
 
-moftransformer.run(root_dataset, downstream, log_dir=log_dir, 
+moftransformer.run(root_dataset, downstream, log_dir=log_dir,                   
                    max_epochs=max_epochs, batch_size=batch_size,)
 ```
 

@@ -17,7 +17,7 @@ seed = 0               # default seeds
 version = 0            # version for model. It increases with the number of trains
 checkpoint = 'last'    # Epochs where the model is stored. 
 
-load_path = Path(log_dir) / f'pretrained_mof_seed{seed}_from_/version_{version}/checkpoints/{checkpoint}.ckpt'
+load_path = Path(log_dir) / f'pretrained_mof_seed{seed}_from_pmtransformer/version_{version}/checkpoints/{checkpoint}.ckpt'
 
 if not load_path.exists():
     raise ValueError(f'load_path does not exists. check path for .ckpt file : {load_path}')

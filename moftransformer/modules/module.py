@@ -305,3 +305,6 @@ class Module(LightningModule):
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)
+
+    def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
+        scheduler.step()
