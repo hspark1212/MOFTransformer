@@ -38,7 +38,7 @@ $ pip install moftransformer
 ```
 
 ### Download the pretrained models (ckpt file)
-- you can download the pretrained models (`PMTransformer.ckpt` and `MOFTransformer.ckpt`) [figshare](#TODO:update)
+- you can download the pretrained models (`PMTransformer.ckpt` and `MOFTransformer.ckpt`) [figshare](https://figshare.com/articles/dataset/PMTransformer_pre-trained_model/22698655/2)
 
 or you can download with a command line:
 ```
@@ -65,6 +65,7 @@ from moftransformer.examples import example_path
 data_root = example_path['data_root']
 downstream = example_path['downstream']
 log_dir = './logs/'
+# load_path = "pmtransformer" (default)
 
 moftransformer.run(data_root, downstream, log_dir=log_dir, 
                    max_epochs=max_epochs, batch_size=batch_size,)

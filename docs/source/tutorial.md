@@ -1,6 +1,6 @@
 # Tutorial
 ## 1. Download pretrain_model and hMOF file
-First, download pretrain_model
+First, download pretrain_models to the default directory. (default: `./database/pretrained_model.ckpt`)
 ```bash
 $ moftransformer download pretrain_model
 ```
@@ -56,9 +56,10 @@ max_epochs = 20
 mean = 487.841
 std = 63.088
 batch_size = 32
+load_path = "pmtransformer" # default : "pmtransformer", you can also choose "moftransformer" or None or path of other training models.
 
 moftransformer.run(root_dataset, downstream, max_epochs=max_epochs, mean=mean, std=std, 
-                   batch_size=batch_size, log_dir=log_dir)
+                   batch_size=batch_size, log_dir=log_dir, load_path="pmtransformer")
 ```
 Trained model and their hyper-parameters are saved in `log_dir` folder.
 

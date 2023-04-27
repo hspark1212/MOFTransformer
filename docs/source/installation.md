@@ -28,10 +28,9 @@ $ pip install -e .
 ```
 
 ## 3. Download model and data
-You can download various data needed for MOFTransformer. \
-(URL : https://figshare.com/articles/dataset/MOFTransformer/21155506)\
-There are five data that you can download
-1) Pre-trained models (ckpt files of `PMTransformer`, `MOFTransformer`)
+You can download various data and models used in `MOFTransformer` through the command line or python code.
+
+1) (requirement) Pre-trained models (ckpt files of `PMTransformer`, `MOFTransformer`)
 2) Fine-tuned models (h2 uptake and band gap)
 3) The pre-embeddings for CoREMOF database
 4) The pre-embeddings for QMOF database
@@ -45,14 +44,14 @@ $ moftransformer download [target] (--outdir outdir) (--remove_tarfile)
 Each argument is as follows:
 - target : One or more of the `pretrain_model`, `finetuned_model`, `coremof`, `qmof`
 - outdir (--outdir, -o) : (optional) Directory to save model or dataset.
-  - default `pretrain_model` : [moftransformer_dir]/database/pretrained_model.ckpt
+  - default `pretrain_model` : [moftransformer_dir]/database/pmtransformer.ckpt or moftransformer.ckpt
   - default `finetuned_model` : [moftransformer_dir]/database/finetuend_model/
   - default `coremof` : [moftransformer_dir]/database/coremof/
   - default `qmof` : [moftransformer_dir]/database/qmof/
 
 
 ```bash
-# download pre-trained model
+# download pre-trained model (required)
 $ moftransformer download pretrain_model
 
 # download graph-data and graph-data for CoREMOF (optional)

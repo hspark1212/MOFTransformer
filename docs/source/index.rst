@@ -12,7 +12,7 @@ The library provides tools for fine-tuning, pre-training, and feature importance
 
 Features
 --------
-- The library provides a pre-trained PMTransformer `ckpt file <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ with 1.9 million hypothetical porous materials. we provide  of PMTransformer pre-trained with 1.9 million hypothetical porous materials.
+- The library provides a pre-trained PMTransformer `ckpt file <https://figshare.com/articles/dataset/PMTransformer_pre-trained_model/22698655/2>`_ with 1.9 million hypothetical porous materials. we provide  of PMTransformer pre-trained with 1.9 million hypothetical porous materials.
 - With fine-tuning, the pre-training model allows for high-performance machine learning models to predict properties of porous materials.
 - `The pre-embeddings <https://figshare.com/articles/dataset/MOFTransformer/21155506>`_ (i.e., atom-based embeddings and energy-grid embeddings) for CoRE MOF, QMOF databases are available.
 - Feature importance analysis can be easily visualized from attention scores of the fine-tuning models.
