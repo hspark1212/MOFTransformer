@@ -85,5 +85,5 @@ we've provided the dataset of atom-wise graph embedding and energy-grid embeddin
 in our [**figshare**](https://figshare.com/articles/dataset/MOFTransformer/21155506) database.
 
 Or, you can download using [command line](https://hspark1212.github.io/MOFTransformer/installation.html#download-using-python) or [python](https://hspark1212.github.io/MOFTransformer/installation.html#download-using-python)
-(refer in [installation](https://hspark1212.github.io/MOFTransformer/installation.html#installation))
+(refer to [installation](https://hspark1212.github.io/MOFTransformer/installation.html#installation))
 
