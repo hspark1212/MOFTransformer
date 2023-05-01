@@ -79,9 +79,7 @@ def _get_auto_device(_config):
     return devices
 
 
-def _set_valid_batchsize(_config):
-    devices = get_num_devices(_config)
-
+def _set_valid_batchsize(_config, devices):
     per_gpu_batchsize = _config["batch_size"] // devices
 
     _config["per_gpu_batchsize"] = per_gpu_batchsize
@@ -121,6 +119,6 @@ def get_valid_config(_config):
 
     # Batch size must be larger than gpu_per_batch
     if _config["batch_size"] < _config["per_gpu_batchsize"] * devices:
-        _set_valid_batchsize(_config)
+        _set_valid_batchsize(_config, devices)
 
     return _config
