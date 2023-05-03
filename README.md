@@ -38,7 +38,7 @@ $ pip install moftransformer
 ```
 
 ### Download the pretrained models (ckpt file)
-- you can download the pretrained models (`PMTransformer.ckpt` and `MOFTransformer.ckpt`) [figshare](https://figshare.com/articles/dataset/PMTransformer_pre-trained_model/22698655/2)
+- you can download the pretrained models (`PMTransformer.ckpt` and `MOFTransformer.ckpt`) via [figshare](https://figshare.com/articles/dataset/PMTransformer_pre-trained_model/22698655/2)
 
 or you can download with a command line:
 ```
@@ -126,7 +126,7 @@ vis.draw_grid()
 
 ## Universal Transfer Learning
 
-Comparison of mean absolute error (MAE) values for various baseline models, scratch, MOFTransformer, and PMTransformer on different properties of MOFs, COFs, PPNs, and zeolites. The bold values indicate the lowest MAE value for each property. The details of information can be found in [PMTransformer paper]()
+Comparison of mean absolute error (MAE) values for various baseline models, scratch, MOFTransformer, and PMTransformer on different properties of MOFs, COFs, PPNs, and zeolites. The bold values indicate the lowest MAE value for each property. The details of information can be found in [PMTransformer paper](https://chemrxiv.org/engage/chemrxiv/article-details/644a0651df78ec50157390c9)
 
 | Material | Property | Number of Dataset | Energy histogram | Descriptor-based ML | CGCNN | Scratch | MOFTransformer | PMTransformer |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -148,3 +148,10 @@ Comparison of mean absolute error (MAE) values for various baseline models, scra
 | Zeolite | CH<sub>4</sub>  KH (unitless) | 99,204	| 8.032	| 6.268	| 6.334	| 4.286	| 4.103	| **3.998** |
 | Zeolite | CH<sub>4</sub>  Heat of adsorption | 99,204	| 1.612	|1.033	| 1.603	| 0.670	| 0.647	|**0.639** |
 
+## Contributing 🙌
+
+Contributions are welcome! If you have any suggestions or find any issues, please open an issue or a pull request.
+
+## License 📄
+
+This project is licensed under the MIT License. See the `LICENSE` file for more information.
