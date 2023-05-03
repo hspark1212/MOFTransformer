@@ -1,4 +1,4 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.0.1
 import sys
 import os
 import copy
@@ -254,6 +254,8 @@ def main(_config):
 
     if _IS_INTERACTIVE:
         strategy = None
+    elif pl.__version__ >= '2.0.0':
+        strategy = "ddp_find_unused_parameters_true"
     else:
         strategy = "ddp"
 
@@ -272,12 +274,11 @@ def main(_config):
         logger=logger,
         accumulate_grad_batches=accumulate_grad_batches,
         log_every_n_steps=log_every_n_steps,
-        resume_from_checkpoint=_config["resume_from"],
         val_check_interval=_config["val_check_interval"],
         deterministic=True,
     )
 
     if not _config["test_only"]:
-        trainer.fit(model, datamodule=dm)
+        trainer.fit(model, datamodule=dm, ckpt_path=_config['resume_from'])
     else:
         trainer.test(model, datamodule=dm)
