@@ -30,7 +30,7 @@ It takes two different representations as input
 Gas uptake (H<sub>2</sub> uptake at 100 bar), Diffusivity (H<sub>2</sub> diffusivity), Electronic properties (PBE bandgap)
 
 ## Universal transfer learning
-Comparison of mean absolute error (MAE) values for various baseline models, scratch, MOFTransformer, and PMTransformer on different properties of MOFs, COFs, PPNs, and zeolites. The bold values indicate the lowest MAE value for each property. The details of information can be found in [PMTransformer paper]()
+Comparison of mean absolute error (MAE) values for various baseline models, scratch, MOFTransformer, and PMTransformer on different properties of MOFs, COFs, PPNs, and zeolites. The bold values indicate the lowest MAE value for each property. The details of information can be found in [PMTransformer paper](https://chemrxiv.org/engage/chemrxiv/article-details/644a0651df78ec50157390c9)
 
 | Material | Property | Energy histogram | Descriptor-based ML | CGCNN | Scratch | MOFTransformer | PMTransformer |
 | --- | --- | --- | --- | --- | --- | --- | --- |
