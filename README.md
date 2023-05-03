@@ -148,6 +148,12 @@ Comparison of mean absolute error (MAE) values for various baseline models, scra
 | Zeolite | CH<sub>4</sub>  KH (unitless) | 99,204	| 8.032	| 6.268	| 6.334	| 4.286	| 4.103	| **3.998** |
 | Zeolite | CH<sub>4</sub>  Heat of adsorption | 99,204	| 1.612	|1.033	| 1.603	| 0.670	| 0.647	|**0.639** |
 
+## Citation
+if you want to cite PMTransformer or MOFTransformer, please refer to the following paper:
+1. A multi-modal pre-training transformer for universal transfer learning in metal–organic frameworks, Nature Machine Intelligence, 5, 2023. [link](https://www.nature.com/articles/s42256-023-00628-2)
+
+2. PMTransformer: Universal Transfer Learning and Cross-material Few-shot Learning in Porous Materials, (submitted). [link](https://chemrxiv.org/engage/chemrxiv/article-details/644a0651df78ec50157390c9)
+
 ## Contributing 🙌
 
 Contributions are welcome! If you have any suggestions or find any issues, please open an issue or a pull request.
