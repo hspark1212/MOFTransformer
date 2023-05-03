@@ -1,26 +1,10 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.0.1
 import os
 from sacred import Experiment
 from moftransformer import __root_dir__
-from moftransformer.utils.download import DEFAULT_PRETRAIN_MODEL_PATH
+from moftransformer.utils.validation import _set_load_path, _loss_names
 
 ex = Experiment("pretrained_mof", save_git_info=False)
-
-
-def _loss_names(d):
-    ret = {
-        "ggm": 0,  # graph grid matching
-        "mpp": 0,  # masked patch prediction
-        "mtp": 0,  # mof topology prediction
-        "vfp": 0,  # (accessible) void fraction prediction
-        "moc": 0,  # metal organic classification
-        "bbc": 0,  # building block classification
-        "classification": 0,  # classification
-        "regression": 0,  # regression
-    }
-    ret.update(d)
-    return ret
-
 
 @ex.config
 def config():
@@ -71,7 +55,7 @@ def config():
     decay_power = (
         1  # default polynomial decay, [cosine, constant, constant_with_warmup]
     )
-    max_epochs = 100
+    max_epochs = 20
     max_steps = -1  # num_data * max_epoch // batch_size (accumulate_grad_batches)
     warmup_steps = 0.05  # int or float ( max_steps * warmup_steps)
     end_lr = 0
@@ -87,14 +71,11 @@ def config():
     log_dir = "logs/"
     batch_size = 1024  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    accelerator = "gpu"
-    devices = 1
+    accelerator = "auto"
+    devices = "auto"
     num_nodes = 1
 
-    if os.path.exists(DEFAULT_PRETRAIN_MODEL_PATH):
-        load_path = DEFAULT_PRETRAIN_MODEL_PATH
-    else:
-        load_path = ""
+    load_path = _set_load_path('pmtransformer')
 
     num_workers = 16  # the number of cpu's core
     precision = 16

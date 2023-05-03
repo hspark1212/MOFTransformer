@@ -1,11 +1,14 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.0.1
 import sys
 import warnings
-from pytorch_lightning.trainer.connectors.accelerator_connector import (
-    AcceleratorConnector,
-)
+import pytorch_lightning as pl
+from moftransformer.database import DEFAULT_PMTRANSFORMER_PATH, DEFAULT_MOFTRANSFORMER_PATH
 
-from moftransformer.config import _loss_names
+if pl.__version__ >= '2.0.0':
+    from pytorch_lightning.trainer.connectors.accelerator_connector import _AcceleratorConnector as AC
+else:
+    from pytorch_lightning.trainer.connectors.accelerator_connector import AcceleratorConnector as AC
+
 
 _IS_INTERACTIVE = hasattr(sys, "ps1")
 
@@ -30,25 +33,53 @@ def _set_loss_names(loss_name):
     return _loss_names(d)
 
 
+def _loss_names(d):
+    ret = {
+        "ggm": 0,  # graph grid matching
+        "mpp": 0,  # masked patch prediction
+        "mtp": 0,  # mof topology prediction
+        "vfp": 0,  # (accessible) void fraction prediction
+        "moc": 0,  # metal organic classification
+        "bbc": 0,  # building block classification
+        "classification": 0,  # classification
+        "regression": 0,  # regression
+    }
+    ret.update(d)
+    return ret
+
+
+def _set_load_path(path):
+    if path == 'pmtransformer':
+        return DEFAULT_PMTRANSFORMER_PATH
+    if path == 'moftransformer':
+        return DEFAULT_MOFTRANSFORMER_PATH
+    elif not path:
+        return ""
+    else:
+        return path
+
+
 def get_num_devices(_config):
     if isinstance(devices := _config["devices"], list):
         devices = len(devices)
     elif isinstance(devices, int):
         pass
     elif devices == "auto" or devices is None:
-        accelerator = AcceleratorConnector(accelerator=_config["accelerator"])
-        devices = accelerator.auto_device_count()
+        devices = _get_auto_device(_config)
     else:
         raise ConfigurationError(
             f'devices must be int, list, and "auto", not {devices}'
         )
-
     return devices
 
 
-def _set_valid_batchsize(_config):
-    devices = get_num_devices(_config)
+def _get_auto_device(_config):
+    accelerator = AC(accelerator=_config["accelerator"]).accelerator
+    devices = accelerator.auto_device_count()
+    return devices
 
+
+def _set_valid_batchsize(_config, devices):
     per_gpu_batchsize = _config["batch_size"] // devices
 
     _config["per_gpu_batchsize"] = per_gpu_batchsize
@@ -73,16 +104,21 @@ def _check_valid_num_gpus(_config):
             "If you want to use multi-devices, make *.py file and run."
         )
 
+    return devices
+
 
 def get_valid_config(_config):
     # set loss_name to dictionary
     _config["loss_names"] = _set_loss_names(_config["loss_names"])
 
+    # set load_path to directory
+    _config["load_path"] = _set_load_path(_config["load_path"])
+
     # check_valid_num_gpus
-    _check_valid_num_gpus(_config)
+    devices = _check_valid_num_gpus(_config)
 
     # Batch size must be larger than gpu_per_batch
-    if _config["batch_size"] < _config["per_gpu_batchsize"]:
-        _set_valid_batchsize(_config)
+    if _config["batch_size"] < _config["per_gpu_batchsize"] * devices:
+        _set_valid_batchsize(_config, devices)
 
     return _config
