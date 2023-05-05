@@ -1,6 +1,7 @@
 # MOFTransformer version 2.0.1
 wget
-pytorch-lightning
+torch<2.0.0
+pytorch-lightning==1.7.0 # pytorch-lightning>=1.7.0
 torchmetrics>=0.6.0
 transformers>=4.12.5
 timm>=0.4.12

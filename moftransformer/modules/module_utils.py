@@ -47,7 +47,6 @@ def epoch_wrapup(pl_module):
                 f"{loss_name}/{phase}/loss_epoch",
                 getattr(pl_module, f"{phase}_{loss_name}_loss").compute(),
                 batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
-                sync_dist=True
             )
             getattr(pl_module, f"{phase}_{loss_name}_loss").reset()
             # mae loss
@@ -56,7 +55,6 @@ def epoch_wrapup(pl_module):
                 f"{loss_name}/{phase}/mae_epoch",
                 value,
                 batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
-                sync_dist=True
             )
             getattr(pl_module, f"{phase}_{loss_name}_mae").reset()
 
@@ -67,20 +65,18 @@ def epoch_wrapup(pl_module):
                 f"{loss_name}/{phase}/accuracy_epoch",
                 value,
                 batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
-                sync_dist=True
             )
             getattr(pl_module, f"{phase}_{loss_name}_accuracy").reset()
             pl_module.log(
                 f"{loss_name}/{phase}/loss_epoch",
                 getattr(pl_module, f"{phase}_{loss_name}_loss").compute(),
                 batch_size=pl_module.hparams["config"]["per_gpu_batchsize"],
-                sync_dist=True
             )
             getattr(pl_module, f"{phase}_{loss_name}_loss").reset()
 
         the_metric += value
 
-    pl_module.log(f"{phase}/the_metric", the_metric, sync_dist=True)
+    pl_module.log(f"{phase}/the_metric", the_metric)
 
 
 def set_schedule(pl_module):
