@@ -1,13 +1,7 @@
-# MOFTransformer version 2.0.1
+# MOFTransformer version 2.0.0
 import sys
 import warnings
-import pytorch_lightning as pl
 from moftransformer.database import DEFAULT_PMTRANSFORMER_PATH, DEFAULT_MOFTRANSFORMER_PATH
-
-if pl.__version__ >= '2.0.0':
-    from pytorch_lightning.trainer.connectors.accelerator_connector import _AcceleratorConnector as AC
-else:
-    from pytorch_lightning.trainer.connectors.accelerator_connector import AcceleratorConnector as AC
 
 
 _IS_INTERACTIVE = hasattr(sys, "ps1")
@@ -74,12 +68,19 @@ def get_num_devices(_config):
 
 
 def _get_auto_device(_config):
-    accelerator = AC(accelerator=_config["accelerator"]).accelerator
+    
+    from pytorch_lightning.trainer.connectors.accelerator_connector import (
+        AcceleratorConnector,
+    )
+    accelerator = AcceleratorConnector(accelerator=_config["accelerator"]).accelerator
     devices = accelerator.auto_device_count()
+    
     return devices
 
 
-def _set_valid_batchsize(_config, devices):
+def _set_valid_batchsize(_config):
+    devices = get_num_devices(_config)
+
     per_gpu_batchsize = _config["batch_size"] // devices
 
     _config["per_gpu_batchsize"] = per_gpu_batchsize
@@ -104,8 +105,6 @@ def _check_valid_num_gpus(_config):
             "If you want to use multi-devices, make *.py file and run."
         )
 
-    return devices
-
 
 def get_valid_config(_config):
     # set loss_name to dictionary
@@ -115,10 +114,10 @@ def get_valid_config(_config):
     _config["load_path"] = _set_load_path(_config["load_path"])
 
     # check_valid_num_gpus
-    devices = _check_valid_num_gpus(_config)
+    _check_valid_num_gpus(_config)
 
     # Batch size must be larger than gpu_per_batch
-    if _config["batch_size"] < _config["per_gpu_batchsize"] * devices:
-        _set_valid_batchsize(_config, devices)
+    if _config["batch_size"] < _config["per_gpu_batchsize"]:
+        _set_valid_batchsize(_config)
 
     return _config

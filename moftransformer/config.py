@@ -69,10 +69,10 @@ def config():
     # below params varies with the environment
     root_dataset = os.path.join(__root_dir__, "examples/dataset")
     log_dir = "logs/"
-    batch_size = 1024  # desired batch size; for gradient accumulation
+    batch_size = 32  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
-    accelerator = "auto"
-    devices = "auto"
+    accelerator = "gpu"
+    devices = 1
     num_nodes = 1
 
     load_path = _set_load_path('pmtransformer')
