@@ -68,28 +68,13 @@ def get_num_devices(_config):
 
 
 def _get_auto_device(_config):
-    try:
-        from pytorch_lightning.trainer.connectors.accelerator_connector import (
-            AcceleratorConnector,
-        )
-        accelerator = AcceleratorConnector(accelerator=_config["accelerator"]).accelerator
-        devices = accelerator.auto_device_count()
-
-    except ImportError:
-        accelerator = _config['accelerator']
-        if accelerator == 'cpu':
-            from pytorch_lightning.accelerators.cpu import CPUAccelerator as Accelerator
-        elif accelerator in ['gpu', 'cuda']:
-            from pytorch_lightning.accelerators.cuda import CUDAAccelerator as Accelerator
-        elif accelerator == 'tpu':
-            from pytorch_lightning.accelerators.tpu import TPUAccelerator as Accelerator
-        elif accelerator == 'hpu':
-            from pytorch_lightning.accelerators.hpu import HPUAccelerator as Accelerator
-        elif accelerator == 'ipu':
-            from pytorch_lightning.accelerators.ipu import IPUAccelerator as Accelerator
-
-        devices = Accelerator().auto_device_count()
-
+    
+    from pytorch_lightning.trainer.connectors.accelerator_connector import (
+        AcceleratorConnector,
+    )
+    accelerator = AcceleratorConnector(accelerator=_config["accelerator"]).accelerator
+    devices = accelerator.auto_device_count()
+    
     return devices
 
 
