@@ -55,8 +55,10 @@ def _set_load_path(path):
         return DEFAULT_MOFTRANSFORMER_PATH
     elif not path:
         return ""
-    else:
+    elif str(path)[-4:] == 'ckpt':
         return path
+    else:
+        raise ConfigurationError(f"path must be 'pmtransformer', 'moftransformer', None, or *.ckpt, not {path}")
 
 
 def get_num_devices(_config):

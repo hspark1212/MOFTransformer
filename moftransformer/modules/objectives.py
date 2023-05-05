@@ -41,8 +41,9 @@ def compute_regression(pl_module, batch, normalizer):
         mean_absolute_error(ret["regression_logits"], ret["regression_labels"])
     )
 
-    pl_module.log(f"regression/{phase}/loss", loss, sync_dist=True)
-    pl_module.log(f"regression/{phase}/mae", mae, sync_dist=True)
+    if pl_module.write_log:
+        pl_module.log(f"regression/{phase}/loss", loss, sync_dist=True)
+        pl_module.log(f"regression/{phase}/mae", mae, sync_dist=True)
 
     return ret
 
@@ -78,8 +79,9 @@ def compute_classification(pl_module, batch):
         ret["classification_logits"], ret["classification_labels"]
     )
 
-    pl_module.log(f"classification/{phase}/loss", loss, sync_dist=True)
-    pl_module.log(f"classification/{phase}/accuracy", acc, sync_dist=True)
+    if pl_module.write_log:
+        pl_module.log(f"classification/{phase}/loss", loss, sync_dist=True)
+        pl_module.log(f"classification/{phase}/accuracy", acc, sync_dist=True)
 
     return ret
 

@@ -26,7 +26,7 @@ _IS_INTERACTIVE = hasattr(sys, "ps1")
 
 def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kwargs):
     """
-    Train or predict MOFTransformer.
+    Train or Test MOFTransformer.
 
     Call signatures::
         run(root_dataset, downstream, [test_only], **kwargs)
@@ -34,7 +34,7 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
     The basic usage of the code is as follows:
 
     >>> run(root_dataset, downstream)  # train MOFTransformer from [root_dataset] with train_{downstream}.json
-    >>> run(root_dataset, downstream, log_dir, test_only=True, load_path=model_path) # predict MOFTransformer from trained-model path
+    >>> run(root_dataset, downstream, log_dir, test_only=True, load_path=model_path) # Test MOFTransformer from trained-model path
 
     Dataset preperation is necessary for learning
     (url: https://hspark1212.github.io/MOFTransformer/dataset.html)
@@ -112,7 +112,7 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
         Half precision, or mixed precision, is the combined use of 32 and 16 bit floating points to reduce memory footprint during model training.
         This can result in improved performance, achieving +3X speedups on modern GPUs.
 
-    max_epochs: int, default: 100
+    max_epochs: int, default: 20
         Stop training once this number of epochs is reached.
 
     seed: int, default: 0
@@ -229,9 +229,13 @@ def main(_config):
         save_last=True,
     )
 
+    if _config["test_only"]:
+        name = f'test_{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}'
+    else:
+        name = f'{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}'
     logger = pl.loggers.TensorBoardLogger(
         _config["log_dir"],
-        name=f'{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}',
+        name=name,
     )
 
     lr_callback = pl.callbacks.LearningRateMonitor(logging_interval="step")

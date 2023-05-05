@@ -17,7 +17,6 @@ class Module(LightningModule):
     def __init__(self, config):
         super().__init__()
         self.save_hyperparameters()
-
         self.max_grid_len = config["max_grid_len"]
         self.vis = config["visualize"]
 
@@ -113,8 +112,10 @@ class Module(LightningModule):
             print(f"load model : {config['load_path']}")
 
         # test logits and labels
+        self.write_log = True
         self.test_logits = []
         self.test_labels = []
+        self.test_cifid = []
 
     def infer(
         self,
@@ -306,6 +307,23 @@ class Module(LightningModule):
             self.log(f"test/r2_score", r2, sync_dist=True)
             self.test_labels.clear()
             self.test_logits.clear()
+
+    def on_predict_start(self):
+        self.write_log = False
+        module_utils.set_task(self)
+
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        output = self(batch)
+        output = {
+            k: (v.cpu().tolist() if torch.is_tensor(v) else v)
+            for k, v in output.items()
+            if ('logits' in k) or ('labels' in k) or 'cif_id' == k
+        }  # update cpu for memory
+        return output
+
+    def on_predict_epoch_end(self, *args):
+        self.test_labels.clear()
+        self.test_logits.clear()
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)
