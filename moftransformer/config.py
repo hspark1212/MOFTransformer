@@ -1,4 +1,4 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.0.1
 import os
 from sacred import Experiment
 from moftransformer import __root_dir__
@@ -69,7 +69,7 @@ def config():
     # below params varies with the environment
     root_dataset = os.path.join(__root_dir__, "examples/dataset")
     log_dir = "logs/"
-    batch_size = 1024  # desired batch size; for gradient accumulation
+    batch_size = 32  # desired batch size; for gradient accumulation
     per_gpu_batchsize = 8  # you should define this manually with per_gpu_batch_size
     accelerator = "gpu"
     devices = 1
