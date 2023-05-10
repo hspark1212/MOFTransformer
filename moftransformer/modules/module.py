@@ -112,6 +112,10 @@ class Module(LightningModule):
             self.load_state_dict(state_dict, strict=False)
             print(f"load model : {config['load_path']}")
 
+        self.test_logits = []
+        self.test_labels = []
+        self.test_cifid = []
+
     def infer(
         self,
         batch,
@@ -270,14 +274,14 @@ class Module(LightningModule):
         total_loss = sum([v for k, v in output.items() if "loss" in k])
         return total_loss
 
-    def training_epoch_end(self, outputs):
+    def on_train_epoch_end(self):
         module_utils.epoch_wrapup(self)
 
     def validation_step(self, batch, batch_idx):
         module_utils.set_task(self)
         output = self(batch)
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self) -> None:
         module_utils.epoch_wrapup(self)
 
     def test_step(self, batch, batch_idx):
@@ -286,22 +290,23 @@ class Module(LightningModule):
         output = {
             k: (v.cpu() if torch.is_tensor(v) else v) for k, v in output.items()
         }  # update cpu for memory
+
+        if 'regression_logits' in output.keys():
+            self.test_logits += output["regression_logits"].tolist()
+            self.test_labels += output["regression_labels"].tolist()
         return output
 
-    def test_epoch_end(self, outputs):
+    def on_test_epoch_end(self):
         module_utils.epoch_wrapup(self)
 
         # calculate r2 score when regression
-        if "regression_logits" in outputs[0].keys():
-            logits = []
-            labels = []
-            for out in outputs:
-                logits += out["regression_logits"].tolist()
-                labels += out["regression_labels"].tolist()
-
-            if len(logits) > 1:
-                r2 = r2_score(np.array(labels), np.array(logits))
-                self.log(f"test/r2_score", r2, sync_dist=True)
+        if len(self.test_logits) > 1:
+            r2 = r2_score(
+                np.array(self.test_labels), np.array(self.test_logits)
+            )
+            self.log(f"test/r2_score", r2, sync_dist=True)
+            self.test_labels.clear()
+            self.test_logits.clear()
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)
