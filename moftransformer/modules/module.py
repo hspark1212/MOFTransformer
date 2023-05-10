@@ -1,4 +1,4 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.1.0
 import torch
 import torch.nn as nn
 from pytorch_lightning import LightningModule

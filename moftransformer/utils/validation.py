@@ -1,7 +1,13 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.1.0
 import sys
 import warnings
+import pytorch_lightning as pl
 from moftransformer.database import DEFAULT_PMTRANSFORMER_PATH, DEFAULT_MOFTRANSFORMER_PATH
+
+if pl.__version__ >= '2.0.0':
+    from pytorch_lightning.trainer.connectors.accelerator_connector import _AcceleratorConnector as AC
+else:
+    from pytorch_lightning.trainer.connectors.accelerator_connector import AcceleratorConnector as AC
 
 
 _IS_INTERACTIVE = hasattr(sys, "ps1")
@@ -49,8 +55,12 @@ def _set_load_path(path):
         return DEFAULT_MOFTRANSFORMER_PATH
     elif not path:
         return ""
-    else:
+    elif str(path)[-4:] == 'ckpt':
         return path
+    else:
+        raise ConfigurationError(
+            "path must be 'pmtransformer', 'moftransformer', None, or *.ckpt, not {path}"
+        )
 
 
 def get_num_devices(_config):
@@ -68,19 +78,13 @@ def get_num_devices(_config):
 
 
 def _get_auto_device(_config):
-    
-    from pytorch_lightning.trainer.connectors.accelerator_connector import (
-        AcceleratorConnector,
-    )
-    accelerator = AcceleratorConnector(accelerator=_config["accelerator"]).accelerator
+    accelerator = AC(accelerator=_config["accelerator"]).accelerator
     devices = accelerator.auto_device_count()
     
     return devices
 
 
-def _set_valid_batchsize(_config):
-    devices = get_num_devices(_config)
-
+def _set_valid_batchsize(_config, devices):
     per_gpu_batchsize = _config["batch_size"] // devices
 
     _config["per_gpu_batchsize"] = per_gpu_batchsize
@@ -95,7 +99,7 @@ def _check_valid_num_gpus(_config):
 
     if devices > _config["batch_size"]:
         raise ConfigurationError(
-            "Number of devices must be smaller than batch_size. "
+            "Number of devices must be smaller than batch_size."
             f'num_gpus : {devices}, batch_size : {_config["batch_size"]}'
         )
 
@@ -104,6 +108,8 @@ def _check_valid_num_gpus(_config):
             "The interactive environment (ex. jupyter notebook) does not supports multi-devices environment."
             "If you want to use multi-devices, make *.py file and run."
         )
+    
+    return devices
 
 
 def get_valid_config(_config):
@@ -114,10 +120,10 @@ def get_valid_config(_config):
     _config["load_path"] = _set_load_path(_config["load_path"])
 
     # check_valid_num_gpus
-    _check_valid_num_gpus(_config)
+    devices = _check_valid_num_gpus(_config)
 
     # Batch size must be larger than gpu_per_batch
-    if _config["batch_size"] < _config["per_gpu_batchsize"]:
-        _set_valid_batchsize(_config)
+    if _config["batch_size"] < _config["per_gpu_batchsize"] * devices:
+        _set_valid_batchsize(_config, devices)
 
     return _config
