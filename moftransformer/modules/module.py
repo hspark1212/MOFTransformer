@@ -301,7 +301,7 @@ class Module(LightningModule):
 
             if len(logits) > 1:
                 r2 = r2_score(np.array(labels), np.array(logits))
-                self.log(f"test/r2_score", r2)
+                self.log(f"test/r2_score", r2, sync_dist=True)
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)

@@ -41,8 +41,8 @@ def compute_regression(pl_module, batch, normalizer):
         mean_absolute_error(ret["regression_logits"], ret["regression_labels"])
     )
 
-    pl_module.log(f"regression/{phase}/loss", loss)
-    pl_module.log(f"regression/{phase}/mae", mae)
+    pl_module.log(f"regression/{phase}/loss", loss, sync_dist=True)
+    pl_module.log(f"regression/{phase}/mae", mae, sync_dist=True)
 
     return ret
 
@@ -78,8 +78,8 @@ def compute_classification(pl_module, batch):
         ret["classification_logits"], ret["classification_labels"]
     )
 
-    pl_module.log(f"classification/{phase}/loss", loss)
-    pl_module.log(f"classification/{phase}/accuracy", acc)
+    pl_module.log(f"classification/{phase}/loss", loss, sync_dist=True)
+    pl_module.log(f"classification/{phase}/accuracy", acc, sync_dist=True)
 
     return ret
 
@@ -114,8 +114,8 @@ def compute_mpp(pl_module, batch):
         ret["mpp_logits"], ret["mpp_labels"]
     )
 
-    pl_module.log(f"mpp/{phase}/loss", loss)
-    pl_module.log(f"mpp/{phase}/accuracy", acc)
+    pl_module.log(f"mpp/{phase}/loss", loss, sync_dist=True)
+    pl_module.log(f"mpp/{phase}/accuracy", acc, sync_dist=True)
 
     return ret
 
@@ -140,8 +140,8 @@ def compute_mtp(pl_module, batch):
         ret["mtp_logits"], ret["mtp_labels"]
     )
 
-    pl_module.log(f"mtp/{phase}/loss", loss)
-    pl_module.log(f"mtp/{phase}/accuracy", acc)
+    pl_module.log(f"mtp/{phase}/loss", loss, sync_dist=True)
+    pl_module.log(f"mtp/{phase}/accuracy", acc, sync_dist=True)
 
     return ret
 
@@ -168,8 +168,8 @@ def compute_vfp(pl_module, batch):
         mean_absolute_error(ret["vfp_logits"], ret["vfp_labels"])
     )
 
-    pl_module.log(f"vfp/{phase}/loss", loss)
-    pl_module.log(f"vfp/{phase}/mae", mae)
+    pl_module.log(f"vfp/{phase}/loss", loss, sync_dist=True)
+    pl_module.log(f"vfp/{phase}/mae", mae, sync_dist=True)
 
     return ret
 
@@ -210,8 +210,8 @@ def compute_ggm(pl_module, batch):
         ret["ggm_logits"], ret["ggm_labels"]
     )
 
-    pl_module.log(f"ggm/{phase}/loss", loss)
-    pl_module.log(f"ggm/{phase}/accuracy", acc)
+    pl_module.log(f"ggm/{phase}/loss", loss, sync_dist=True)
+    pl_module.log(f"ggm/{phase}/accuracy", acc, sync_dist=True)
 
     return ret
 
@@ -248,7 +248,7 @@ def compute_moc(pl_module, batch):
         nn.Sigmoid()(ret["moc_logits"]), ret["moc_labels"].long()
     )
 
-    pl_module.log(f"{task}/{phase}/loss", loss)
-    pl_module.log(f"{task}/{phase}/accuracy", acc)
+    pl_module.log(f"{task}/{phase}/loss", loss, sync_dist=True)
+    pl_module.log(f"{task}/{phase}/accuracy", acc, sync_dist=True)
 
     return ret
