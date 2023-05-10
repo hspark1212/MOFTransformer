@@ -5,7 +5,7 @@ You can train MOFTransformers by the following methods.
 After downloading the [**pre-trained model**](https://hspark1212.github.io/MOFTransformer/installation.html#download-model-and-data), it is possible to train a model with higher accuracy.
 
 ```bash
-$ moftransformer download pretrain-model
+$ moftransformer download pretrain_model
 ```
 
 ## 1. Using `run` function

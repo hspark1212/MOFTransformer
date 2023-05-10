@@ -1,4 +1,4 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.1.0
 import sys
 import os
 import copy
@@ -34,7 +34,7 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
     The basic usage of the code is as follows:
 
     >>> run(root_dataset, downstream)  # train MOFTransformer from [root_dataset] with train_{downstream}.json
-    >>> run(root_dataset, downstream, log_dir, test_only=True, load_path=model_path) # predict MOFTransformer from trained-model path
+    >>> run(root_dataset, downstream, log_dir, test_only=True, load_path=model_path) # test MOFTransformer from trained-model path
 
     Dataset preperation is necessary for learning
     (url: https://hspark1212.github.io/MOFTransformer/dataset.html)
@@ -87,7 +87,7 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
     n_classes: int, default: 0
         Number of classes when your loss is 'classification'
 
-    batch_size: int, default: 1024
+    batch_size: int, default: 32
         desired batch size; for gradient accumulation
 
     per_gpu_batchsize: int, default: 8
@@ -112,7 +112,7 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
         Half precision, or mixed precision, is the combined use of 32 and 16 bit floating points to reduce memory footprint during model training.
         This can result in improved performance, achieving +3X speedups on modern GPUs.
 
-    max_epochs: int, default: 100
+    max_epochs: int, default: 20
         Stop training once this number of epochs is reached.
 
     seed: int, default: 0
@@ -229,9 +229,14 @@ def main(_config):
         save_last=True,
     )
 
+    if _config["test_only"]:
+        name = f'test_{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}'
+    else:
+        name = f'{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}'
+
     logger = pl.loggers.TensorBoardLogger(
         _config["log_dir"],
-        name=f'{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}',
+        name=name,
     )
 
     lr_callback = pl.callbacks.LearningRateMonitor(logging_interval="step")
@@ -254,6 +259,8 @@ def main(_config):
 
     if _IS_INTERACTIVE:
         strategy = None
+    elif pl.__version__ >= '2.0.0':
+        strategy = "ddp_find_unused_parameters_true"
     else:
         strategy = "ddp"
 
@@ -272,12 +279,11 @@ def main(_config):
         logger=logger,
         accumulate_grad_batches=accumulate_grad_batches,
         log_every_n_steps=log_every_n_steps,
-        resume_from_checkpoint=_config["resume_from"],
         val_check_interval=_config["val_check_interval"],
         deterministic=True,
     )
 
     if not _config["test_only"]:
-        trainer.fit(model, datamodule=dm)
+        trainer.fit(model, datamodule=dm, ckpt_path=_config["resume_from"])
     else:
         trainer.test(model, datamodule=dm)
