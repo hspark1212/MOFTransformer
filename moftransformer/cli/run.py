@@ -22,4 +22,4 @@ class CLICommand:
         run_path = Path(__root_dir__) / "run.py"
         config = args.args
         print(config)
-        os.system(f"python {run_path} with {' '.join(config)}")
+        os.system(f"python {run_path} {' '.join(config)}")

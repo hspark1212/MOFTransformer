@@ -67,11 +67,13 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
              ├── val_{downstream}.json
              └── test_{downstream}.json
 
+     :param load_path : Path for model you want to load and predict (*.ckpt).
      :param downstream: Name of user-specific task (e.g. bandgap, gasuptake, etc).
              if downstream is None, target json is 'train.json', 'val.json', and 'test.json'
-     :param log_dir: Directory to save log, models, and params.
-     :param test_only: If True, only the test process is performed without the learning model.
+     :param split : The split you want to predict on your dataset ('all', 'train', 'test', or 'val')
+     :param save_dir : Path for directory you want to save *.csv file. (default : None -> path for loaded model)
 
+     
      Other Parameters
      ________________
      load_path: str, default: "pmtransformer"
@@ -206,6 +208,18 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
     config['load_path'] = load_path
     config['test_only'] = True
     config['visualize'] = False
+    config['split'] = split
+    config['save_dir'] = save_dir
+    
+    main(config)
+
+
+@ex.automain
+def main(_config):
+    config = copy.deepcopy(_config)
+
+    config['test_only'] = True
+    config['visualize'] = False
 
     os.makedirs(config["log_dir"], exist_ok=True)
     pl.seed_everything(config['seed'])
@@ -264,12 +278,14 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
     )
 
     # refine split
+    split = config.get('split', 'all')
     if split == 'all':
         split = ['train', 'val', 'test']
     elif isinstance(split, str):
         split = re.split(r",\s?", split)
 
     # save_dir
+    save_dir = config.get('save_dir', None)
     if save_dir is None:
         save_dir = Path(config['load_path']).parent.parent
     else:
@@ -277,7 +293,6 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
         save_dir.mkdir(exist_ok=True, parents=True)
 
     # predict
-
     for s in split:
         if not s in ['train', 'test', 'val']:
             raise ValueError(f'split must be train, test, or val, not {s}')
@@ -288,6 +303,7 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
         write_output(rets, savefile)
 
     print (f'All prediction values are saved in {save_dir}')
+
 
 def write_output(rets, savefile):
     keys = rets[0].keys()

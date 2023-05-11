@@ -196,7 +196,7 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
 
     """
 
-    config = _config()
+    config = copy.deepcopy(_config())
     for key in kwargs.keys():
         if key not in config:
             raise ConfigurationError(f"{key} is not in configuration.")
