@@ -1,6 +1,8 @@
 # MOFTransformer version 2.1.0
+from typing import Any, List
 import torch
 import torch.nn as nn
+import pytorch_lightning as pl
 from pytorch_lightning import LightningModule
 
 from moftransformer.modules import objectives, heads, module_utils
@@ -115,6 +117,7 @@ class Module(LightningModule):
         self.test_logits = []
         self.test_labels = []
         self.test_cifid = []
+        self.write_log = True
 
     def infer(
         self,
@@ -310,6 +313,33 @@ class Module(LightningModule):
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)
+    
+    def on_predict_start(self):
+        self.write_log = False
+        module_utils.set_task(self)
 
-    def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
-        scheduler.step()
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        output = self(batch)
+        output = {
+            k: (v.cpu().tolist() if torch.is_tensor(v) else v)
+            for k, v in output.items()
+            if ('logits' in k) or ('labels' in k) or 'cif_id' == k
+        }
+        return output
+    
+    def on_predict_epoch_end(self, *args):
+        self.test_labels.clear()
+        self.test_logits.clear()
+
+    def lr_scheduler_step(self, scheduler, *args):
+        if len(args) == 2:
+            optimizer_idx, metric = args
+        elif len(args) == 1:
+            metric, = args
+        else:
+            raise ValueError('lr_scheduler_step must have metric and optimizer_idx(optional)')
+
+        if pl.__version__ >= '2.0.0':
+            scheduler.step(epoch=self.current_epoch)
+        else:
+            scheduler.step()
