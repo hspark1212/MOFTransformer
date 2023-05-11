@@ -271,8 +271,12 @@ class Module(LightningModule):
             ret.update(objectives.compute_classification(self, batch))
         return ret
 
-    def training_step(self, batch, batch_idx):
+    
+    def on_train_start(self):
         module_utils.set_task(self)
+        self.write_log = True
+
+    def training_step(self, batch, batch_idx):
         output = self(batch)
         total_loss = sum([v for k, v in output.items() if "loss" in k])
         return total_loss
@@ -280,15 +284,20 @@ class Module(LightningModule):
     def on_train_epoch_end(self):
         module_utils.epoch_wrapup(self)
 
-    def validation_step(self, batch, batch_idx):
+    def on_validation_start(self):
         module_utils.set_task(self)
+        self.write_log = True
+
+    def validation_step(self, batch, batch_idx):
         output = self(batch)
 
     def on_validation_epoch_end(self) -> None:
         module_utils.epoch_wrapup(self)
 
-    def test_step(self, batch, batch_idx):
+    def on_test_start(self,):
         module_utils.set_task(self)
+    
+    def test_step(self, batch, batch_idx):
         output = self(batch)
         output = {
             k: (v.cpu() if torch.is_tensor(v) else v) for k, v in output.items()
@@ -330,6 +339,9 @@ class Module(LightningModule):
     def on_predict_epoch_end(self, *args):
         self.test_labels.clear()
         self.test_logits.clear()
+
+    def on_predict_end(self, ):
+        self.write_log = True
 
     def lr_scheduler_step(self, scheduler, *args):
         if len(args) == 2:
