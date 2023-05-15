@@ -5,7 +5,7 @@ You can train MOFTransformers by the following methods.
 After downloading the [**pre-trained model**](https://hspark1212.github.io/MOFTransformer/installation.html#download-model-and-data), it is possible to train a model with higher accuracy.
 
 ```bash
-$ moftransformer download pretrain-model
+$ moftransformer download pretrain_model
 ```
 
 ## 1. Using `run` function
@@ -61,5 +61,5 @@ In the `config` argument, it is used in the form of `parameter=value`, and sever
 
 For example:
 ```bash
-$ moftransformer run --root_dataset './data' --downstream 'exmaple' --config max_epcohs=10 devices=2 batch_size=216
+$ moftransformer run --root_dataset './data' --downstream 'exmaple' --config max_epochs=10 devices=2 batch_size=216
 ```
