@@ -33,6 +33,7 @@ moftransformer/database/coremof/
 moftransformer/database/hmof/
 moftransformer/database/qmof/
 moftransformer/database/finetuned/
+moftransformer/examples/dataset/
 moftransformer/config.py
 
 dft/

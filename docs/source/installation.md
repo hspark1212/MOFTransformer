@@ -123,12 +123,11 @@ install_griday()
 
 If the installation is not done perfectly, you can go directly to the path and install it.
 
-The c++14 version is required to use the `GRIDAY`. In anaconda virtual environment, the corresponding version can be installed as follows.
+The c++14 version is required to use the `GRIDAY`. In anaconda virtual environment, the corresponding version can be installed as follows when c++ version is incorrect.
 
 ```bash
 $ conda install -c conda-forge gcc=9.5.0
 $ conda install -c conda-forge gxx=9.5.0
-$ conda install -c anaconda make=4.2.1
 ```
 
 Once the correct installation of g++ is completed, the `GRIDAY` could be installed in the following way.

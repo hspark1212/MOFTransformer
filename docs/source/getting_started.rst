@@ -13,6 +13,7 @@ In this section, you will learn about preparing dataset, fine-tuning, test, visu
    getting_started/prepare_data
    getting_started/training
    getting_started/test
+   getting_started/predict
    getting_started/visualization
 
 
