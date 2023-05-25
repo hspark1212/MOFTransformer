@@ -294,6 +294,7 @@ def _split_dataset(root_dataset: Path, **kwargs):
 def _split_json(root_cifs: Path, root_dataset: Path, downstream: str):
     with open(str(root_cifs / f"raw_{downstream}.json")) as f:
         src = json.load(f)
+        src = {i.replace(".cif", ""):v for i, v in src.items()}  # if *.cif in JSON files
 
     for split in ["train", "test", "val"]:
         cif_folder = root_dataset / split
