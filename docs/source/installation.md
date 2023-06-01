@@ -23,7 +23,7 @@ If you want to modify the code, you can use the develop mode.
 
 ```bash
 $ git clone https://github.com/hspark1212/MOFTransformer.git
-$ cd moftransformer
+$ cd MOFTransformer
 $ pip install -e .
 ```
 

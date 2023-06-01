@@ -10,6 +10,7 @@ commands = [
     ("install-griday", "moftransformer.cli.install_griday"),
     ("uninstall-griday", "moftransformer.cli.uninstall_griday"),
     ("run", "moftransformer.cli.run"),
+    ("predict", "moftransformer.cli.predict"),
     ("download", "moftransformer.cli.download"),
 ]
 

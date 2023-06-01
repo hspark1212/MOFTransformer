@@ -54,12 +54,12 @@ $ tensorboard --logdir=[log_dir] --bind_all
 You can proceed with training in the `command-line` using parameters the same as Python's run.
 
 ```bash
-$ moftransformer run --root_dataset [root_dataset] --downstream [downstream] --logdir [logdir] [--test_only] --config [configuration]  
+$ moftransformer run --root_dataset [root_dataset] --downstream [downstream] --logdir [logdir] [--test_only] ...
 ```
-
-In the `config` argument, it is used in the form of `parameter=value`, and several factors can be received at once.
 
 For example:
 ```bash
-$ moftransformer run --root_dataset './data' --downstream 'exmaple' --config max_epochs=10 devices=2 batch_size=216
+$ moftransformer run --root_dataset './data' --downstream 'exmaple' --max_epochs 10 --devices 2 --batch_size 216
 ```
+
+For more information, see the help, command by "moftransformer run -h".

@@ -1,4 +1,4 @@
-# MOFTransformer version 2.1.0
+# MOFTransformer version 2.1.1
 import sys
 import os
 import copy
@@ -239,24 +239,6 @@ def main(_config):
     dm.setup()
     model.eval()
 
-    exp_name = f"{config['exp_name']}"
-    logger = pl.loggers.TensorBoardLogger(
-        config["log_dir"],
-        name=f'prediction_{exp_name}_seed{config["seed"]}_from_{str(config["load_path"]).split("/")[-1][:-5]}',
-    )
-
-    # gradient accumulation
-    if num_device == 0:
-        accumulate_grad_batches = config["batch_size"] // (
-                config["per_gpu_batchsize"]
-        )
-    else:
-        accumulate_grad_batches = config["batch_size"] // (
-                config["per_gpu_batchsize"]
-        )
-
-    max_steps = config["max_steps"] if config["max_steps"] is not None else None
-
     if _IS_INTERACTIVE:
         strategy = None
     elif pl.__version__ >= '2.0.0':
@@ -271,10 +253,10 @@ def main(_config):
         precision=config["precision"],
         strategy=strategy,
         benchmark=True,
-        max_steps=max_steps,
-        accumulate_grad_batches=accumulate_grad_batches,
+        max_epochs=1,
+        log_every_n_steps=0,
         deterministic=True,
-        logger=logger,
+        logger=False,
     )
 
     # refine split

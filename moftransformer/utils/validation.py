@@ -59,7 +59,7 @@ def _set_load_path(path):
         return path
     else:
         raise ConfigurationError(
-            "path must be 'pmtransformer', 'moftransformer', None, or *.ckpt, not {path}"
+            f"path must be 'pmtransformer', 'moftransformer', None, or *.ckpt, not {path}"
         )
 
 
