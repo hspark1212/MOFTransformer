@@ -1,16 +1,9 @@
 # MOFTransformer version 2.1.1
 from itertools import chain
-from moftransformer.run import run
+from moftransformer.predict import predict
 
 str_kwargs_names = {
-    'load_path': 'This parameter specifies the path of the model that will be used for training/testing. '
-    'The available options are "pmtransformer", "moftransformer", other .ckpt paths, and None (scratch). '
-    "If you want to test a fine-tuned model, you should specify the path to the .ckpt file stored in the 'log' folder."
-    "To download a pre-trained model, use the following command:"
-    "$ moftransformer download pretrain_model'",
-    'loss_names': "One or more of the following loss : 'regression', 'classification', 'mpt', 'moc', and 'vfp'",
-    'optim_type': 'Type of optimizer, which is "adamw", "adam", or "sgd" (momentum=0.9)',
-    'resume_from' : 'Restart model - path for ckpt'
+    'loss_names': "One or more of the following loss : 'regression', 'classification', 'mpt', 'moc', and 'vfp'"
 }
 
 int_kwargs_names = {
@@ -19,7 +12,6 @@ int_kwargs_names = {
     'per_gpu_batchsize': 'you should define this manually with per_gpu_batch_size',
     'num_nodes': 'Number of GPU nodes for distributed training.',
     'num_workers': "the number of cpu's core",
-    'max_epochs': 'Stop training once this number of epochs is reached.',
     'seed': 'The random seed for pytorch_lightning.',
     'max_steps': 'num_data * max_epoch // batch_size (accumulate_grad_batches). If -1, set max_steps automatically.',
 }
@@ -27,15 +19,8 @@ int_kwargs_names = {
 float_kwargs_names = {
     'mean': 'mean for normalizer. If None, it is automatically obtained from the train dataset.',
     'std': 'standard deviation for normalizer. If None, it is automatically obtained from the train dataset.',
-    'learning_rate': 'Learning rate for optimizer',
-    'weight_decay': 'Weight decay for optmizer',
-    'decay_power': 'default polynomial decay, [cosine, constant, constant_with_warmup]',
-    'warmup_steps' : 'warmup steps for optimizer. If type is float, set to max_steps * warmup_steps.',
 }
 
-bool_kwargs_names = {
-    'visualize': 'return attention map (use at attetion visualization step)',
-}
 
 none_kwargs_names = {
     'accelerator' : 'Supports passing different accelerator types ("cpu", "gpu", "tpu", "ipu", "hpu", "mps, "auto") '
@@ -60,14 +45,13 @@ class CLICommand:
                             help="A folder containing graph data, grid data, and json of MOFs that you want to train or test. "\
                             "The way to make root_dataset is at this link (https://hspark1212.github.io/MOFTransformer/dataset.html)"
                             )
+        parser.add_argument('--load_path', '-l', type=str, help='Path for model you want to load and predict (*.ckpt).')
         parser.add_argument('--downstream', "-d", type=str, default=None, help="Name of user-specific task (e.g. bandgap, gasuptake, etc). "
                             "if downstream is None, target json is 'train.json', 'val.json', and 'test.json'",
                             )
-        parser.add_argument('--log_dir', "-l", default='./logs', type=str,
-                            help='(optional) Directory to save log, models, and params. (default = ./logs/)'
-                            )
-        parser.add_argument('--test_only', "-t", action='store_true',
-                            help='(optional) If True, only the test process is performed without the learning model.'
+        parser.add_argument('--split', "-s", default='all', type=str, help="(optional) The split you want to predict on your dataset ('all', 'train', 'test', or 'val')")
+        parser.add_argument('--save_dir', "-sd", type=str, default=None,
+                            help='(optional) Path for directory you want to save *.csv file. (default : None -> path for loaded model)'
                             )
 
         for key, value in str_kwargs_names.items():
@@ -82,32 +66,30 @@ class CLICommand:
         for key, value in float_kwargs_names.items():
             parser.add_argument(f"--{key}", type=float, required=False, help=f"(optional) {value}")
 
-        for key, value in bool_kwargs_names.items():
-            parser.add_argument(f"--{key}", action='store_true', required=False, help=f"(optional) {value}")
-
     @staticmethod
     def run(args):
         from moftransformer import __root_dir__
         
         root_dataset = args.root_dataset
+        load_path = args.load_path
         downstream = args.downstream
-        log_dir = args.log_dir
-        test_only = args.test_only
+        split = args.split
+        save_dir = args.save_dir
 
         kwargs = {}
         for key in chain(str_kwargs_names.keys(), 
                          none_kwargs_names.keys(),
                          int_kwargs_names.keys(),
                          float_kwargs_names.keys(),
-                         bool_kwargs_names.keys(),
                          ):
             if value := getattr(args, key):
                 kwargs[key] = value
                 
-        run(
+        predict(
             root_dataset,
-            downstream,
-            log_dir,
-            test_only=test_only,
+            load_path,
+            downstream=downstream,
+            split=split,
+            save_dir=save_dir,
             **kwargs
         )
