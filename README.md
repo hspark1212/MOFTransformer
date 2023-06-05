@@ -27,6 +27,8 @@
 ## [Install](https://hspark1212.github.io/MOFTransformer/installation.html)
 
 ### Depedencies
+NOTE: This package is primarily tested on Linux. We strongly recommend using Linux for the installation.
+
 ```
 python>=3.8
 ```

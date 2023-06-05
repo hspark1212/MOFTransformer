@@ -7,3 +7,4 @@
 - Add command-line interface (moftransformer predict)
 - Modified minor typo errors in document
 - Remove logger file in function "predict"
+- Update Readme.md to include the comment regarding only support for Linux
