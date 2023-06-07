@@ -28,7 +28,7 @@ downstream = example_path['downstream']
 log_dir = './logs/'    # same directory make from training
 seed = 0               # default seeds
 version = 0            # version for model. It increases with the number of trains
-checkpoint = 'last'    # Epochs where the model is stored. 
+checkpoint = 'best'    # Epochs where the model is stored. 
 
 load_path = Path(log_dir) / f'pretrained_mof_seed{seed}_from_pmtransformer/version_{version}/checkpoints/{checkpoint}.ckpt'
 

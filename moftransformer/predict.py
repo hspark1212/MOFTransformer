@@ -29,7 +29,7 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
      Predict MOFTransformer.
 
      Call signatures::
-         predict(root_dataset, laod_path, downstream, [split], **kwargs)
+         predict(root_dataset, load_path, downstream, [split], **kwargs)
 
      The basic usage of the code is as follows:
 
