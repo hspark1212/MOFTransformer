@@ -7,6 +7,7 @@ __root_dir__ = os.path.dirname(__file__)
 from moftransformer import visualize, utils, modules, libs, gadgets, datamodules, assets
 from moftransformer.run import run
 from moftransformer.predict import predict
+from moftransformer.test import test
 
 __all__ = [
     "visualize",
@@ -18,5 +19,6 @@ __all__ = [
     "assets",
     "run",
     "predict",
+    "test",
     __version__,
 ]

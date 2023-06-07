@@ -7,3 +7,5 @@
 - Add command-line interface (moftransformer predict)
 - Modified minor typo errors in document
 - Remove logger file in function "predict"
+- Make "test" function
+- 'best.ckpt' are generated after training

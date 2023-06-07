@@ -20,6 +20,8 @@ You can train the model using the function `run` in `moftransformer` python libr
 - test_only: If True, only the test process is performed without the learning model. (default:`False`)
 - kwargs : configuration for MOFTransformer
 
+** After version 2.1.1, the best model is saved separately as `best.ckpt`.
+
 
 ### Example for training PMTransformer (MOFTransformer):
 ```python
@@ -35,9 +37,13 @@ log_dir = './logs/'
 # kwargs (optional)
 max_epochs = 10
 batch_size = 8
+mean = 0
+std = 1
+
 
 moftransformer.run(root_dataset, downstream, log_dir=log_dir,                   
-                   max_epochs=max_epochs, batch_size=batch_size,)
+                   max_epochs=max_epochs, batch_size=batch_size,
+                   mean=mean, std=std)
 ```
 
 After training, the trained model, logs and hyperparameters will be saved at `log_dir`.  
@@ -54,12 +60,12 @@ $ tensorboard --logdir=[log_dir] --bind_all
 You can proceed with training in the `command-line` using parameters the same as Python's run.
 
 ```bash
-$ moftransformer run --root_dataset [root_dataset] --downstream [downstream] --logdir [logdir] [--test_only] ...
+$ moftransformer run --root_dataset [root_dataset] --downstream [downstream] --logdir [logdir] ...
 ```
 
 For example:
 ```bash
-$ moftransformer run --root_dataset './data' --downstream 'exmaple' --max_epochs 10 --devices 2 --batch_size 216
+$ moftransformer run --root_dataset './data' --downstream 'example' --max_epochs 10 --devices 2 --batch_size 216
 ```
 
 For more information, see the help, command by "moftransformer run -h".
