@@ -9,3 +9,4 @@
 - Remove logger file in function "predict"
 - Make "test" function
 - 'best.ckpt' are generated after training
+- Update Readme.md to include the comment regarding only support for Linux
