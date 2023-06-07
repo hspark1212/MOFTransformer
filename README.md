@@ -64,15 +64,81 @@ import moftransformer
 from moftransformer.examples import example_path
 
 # data root and downstream from example
-data_root = example_path['data_root']
+root_dataset = example_path['root_dataset']
 downstream = example_path['downstream']
 log_dir = './logs/'
 # load_path = "pmtransformer" (default)
 
-moftransformer.run(data_root, downstream, log_dir=log_dir, 
-                   max_epochs=max_epochs, batch_size=batch_size,)
+# kwargs (optional)
+max_epochs = 10
+batch_size = 8
+mean = 0
+std = 1
+
+
+moftransformer.run(root_dataset, downstream, log_dir=log_dir,                   
+                   max_epochs=max_epochs, batch_size=batch_size,
+                   mean=mean, std=std)
 ```
-3. Visualize analysis of feature importance for the fine-tuned model.
+
+3. Test fine-tuned model
+```python
+from pathlib import Path
+import moftransformer
+from moftransformer.examples import example_path
+
+root_dataset = example_path['root_dataset']
+downstream = example_path['downstream']
+
+# Get ckpt file
+seed = 0               # default seeds
+version = 0            # version for model. It increases with the number of trains
+
+# For version > 2.1.1, best.ckpt exists
+checkpoint = 'best'    # Epochs where the model is stored. 
+save_dir = 'result/'
+
+# optional keyword
+mean = 0
+std = 1
+
+load_path = Path(log_dir) / f'pretrained_mof_seed{seed}_from_pmtransformer/version_{version}/checkpoints/{checkpoint}.ckpt'
+
+if not load_path.exists():
+    raise ValueError(f'load_path does not exists. check path for .ckpt file : {load_path}')
+
+moftransformer.test(root_dataset, load_path, downstream=downstream,
+                   save_dir=save_dir, mean=mean, std=std)
+```
+
+4. predict from fine-tuned model
+```python
+from pathlib import Path
+import moftransformer
+from moftransformer.examples import example_path
+
+root_dataset = example_path['root_dataset']
+downstream = example_path['downstream']
+
+# Get ckpt file
+log_dir = './logs/'    # same directory make from training
+seed = 0               # default seeds
+version = 0            # version for model. It increases with the number of trains
+checkpoint = 'best'    # Epochs where the model is stored. 
+mean = 0
+std = 1
+
+load_path = Path(log_dir) / f'pretrained_mof_seed{seed}_from_pmtransformer/version_{version}/checkpoints/{checkpoint}.ckpt'
+
+if not load_path.exists():
+    raise ValueError(f'load_path does not exists. check path for .ckpt file : {load_path}')
+    
+moftransformer.predict(
+    root_dataset, load_path=load_path, downstream=downstream, split='all', mean=mean, std=std
+)
+```
+
+5. Visualize analysis of feature importance for the fine-tuned model.
 ```python
 %matplotlib widget
 from visualize import PatchVisualizer

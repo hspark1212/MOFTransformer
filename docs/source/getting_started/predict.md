@@ -36,7 +36,7 @@ load_path = Path(log_dir) / f'pretrained_mof_seed{seed}_from_pmtransformer/versi
 
 if not load_path.exists():
     raise ValueError(f'load_path does not exists. check path for .ckpt file : {load_path}')
-
+    
 moftransformer.predict(
     root_dataset, load_path=load_path, downstream=downstream, split='all', mean=mean, std=std
 )
