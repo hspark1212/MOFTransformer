@@ -25,7 +25,6 @@ root_dataset = example_path['root_dataset']
 downstream = example_path['downstream']
 
 # Get ckpt file
-log_dir = './logs/'    # same directory make from training
 seed = 0               # default seeds
 version = 0            # version for model. It increases with the number of trains
 checkpoint = 'best'    # Epochs where the model is stored. 
