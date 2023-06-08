@@ -1,4 +1,4 @@
-# MOFTransformer version 2.1.0
+# MOFTransformer version 2.1.1
 import sys
 import os
 import copy
@@ -29,7 +29,7 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
      Predict MOFTransformer.
 
      Call signatures::
-         predict(root_dataset, laod_path, downstream, [split], **kwargs)
+         predict(root_dataset, load_path, downstream, [split], **kwargs)
 
      The basic usage of the code is as follows:
 
@@ -76,13 +76,6 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
      
      Other Parameters
      ________________
-     load_path: str, default: "pmtransformer"
-     This parameter specifies the path of the model that will be used for training/testing.
-     The available options are "pmtransformer", "moftransformer", other .ckpt paths, and None (scratch).
-     If you want to test a fine-tuned model, you should specify the path to the .ckpt file stored in the 'log' folder.
-     To download a pre-trained model, use the following command:
-     $ moftransformer download pretrain_model
-
      loss_names: str or list, or dict, default: "regression"
          One or more of the following loss : 'regression', 'classification', 'mpt', 'moc', and 'vfp'
 
@@ -239,24 +232,6 @@ def main(_config):
     dm.setup()
     model.eval()
 
-    exp_name = f"{config['exp_name']}"
-    logger = pl.loggers.TensorBoardLogger(
-        config["log_dir"],
-        name=f'prediction_{exp_name}_seed{config["seed"]}_from_{str(config["load_path"]).split("/")[-1][:-5]}',
-    )
-
-    # gradient accumulation
-    if num_device == 0:
-        accumulate_grad_batches = config["batch_size"] // (
-                config["per_gpu_batchsize"]
-        )
-    else:
-        accumulate_grad_batches = config["batch_size"] // (
-                config["per_gpu_batchsize"]
-        )
-
-    max_steps = config["max_steps"] if config["max_steps"] is not None else None
-
     if _IS_INTERACTIVE:
         strategy = None
     elif pl.__version__ >= '2.0.0':
@@ -271,10 +246,10 @@ def main(_config):
         precision=config["precision"],
         strategy=strategy,
         benchmark=True,
-        max_steps=max_steps,
-        accumulate_grad_batches=accumulate_grad_batches,
+        max_epochs=1,
+        log_every_n_steps=0,
         deterministic=True,
-        logger=logger,
+        logger=False,
     )
 
     # refine split

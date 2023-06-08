@@ -31,5 +31,5 @@ test_fraction = 0.1   # default value
 
 # Run prepare data
 prepare_data(root_cifs, root_dataset, downstream=downstream, 
-             train_fraciton=train_fraction, test_fraciton=test_fraction)
+             train_fraction=train_fraction, test_fraction=test_fraction)
 ```

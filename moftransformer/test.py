@@ -3,8 +3,8 @@ import sys
 import os
 import copy
 import warnings
+import json
 from pathlib import Path
-import shutil
 
 import pytorch_lightning as pl
 
@@ -26,21 +26,19 @@ warnings.filterwarnings(
 _IS_INTERACTIVE = hasattr(sys, "ps1")
 
 
-def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kwargs):
+def test(root_dataset, load_path, downstream=None, save_dir=None, **kwargs):
     """
-    Train or predict MOFTransformer.
+    Test MOFTransformer from load_path.
 
     Call signatures::
-        run(root_dataset, downstream, [test_only], **kwargs)
+        test(root_dataset, load_path, downstream, save_dir, **kwargs)
 
     The basic usage of the code is as follows:
 
-    >>> run(root_dataset, downstream)  # train MOFTransformer from [root_dataset] with train_{downstream}.json
-    >>> run(root_dataset, downstream, log_dir, test_only=True, load_path=model_path) # test MOFTransformer from trained-model path
+    >>> test(root_dataset, load_path, downstream)  # test MOFTransformer from trained-model path
 
-    Dataset preperation is necessary for learning
-    (url: https://hspark1212.github.io/MOFTransformer/dataset.html)
-
+    Results save in 'load_path' directory.
+    
     Parameters
     __________
     :param root_dataset: A folder containing graph data, grid data, and json of MOFs that you want to train or test.
@@ -69,20 +67,13 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
             ├── val_{downstream}.json
             └── test_{downstream}.json
 
+    :param load_path : Path for model you want to load and predict (*.ckpt).
     :param downstream: Name of user-specific task (e.g. bandgap, gasuptake, etc).
             if downstream is None, target json is 'train.json', 'val.json', and 'test.json'
-    :param log_dir: Directory to save log, models, and params.
-    :param test_only: If True, only the test process is performed without the learning model.
+    :param save_dir : Directory path to save the 'result.json' file. (Default: load_path)
 
     Other Parameters
     ________________
-    load_path: str, default: "pmtransformer"
-    This parameter specifies the path of the model that will be used for training/testing.
-    The available options are "pmtransformer", "moftransformer", other .ckpt paths, and None (scratch).
-    If you want to test a fine-tuned model, you should specify the path to the .ckpt file stored in the 'log' folder.
-    To download a pre-trained model, use the following command:
-    $ moftransformer download pretrain_model
-
     loss_names: str or list, or dict, default: "regression"
         One or more of the following loss : 'regression', 'classification', 'mpt', 'moc', and 'vfp'
 
@@ -206,8 +197,10 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
     config.update(kwargs)
     config["root_dataset"] = root_dataset
     config["downstream"] = downstream
-    config["log_dir"] = log_dir
-    config["test_only"] = test_only
+    config['load_path'] = load_path
+    config["test_only"] = True
+    config['visualize'] = False
+    config['save_dir'] = save_dir
 
     main(config)
 
@@ -215,49 +208,17 @@ def run(root_dataset, downstream=None, log_dir="logs/", *, test_only=False, **kw
 @ex.automain
 def main(_config):
     _config = copy.deepcopy(_config)
+
+    _config['test_only'] = True
+    _config['visualize'] = False
+
     pl.seed_everything(_config["seed"])
 
     _config = get_valid_config(_config)
     dm = Datamodule(_config)
     model = Module(_config)
-    exp_name = f"{_config['exp_name']}"
-
-    os.makedirs(_config["log_dir"], exist_ok=True)
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(
-        save_top_k=1,
-        verbose=True,
-        monitor="val/the_metric",
-        mode="max",
-        save_last=True,
-    )
-
-    if _config["test_only"]:
-        name = f'test_{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}'
-    else:
-        name = f'{exp_name}_seed{_config["seed"]}_from_{str(_config["load_path"]).split("/")[-1][:-5]}'
-
-    logger = pl.loggers.TensorBoardLogger(
-        _config["log_dir"],
-        name=name,
-    )
-
-    lr_callback = pl.callbacks.LearningRateMonitor(logging_interval="step")
-    callbacks = [checkpoint_callback, lr_callback]
-
-    num_device = get_num_devices(_config)
-    print("num_device", num_device)
-
-    # gradient accumulation
-    if num_device == 0:
-        accumulate_grad_batches = _config["batch_size"] // (
-            _config["per_gpu_batchsize"] * _config["num_nodes"]
-        )
-    else:
-        accumulate_grad_batches = _config["batch_size"] // (
-            _config["per_gpu_batchsize"] * num_device * _config["num_nodes"]
-        )
-
-    max_steps = _config["max_steps"] if _config["max_steps"] is not None else None
+    dm.setup('test')
+    model.eval()
 
     if _IS_INTERACTIVE:
         strategy = None
@@ -266,8 +227,6 @@ def main(_config):
     else:
         strategy = "ddp"
 
-    log_every_n_steps = 10
-
     trainer = pl.Trainer(
         accelerator=_config["accelerator"],
         devices=_config["devices"],
@@ -275,21 +234,23 @@ def main(_config):
         precision=_config["precision"],
         strategy=strategy,
         benchmark=True,
-        max_epochs=_config["max_epochs"],
-        max_steps=max_steps,
-        callbacks=callbacks,
-        logger=logger,
-        accumulate_grad_batches=accumulate_grad_batches,
-        log_every_n_steps=log_every_n_steps,
-        val_check_interval=_config["val_check_interval"],
+        max_epochs=1,
+        logger=False,
+        log_every_n_steps=0,
         deterministic=True,
     )
 
-    if not _config["test_only"]:
-        trainer.fit(model, datamodule=dm, ckpt_path=_config["resume_from"])
-        log_dir = Path(logger.log_dir)/'checkpoints'
-        if best_model:= next(log_dir.glob('epoch=*.ckpt')):
-            shutil.copy(best_model, log_dir/'best.ckpt')
-            
+    output = trainer.test(model, datamodule=dm)
+
+    if save_dir := _config.get('save_dir'):
+        save_dir = Path(save_dir)
+        if save_dir.is_dir():
+            save_dir = save_dir/'result.json'
     else:
-        trainer.test(model, datamodule=dm)
+        save_dir = Path(_config['load_path'])/'../../result.json'
+        save_dir = save_dir.resolve()
+
+    with save_dir.open('w') as f:
+        json.dump(output, f)
+
+    print (f'Results are saved in {save_dir}')

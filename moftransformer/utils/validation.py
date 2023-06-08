@@ -1,4 +1,4 @@
-# MOFTransformer version 2.1.0
+# MOFTransformer version 2.1.1
 import sys
 import warnings
 import pytorch_lightning as pl
@@ -59,7 +59,7 @@ def _set_load_path(path):
         return path
     else:
         raise ConfigurationError(
-            "path must be 'pmtransformer', 'moftransformer', None, or *.ckpt, not {path}"
+            f"path must be 'pmtransformer', 'moftransformer', None, or *.ckpt, not {path}"
         )
 
 
@@ -99,13 +99,15 @@ def _check_valid_num_gpus(_config):
 
     if devices > _config["batch_size"]:
         raise ConfigurationError(
-            "Number of devices must be smaller than batch_size."
+            "Number of devices must be smaller than batch_size. "
             f'num_gpus : {devices}, batch_size : {_config["batch_size"]}'
         )
 
     if _IS_INTERACTIVE and devices > 1:
-        raise ConfigurationError(
-            "The interactive environment (ex. jupyter notebook) does not supports multi-devices environment."
+        _config["devices"] = 1
+        warnings.warn(
+            "The interactive environment (ex. jupyter notebook) does not supports multi-devices environment. "
+            f"Adjusted number of devices : {devices} to 1. "
             "If you want to use multi-devices, make *.py file and run."
         )
     
