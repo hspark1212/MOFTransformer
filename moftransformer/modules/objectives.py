@@ -26,6 +26,10 @@ def compute_regression(pl_module, batch, normalizer):
     # normalize encode if config["mean"] and config["std], else pass
     labels = normalizer.encode(labels)
     loss = F.mse_loss(logits, labels)
+
+    labels = labels.to(torch.float32)
+    logits = logits.to(torch.float32)
+
     ret = {
         "cif_id": infer["cif_id"],
         "cls_feats": infer["cls_feats"],
@@ -63,7 +67,7 @@ def compute_classification(pl_module, batch):
         loss = F.cross_entropy(logits, labels)
 
     ret = {
-        "cif_ids": infer["cif_id"],
+        "cif_id": infer["cif_id"],
         "cls_feats": infer["cls_feats"],
         "classification_loss": loss,
         "classification_logits": logits,

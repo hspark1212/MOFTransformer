@@ -76,13 +76,6 @@ def predict(root_dataset, load_path, downstream=None, split='all', save_dir=None
      
      Other Parameters
      ________________
-     load_path: str, default: "pmtransformer"
-     This parameter specifies the path of the model that will be used for training/testing.
-     The available options are "pmtransformer", "moftransformer", other .ckpt paths, and None (scratch).
-     If you want to test a fine-tuned model, you should specify the path to the .ckpt file stored in the 'log' folder.
-     To download a pre-trained model, use the following command:
-     $ moftransformer download pretrain_model
-
      loss_names: str or list, or dict, default: "regression"
          One or more of the following loss : 'regression', 'classification', 'mpt', 'moc', and 'vfp'
 
