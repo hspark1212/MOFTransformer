@@ -65,10 +65,18 @@ def _make_griday():
     print(
         "=== Successfully download ======================================================="
     )
-    if Path(GRIDAY_PATH).exists():
+    if not Path(GRIDAY_PATH).exists():
+        raise InstallationError(f"GRIDAY is not installed. Please try again.")
+    
+    print(
+        "=== Check GIRDAY ================================================================"
+    )    
+    ps = subprocess.run([str(GRIDAY_PATH)], cwd=dir_griday, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if ps.stderr == b'./make_egrid spacing atom_type force_field input_cssr egrid_stem\n':
         print(f"GRIDAY is installed to {dir_griday}")
     else:
-        raise InstallationError(f"GRIDAY is not installed. Please try again.")
+        print (ps.stdout, ps.stderr)
+        print(f'GRIDAY does not installed correctly. Please uninstall griday and re-install.')    
 
 
 def install_griday(install_make=False):
