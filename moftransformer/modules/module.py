@@ -330,10 +330,13 @@ class Module(LightningModule):
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         output = self(batch)
         
-        softmax = torch.nn.Softmax(dim=1)
         if 'classification_logits' in output:
-            output['classification_logits'] = softmax(output['classification_logits'])
-            output['classification_logits_index'] = torch.argmax(output['classification_logits'], dim=1)
+            if self.hparams.config['n_classes'] == 2:
+                output['classification_logits_index'] = torch.round(output['classification_logits']).to(torch.int)
+            else:
+                softmax = torch.nn.Softmax(dim=1)
+                output['classification_logits'] = softmax(output['classification_logits'])
+                output['classification_logits_index'] = torch.argmax(output['classification_logits'], dim=1)
 
         output = {
             k: (v.cpu().tolist() if torch.is_tensor(v) else v)
