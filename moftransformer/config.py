@@ -1,4 +1,4 @@
-# MOFTransformer version 2.1.0
+# MOFTransformer version 2.1.3
 import os
 from sacred import Experiment
 from moftransformer import __root_dir__
@@ -23,7 +23,7 @@ def config():
     loss_names = _loss_names({"regression": 1})
 
     # graph seeting
-    # max_atom_len = 1000  # number of maximum atoms in primitive cell
+    #max_supercell_atoms = None  # number of maximum atoms in supercell atoms
     atom_fea_len = 64
     nbr_fea_len = 64
     max_graph_len = 300  # number of maximum nodes in graph
