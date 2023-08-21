@@ -36,11 +36,7 @@ def get_logger(filename):
     formatter = logging.Formatter(
         fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-
-    # stream_handler = logging.StreamHandler()
-    # stream_handler.setFormatter(formatter)
-    # logger.addHandler(stream_handler)
-
+    
     file_handler = logging.FileHandler(filename)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -341,7 +337,8 @@ def make_prepared_data(
     max_length = kwargs.get("max_length", 60.0)
     min_length = kwargs.get("min_length", 30.0)
     max_num_nbr = kwargs.get("max_num_nbr", 12)
-    max_num_atoms = kwargs.get("max_num_atoms", 300)
+    max_num_unique_atoms = kwargs.get("max_num_unique_atoms", 300)
+    max_num_atoms = kwargs.get("max_num_atoms", None)
 
     cif_id: str = cif.stem
 
@@ -366,23 +363,30 @@ def make_prepared_data(
     try:
         atoms = read(str(cif))
     except Exception as e:
-        logger.info(f"{cif_id} failed : {e}")
+        logger.error(f"{cif_id} failed : {e}")
         return False
 
     # 1. get crystal graph
     atoms = _make_supercell(atoms, cutoff=8)  # radius = 8
+
+    if max_num_atoms and len(atoms) > max_num_atoms:
+        logger.error(
+            f"{cif_id} failed : number of atoms are larger than `max_num_atoms` ({max_num_atoms})"
+        )
+        return False
+
     atom_num, nbr_idx, nbr_dist, uni_idx, uni_count = get_crystal_graph(
         atoms, radius=8, max_num_nbr=max_num_nbr
     )
     if len(nbr_idx) < len(atom_num) * max_num_nbr:
-        logger.info(
+        logger.error(
             f"{cif_id} failed : num_nbr is smaller than max_num_nbr. please make radius larger"
         )
         return False
 
-    if len(uni_idx) > max_num_atoms:
-        logger.info(
-            f"{cif_id} failed : The number of topologically unique atoms is larget than max_num_atoms ({max_num_atoms})"
+    if len(uni_idx) > max_num_unique_atoms:
+        logger.error(
+            f"{cif_id} failed : The number of topologically unique atoms is larget than `max_num_unique_atoms` ({max_num_unique_atoms})"
         )
         return False
 
@@ -390,7 +394,7 @@ def make_prepared_data(
     atoms_eg = _make_supercell(atoms, cutoff=min_length)
     for l in atoms_eg.cell.cellpar()[:3]:
         if l > max_length:
-            logger.info(f"{cif_id} failed : supercell have more than max_length")
+            logger.error(f"{cif_id} failed : supercell have more than max_length")
             return False
 
     # 3. calculate energy grid
@@ -427,7 +431,8 @@ def prepare_data(root_cifs, root_dataset, downstream, **kwargs):
         - test_fraction : (float) fraction for test dataset. train_fraction + test_fraction must be smaller than 1 (default : 0.1)
 
         - get_primitive (bool) : If True, use primitive cell in graph embedding
-        - max_num_atoms (int): max number atoms in primitive cell
+        - max_num_unique_atoms (int): max number unique atoms in primitive cells (default: 300)
+        - max_num_supercell_atoms (int or None): max number atoms in super cell atoms (default: None)
         - max_length (float) : maximum length of supercell
         - min_length (float) : minimum length of supercell
         - max_num_nbr (int) : maximum number of neighbors when calculating graph

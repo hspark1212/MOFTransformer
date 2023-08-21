@@ -1,5 +1,8 @@
 # Update
 
+## Version 2.1.3
+- Add "max_supercell_atoms" in config
+
 ## Version 2.1.2
 - Check GRIDAY is vailed or not when you run `install_griday`
 - `torchmetrics < 1.0.0` in requirements
