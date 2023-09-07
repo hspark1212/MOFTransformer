@@ -229,7 +229,6 @@ def main(_config):
     config = get_valid_config(config)  # valid config
     model = Module(config)
     dm = Datamodule(config)
-    dm.setup()
     model.eval()
 
     if _IS_INTERACTIVE:
@@ -258,6 +257,13 @@ def main(_config):
         split = ['train', 'val', 'test']
     elif isinstance(split, str):
         split = re.split(r",\s?", split)
+
+    if split == ['test']:
+        dm.setup('test')
+    elif 'test' not in split:
+        dm.setup('fit')
+    else:
+        dm.setup()
 
     # save_dir
     save_dir = config.get('save_dir', None)
