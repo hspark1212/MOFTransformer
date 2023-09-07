@@ -2,10 +2,10 @@
 
 <p align="center">
  <a href="https://hspark1212.github.io/MOFTransformer/">
-     <img alt="Docs" src="https://img.shields.io/badge/Docs-v2.1.3-brightgreen.svg?style=plastic">
+     <img alt="Docs" src="https://img.shields.io/badge/Docs-v2.1.4-brightgreen.svg?style=plastic">
  </a>
   <a href="https://pypi.org/project/moftransformer/">
-     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v2.1.3-blue.svg?style=plastic&logo=PyPI">
+     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v2.1.4-blue.svg?style=plastic&logo=PyPI">
  </a>
   <a href="https://doi.org/10.6084/m9.figshare.21155506.v2">
      <img alt="Figshare" src="https://img.shields.io/badge/Figshare-v2-blue.svg?style=plastic&logo=figshare">
@@ -54,11 +54,29 @@ $ moftransformer download qmof
 ```
 
 ## [Getting Started](https://hspark1212.github.io/MOFTransformer/tutorial.html)
-1. At first, you download dataset of hMOFs (20,000 MOFs) as an example.
+1. Install `GRIDAY` to calculate energy-grids from cif files
 ```
-$ moftransformer download hmof
+$ moftransformer install-griday
 ```
-2. Fine-tune the pretrained MOFTransformer.
+2. Run prepare-data .
+```python
+from moftransformer.examples import example_path
+from moftransformer.utils import prepare_data
+
+# Get example path
+root_cifs = example_path['root_cif']
+root_dataset = example_path['root_dataset']
+downstream = example_path['downstream']
+
+train_fraction = 0.8  # default value
+test_fraction = 0.1   # default value
+
+# Run prepare data
+prepare_data(root_cifs, root_dataset, downstream=downstream, 
+             train_fraction=train_fraction, test_fraction=test_fraction)
+```
+
+3. Fine-tune the pretrained MOFTransformer.
 ```python
 import moftransformer
 from moftransformer.examples import example_path
@@ -81,7 +99,7 @@ moftransformer.run(root_dataset, downstream, log_dir=log_dir,
                    mean=mean, std=std)
 ```
 
-3. Test fine-tuned model
+4. Test fine-tuned model
 ```python
 from pathlib import Path
 import moftransformer
@@ -111,7 +129,7 @@ moftransformer.test(root_dataset, load_path, downstream=downstream,
                    save_dir=save_dir, mean=mean, std=std)
 ```
 
-4. predict from fine-tuned model
+5. predict from fine-tuned model
 ```python
 from pathlib import Path
 import moftransformer
@@ -138,17 +156,18 @@ moftransformer.predict(
 )
 ```
 
-5. Visualize analysis of feature importance for the fine-tuned model.
+6. Visualize analysis of feature importance for the fine-tuned model. (You should download or train `fine-tuned` model before visualization)
+
 ```python
-%matplotlib widget
-from visualize import PatchVisualizer
+from moftransformer.visualize import PatchVisualizer
+from moftransformer.examples import visualize_example_path
 
 model_path = "examples/finetuned_bandgap.ckpt" # or 'examples/finetuned_h2_uptake.ckpt'
-data_path = 'examples/visualize/dataset/'
+data_path = visualize_example_path
 cifname = 'MIBQAR01_FSR'
 
 vis = PatchVisualizer.from_cifname(cifname, model_path, data_path)
-vis.draw_graph() # or vis.draw_grid()
+vis.draw_graph()
 ```
 
 ## [Architecture](https://hspark1212.github.io/MOFTransformer/introduction.html)

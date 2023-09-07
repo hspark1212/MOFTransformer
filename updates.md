@@ -1,5 +1,9 @@
 # Update
 
+## Version 2.1.4
+- Modify `README.md`
+- Modify the setup of datamodules in the `predict` function to only proceed with the corresponding split
+
 ## Version 2.1.3
 - Add "max_supercell_atoms" in config
 
