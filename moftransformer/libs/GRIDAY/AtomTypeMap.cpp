@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <ifstream>
 #include <sstream>
 #include <iomanip>
 
@@ -13,7 +14,7 @@ AtomTypeMap::AtomTypeMap()
 void
 AtomTypeMap::read(std::string filename)
     {
-    std::fstream file {filename};
+    std::ifstream file {filename};
 
     if (not file)
         {
