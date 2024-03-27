@@ -1,9 +1,9 @@
-# MOFTransformer version 2.1.2
+# MOFTransformer version 2.1.5
 wget
 torch<2.0.0
 pytorch-lightning==1.7.0 # pytorch-lightning>=1.7.0
 torchmetrics<1.0.0, >=0.6.0
-transformers>=4.12.5
+transformers<4.39.0, >=4.12.5
 timm>=0.4.12
 sacred>=0.8.2
 einops>=0.4.1
