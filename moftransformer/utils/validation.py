@@ -2,12 +2,19 @@
 import sys
 import warnings
 import pytorch_lightning as pl
-from moftransformer.database import DEFAULT_PMTRANSFORMER_PATH, DEFAULT_MOFTRANSFORMER_PATH
+from moftransformer.database import (
+    DEFAULT_PMTRANSFORMER_PATH,
+    DEFAULT_MOFTRANSFORMER_PATH,
+)
 
-if pl.__version__ >= '2.0.0':
-    from pytorch_lightning.trainer.connectors.accelerator_connector import _AcceleratorConnector as AC
+if pl.__version__ >= "2.0.0":
+    from pytorch_lightning.trainer.connectors.accelerator_connector import (
+        _AcceleratorConnector as AC,
+    )
 else:
-    from pytorch_lightning.trainer.connectors.accelerator_connector import AcceleratorConnector as AC
+    from pytorch_lightning.trainer.connectors.accelerator_connector import (
+        AcceleratorConnector as AC,
+    )
 
 
 _IS_INTERACTIVE = hasattr(sys, "ps1")
@@ -49,13 +56,13 @@ def _loss_names(d):
 
 
 def _set_load_path(path):
-    if path == 'pmtransformer':
+    if path == "pmtransformer":
         return DEFAULT_PMTRANSFORMER_PATH
-    if path == 'moftransformer':
+    if path == "moftransformer":
         return DEFAULT_MOFTRANSFORMER_PATH
     elif not path:
         return ""
-    elif str(path)[-4:] == 'ckpt':
+    elif str(path)[-4:] == "ckpt":
         return path
     else:
         raise ConfigurationError(
@@ -80,7 +87,7 @@ def get_num_devices(_config):
 def _get_auto_device(_config):
     accelerator = AC(accelerator=_config["accelerator"]).accelerator
     devices = accelerator.auto_device_count()
-    
+
     return devices
 
 
@@ -110,7 +117,7 @@ def _check_valid_num_gpus(_config):
             f"Adjusted number of devices : {devices} to 1. "
             "If you want to use multi-devices, make *.py file and run."
         )
-    
+
     return devices
 
 

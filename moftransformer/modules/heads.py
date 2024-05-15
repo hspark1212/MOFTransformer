@@ -90,9 +90,9 @@ class RegressionHead(nn.Module):
     head for Regression
     """
 
-    def __init__(self, hid_dim):
+    def __init__(self, hid_dim, n_targets=1):
         super().__init__()
-        self.fc = nn.Linear(hid_dim, 1)
+        self.fc = nn.Linear(hid_dim, n_targets)
 
     def forward(self, x):
         x = self.fc(x)

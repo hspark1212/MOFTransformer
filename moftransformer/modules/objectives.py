@@ -19,11 +19,13 @@ def init_weights(module):
 def compute_regression(pl_module, batch, normalizer):
     infer = pl_module.infer(batch)
 
-    logits = pl_module.regression_head(infer["cls_feats"]).squeeze(-1)  # [B]
-    labels = torch.FloatTensor(batch["target"]).to(logits.device)  # [B]
-    assert len(labels.shape) == 1
+    logits = pl_module.regression_head(infer["cls_feats"])  # [B, n_targets]
+    labels = torch.FloatTensor(batch["target"]).to(
+        logits.device
+    )  # [B] or [B, n_targets]
 
     # normalize encode if config["mean"] and config["std], else pass
+    logits = logits.squeeze(-1)
     labels = normalizer.encode(labels)
     loss = F.mse_loss(logits, labels)
 

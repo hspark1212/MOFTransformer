@@ -207,16 +207,19 @@ class Normalizer(object):
     normalize for regression
     """
 
-    def __init__(self, mean, std):
+    def __init__(self, mean, std, device):
         if mean and std:
+            if isinstance(mean, list):
+                mean = torch.tensor(mean).to(device)
+            if isinstance(std, list):
+                std = torch.tensor(std).to(device)
+            self.mean = mean
+            self.std = std
             self._norm_func = lambda tensor: (tensor - mean) / std
             self._denorm_func = lambda tensor: tensor * std + mean
         else:
             self._norm_func = lambda tensor: tensor
             self._denorm_func = lambda tensor: tensor
-
-        self.mean = mean
-        self.std = std
 
     def encode(self, tensor):
         return self._norm_func(tensor)
