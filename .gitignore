@@ -43,6 +43,7 @@ data/
 test/
 tmp/
 embedding
+database/
 
 # baseline_model
 baseline_model/*/*.csv
