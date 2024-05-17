@@ -46,6 +46,28 @@ moftransformer.run(root_dataset, downstream, log_dir=log_dir,
                    mean=mean, std=std)
 ```
 
+### Example for multi-task learning:
+```python
+import moftransformer
+from moftransformer.examples import example_path
+
+# data root and downstream from example
+root_dataset = example_path['root_dataset']
+downstream = example_path['downstream']
+log_dir = './logs/'
+# load_path = "pmtransformer" (default)
+
+# kwargs (optional)
+max_epochs = 10
+batch_size = 8
+mean = [0, 1, 2]
+std = [1, 2, 3]
+n_targets = 3
+
+moftransformer.run(root_dataset, downstream, log_dir=log_dir,                   
+                   max_epochs=max_epochs, batch_size=batch_size,
+                   mean=mean, std=std, n_targets=n_targets)
+```
 After training, the trained model, logs and hyperparameters will be saved at `log_dir`.  
 Then you look over the results with tensorboard
 

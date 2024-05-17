@@ -6,6 +6,7 @@ from moftransformer.utils.validation import _set_load_path, _loss_names
 
 ex = Experiment("pretrained_mof", save_git_info=False)
 
+
 @ex.config
 def config():
     """
@@ -23,7 +24,7 @@ def config():
     loss_names = _loss_names({"regression": 1})
 
     # graph seeting
-    #max_supercell_atoms = None  # number of maximum atoms in supercell atoms
+    # max_supercell_atoms = None  # number of maximum atoms in supercell atoms
     atom_fea_len = 64
     nbr_fea_len = 64
     max_graph_len = 300  # number of maximum nodes in graph
@@ -46,7 +47,8 @@ def config():
 
     # downstream
     downstream = ""
-    n_classes = 0
+    n_targets = 1  # for regression
+    n_classes = 0  # for classification
 
     # Optimizer Setting
     optim_type = "adamw"  # adamw, adam, sgd (momentum=0.9)
@@ -75,7 +77,7 @@ def config():
     devices = "auto"
     num_nodes = 1
 
-    load_path = _set_load_path('pmtransformer')
+    load_path = _set_load_path("pmtransformer")
 
     num_workers = 16  # the number of cpu's core
     precision = 16

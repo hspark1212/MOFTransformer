@@ -261,7 +261,7 @@ def main(_config):
 
     if _IS_INTERACTIVE:
         strategy = None
-    elif pl.__version__ >= '2.0.0':
+    elif pl.__version__ >= "2.0.0":
         strategy = "ddp_find_unused_parameters_true"
     else:
         strategy = "ddp"
@@ -287,9 +287,10 @@ def main(_config):
 
     if not _config["test_only"]:
         trainer.fit(model, datamodule=dm, ckpt_path=_config["resume_from"])
-        log_dir = Path(logger.log_dir)/'checkpoints'
-        if best_model:= next(log_dir.glob('epoch=*.ckpt')):
-            shutil.copy(best_model, log_dir/'best.ckpt')
-            
+        trainer.test(model, datamodule=dm, ckpt_path="best")
+        log_dir = Path(logger.log_dir) / "checkpoints"
+        if best_model := next(log_dir.glob("epoch=*.ckpt")):
+            shutil.copy(best_model, log_dir / "best.ckpt")
+
     else:
         trainer.test(model, datamodule=dm)
