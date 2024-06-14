@@ -1,4 +1,4 @@
-# MOFTransformer version 2.0.0
+# MOFTransformer version 2.2.0
 import torch.nn as nn
 
 from transformers.models.bert.modeling_bert import (

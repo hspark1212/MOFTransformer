@@ -1,4 +1,4 @@
-# MOFTransformer version 2.1.3
+# MOFTransformer version 2.2.0
 import os
 from sacred import Experiment
 from moftransformer import __root_dir__

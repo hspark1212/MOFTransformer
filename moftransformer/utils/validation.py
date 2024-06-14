@@ -1,4 +1,4 @@
-# MOFTransformer version 2.1.1
+# MOFTransformer version 2.2.0
 import sys
 import warnings
 import pytorch_lightning as pl

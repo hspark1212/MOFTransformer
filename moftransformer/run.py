@@ -1,4 +1,4 @@
-# MOFTransformer version 2.1.0
+# MOFTransformer version 2.2.0
 import sys
 import os
 import copy
