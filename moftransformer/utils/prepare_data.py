@@ -1,3 +1,4 @@
+# Version 2.2.0
 import os
 import math
 import logging
@@ -36,7 +37,7 @@ def get_logger(filename):
     formatter = logging.Formatter(
         fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    
+
     file_handler = logging.FileHandler(filename)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -290,7 +291,9 @@ def _split_dataset(root_dataset: Path, **kwargs):
 def _split_json(root_cifs: Path, root_dataset: Path, downstream: str):
     with open(str(root_cifs / f"raw_{downstream}.json")) as f:
         src = json.load(f)
-        src = {i.replace(".cif", ""):v for i, v in src.items()}  # if *.cif in JSON files
+        src = {
+            i.replace(".cif", ""): v for i, v in src.items()
+        }  # if *.cif in JSON files
 
     for split in ["train", "test", "val"]:
         cif_folder = root_dataset / split
@@ -368,7 +371,6 @@ def make_prepared_data(
 
     # 1. get crystal graph
     atoms = _make_supercell(atoms, cutoff=8)  # radius = 8
-
     if max_num_atoms and len(atoms) > max_num_atoms:
         logger.error(
             f"{cif_id} failed : number of atoms are larger than `max_num_atoms` ({max_num_atoms})"

@@ -93,7 +93,7 @@ class Module(LightningModule):
             print(f"load model : {config['load_path']}")
 
         if self.hparams.config["loss_names"]["regression"] > 0:
-            self.regression_head = heads.RegressionHead(hid_dim)
+            self.regression_head = heads.RegressionHead(hid_dim, config["n_targets"])
             self.regression_head.apply(objectives.init_weights)
             # normalization
             self.mean = config["mean"]
@@ -263,7 +263,7 @@ class Module(LightningModule):
 
         # regression
         if "regression" in self.current_tasks:
-            normalizer = Normalizer(self.mean, self.std)
+            normalizer = Normalizer(self.mean, self.std, self.device)
             ret.update(objectives.compute_regression(self, batch, normalizer))
 
         # classification
@@ -271,7 +271,6 @@ class Module(LightningModule):
             ret.update(objectives.compute_classification(self, batch))
         return ret
 
-    
     def on_train_start(self):
         module_utils.set_task(self)
         self.write_log = True
@@ -294,16 +293,18 @@ class Module(LightningModule):
     def on_validation_epoch_end(self) -> None:
         module_utils.epoch_wrapup(self)
 
-    def on_test_start(self,):
+    def on_test_start(
+        self,
+    ):
         module_utils.set_task(self)
-    
+
     def test_step(self, batch, batch_idx):
         output = self(batch)
         output = {
             k: (v.cpu() if torch.is_tensor(v) else v) for k, v in output.items()
         }  # update cpu for memory
 
-        if 'regression_logits' in output.keys():
+        if "regression_logits" in output.keys():
             self.test_logits += output["regression_logits"].tolist()
             self.test_labels += output["regression_labels"].tolist()
         return output
@@ -313,55 +314,63 @@ class Module(LightningModule):
 
         # calculate r2 score when regression
         if len(self.test_logits) > 1:
-            r2 = r2_score(
-                np.array(self.test_labels), np.array(self.test_logits)
-            )
+            r2 = r2_score(np.array(self.test_labels), np.array(self.test_logits))
             self.log(f"test/r2_score", r2, sync_dist=True)
             self.test_labels.clear()
             self.test_logits.clear()
 
     def configure_optimizers(self):
         return module_utils.set_schedule(self)
-    
+
     def on_predict_start(self):
         self.write_log = False
         module_utils.set_task(self)
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         output = self(batch)
-        
-        if 'classification_logits' in output:
-            if self.hparams.config['n_classes'] == 2:
-                output['classification_logits_index'] = torch.round(output['classification_logits']).to(torch.int)
+
+        if "classification_logits" in output:
+            if self.hparams.config["n_classes"] == 2:
+                output["classification_logits_index"] = torch.round(
+                    output["classification_logits"]
+                ).to(torch.int)
             else:
                 softmax = torch.nn.Softmax(dim=1)
-                output['classification_logits'] = softmax(output['classification_logits'])
-                output['classification_logits_index'] = torch.argmax(output['classification_logits'], dim=1)
+                output["classification_logits"] = softmax(
+                    output["classification_logits"]
+                )
+                output["classification_logits_index"] = torch.argmax(
+                    output["classification_logits"], dim=1
+                )
 
         output = {
             k: (v.cpu().tolist() if torch.is_tensor(v) else v)
             for k, v in output.items()
-            if ('logits' in k) or ('labels' in k) or 'cif_id' == k
+            if ("logits" in k) or ("labels" in k) or "cif_id" == k
         }
 
         return output
-    
+
     def on_predict_epoch_end(self, *args):
         self.test_labels.clear()
         self.test_logits.clear()
 
-    def on_predict_end(self, ):
+    def on_predict_end(
+        self,
+    ):
         self.write_log = True
 
     def lr_scheduler_step(self, scheduler, *args):
         if len(args) == 2:
             optimizer_idx, metric = args
         elif len(args) == 1:
-            metric, = args
+            (metric,) = args
         else:
-            raise ValueError('lr_scheduler_step must have metric and optimizer_idx(optional)')
+            raise ValueError(
+                "lr_scheduler_step must have metric and optimizer_idx(optional)"
+            )
 
-        if pl.__version__ >= '2.0.0':
+        if pl.__version__ >= "2.0.0":
             scheduler.step(epoch=self.current_epoch)
         else:
             scheduler.step()

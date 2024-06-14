@@ -1,5 +1,9 @@
 # Update
 
+## Version 2.2.0
+- MOFTransformer can now proceed with multi-task learning. 
+- Add `n_targets` in config (multi-task learning)
+
 ## Version 2.1.5
 - `transformer < 4.39.0` in requirements
 
