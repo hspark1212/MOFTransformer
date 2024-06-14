@@ -2,10 +2,10 @@
 
 <p align="center">
  <a href="https://hspark1212.github.io/MOFTransformer/">
-     <img alt="Docs" src="https://img.shields.io/badge/Docs-v2.1.4-brightgreen.svg?style=plastic">
+     <img alt="Docs" src="https://img.shields.io/badge/Docs-v2.1.5-brightgreen.svg?style=plastic">
  </a>
   <a href="https://pypi.org/project/moftransformer/">
-     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v2.1.4-blue.svg?style=plastic&logo=PyPI">
+     <img alt="PypI" src="https://img.shields.io/badge/PyPI-v2.1.5-blue.svg?style=plastic&logo=PyPI">
  </a>
   <a href="https://doi.org/10.6084/m9.figshare.21155506.v2">
      <img alt="Figshare" src="https://img.shields.io/badge/Figshare-v2-blue.svg?style=plastic&logo=figshare">
@@ -240,7 +240,7 @@ Comparison of mean absolute error (MAE) values for various baseline models, scra
 if you want to cite PMTransformer or MOFTransformer, please refer to the following paper:
 1. A multi-modal pre-training transformer for universal transfer learning in metal–organic frameworks, Nature Machine Intelligence, 5, 2023. [link](https://www.nature.com/articles/s42256-023-00628-2)
 
-2. PMTransformer: Universal Transfer Learning and Cross-material Few-shot Learning in Porous Materials, (submitted). [link](https://chemrxiv.org/engage/chemrxiv/article-details/644a0651df78ec50157390c9)
+2. Enhancing Structure–Property Relationships in Porous Materials through Transfer Learning and Cross-Material Few-Shot Learning, ACS Appl. Mater. Interfaces 2023, 15, 48, 56375–56385. [link](https://doi.org/10.1021/acsami.3c10323)
 
 ## Contributing 🙌
 

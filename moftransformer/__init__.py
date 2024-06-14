@@ -1,7 +1,7 @@
-# MOFTransformer version 2.1.4
+# MOFTransformer version 2.1.5
 import os
 
-__version__ = "2.1.4"
+__version__ = "2.1.5"
 __root_dir__ = os.path.dirname(__file__)
 
 from moftransformer import visualize, utils, modules, libs, gadgets, datamodules, assets

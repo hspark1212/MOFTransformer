@@ -1,5 +1,8 @@
 # Update
 
+## Version 2.1.5
+- `transformer < 4.39.0` in requirements
+
 ## Version 2.1.4
 - Modify `README.md`
 - Modify the setup of datamodules in the `predict` function to only proceed with the corresponding split
