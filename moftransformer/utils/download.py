@@ -16,6 +16,11 @@ class DownloadError(Exception):
     pass
 
 
+def _figshare_download_url(file_id: int) -> str:
+    """Direct Figshare download host (avoids WAF on figshare.com/ndownloader)."""
+    return f"https://ndownloader.figshare.com/files/{file_id}"
+
+
 def _remove_tmp_file(direc: Path):
     tmp_list = direc.parent.glob("*.tmp")
     for tmp in tmp_list:
@@ -24,19 +29,33 @@ def _remove_tmp_file(direc: Path):
 
 
 def _download_file(link, direc, name="target"):
-    if direc.exists():
+    direc = Path(direc)
+    if direc.exists() and direc.stat().st_size > 0:
         print(f"{name} already exists.")
         return
+    if direc.exists() and direc.stat().st_size == 0:
+        os.remove(direc)
     try:
         print(f"\n====Download {name} =============================================\n")
         filename = wget.download(link, out=str(direc))
     except KeyboardInterrupt:
         _remove_tmp_file(direc)
+        if direc.exists():
+            os.remove(direc)
         raise
     except Exception as e:
         _remove_tmp_file(direc)
+        if direc.exists():
+            os.remove(direc)
         raise DownloadError(e)
     else:
+        if not Path(filename).exists() or Path(filename).stat().st_size == 0:
+            if direc.exists():
+                os.remove(direc)
+            raise DownloadError(
+                f"Downloaded file is empty. The host may be blocking automated "
+                f"downloads (try URL: {link})."
+            )
         print(
             f"\n====Successfully download : {filename}=======================================\n"
         )
@@ -56,12 +75,12 @@ def download_pretrain_model(
         direc.mkdir(parents=True, exist_ok=True)
 
     # download pmtransformer
-    link = "https://figshare.com/ndownloader/files/40298992"
+    link = _figshare_download_url(40298992)
     name = "pmtransformer"
     _download_file(link, direc / 'pmtransformer.ckpt', name)
 
     # download moftransformer
-    link ="https://figshare.com/ndownloader/files/40298269"
+    link = _figshare_download_url(40298269)
     name = 'moftransformer'
     _download_file(link, direc / 'moftransformer.ckpt', name)
 
@@ -82,12 +101,12 @@ def download_finetuned_model(
             raise ValueError(f"direc must be path for directory, not {direc}")
 
     # download band-gap model
-    link = "https://figshare.com/ndownloader/files/37621520"
+    link = _figshare_download_url(37621520)
     name = "finetuned_bandgap"
     _download_file(link, direc / "finetuned_bandgap.ckpt", name)
 
     # download uptake model
-    link = "https://figshare.com/ndownloader/files/37622693"
+    link = _figshare_download_url(37622693)
     name = "finetuned_h2_uptake"
     _download_file(link, direc / "finetuned_h2_uptake.ckpt", name)
 
@@ -107,7 +126,7 @@ def download_coremof(direc=None, remove_tarfile=False):
         direc.mkdir(parents=True, exist_ok=True)
     direc = direc / "coremof.tar.gz"
 
-    link = "https://figshare.com/ndownloader/files/37511746"
+    link = _figshare_download_url(37511746)
     name = "coremof_database"
     _download_file(link, direc, name)
 
@@ -138,7 +157,7 @@ def download_qmof(direc=None, remove_tarfile=False):
         direc.mkdir(parents=True, exist_ok=True)
     direc = direc / "qmof.tar.gz"
 
-    link = "https://figshare.com/ndownloader/files/37511758"
+    link = _figshare_download_url(37511758)
     name = "qmof_database"
     _download_file(link, direc, name)
 
@@ -169,7 +188,7 @@ def download_hmof(direc=None, remove_tarfile=False):
         direc.mkdir(parents=True, exist_ok=True)
     direc = direc / "hmof.tar.gz"
 
-    link = "https://figshare.com/ndownloader/files/37511755"
+    link = _figshare_download_url(37511755)
     name = "hmof_database"
     _download_file(link, direc, name)
 

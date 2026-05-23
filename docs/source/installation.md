@@ -61,7 +61,7 @@ $ moftransformer download coremof
 $ moftransformer download qmof
 
 # download fine-tuned model (optional)
-$ mofransformer download finetuned_model
+$ moftransformer download finetuned_model
 ```
 
 ### Download using python

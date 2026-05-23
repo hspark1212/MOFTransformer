@@ -24,6 +24,9 @@
 
  NOTE: From version 2.0.0, the default pre-training model has been changed from `MOFTransformer` to `PMTransformer`, which was pre-trained with a larger dataset, containing other porous materials as well as MOFs. The `PMTransformer` outperforms the `MOFTransformer` in predicting various properties of porous materials.
 
+## Release Note
+Version: `2.2.0`
+Now, MOFTransformer support multi-task learning (see [multi-task learning](https://hspark1212.github.io/MOFTransformer/getting_started/training.html#example-for-multi-task-learning))
 
 ## [Install](https://hspark1212.github.io/MOFTransformer/installation.html)
 
