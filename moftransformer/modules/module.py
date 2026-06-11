@@ -331,9 +331,11 @@ class Module(LightningModule):
 
         if "classification_logits" in output:
             if self.hparams.config["n_classes"] == 2:
-                output["classification_logits_index"] = torch.round(
-                    output["classification_logits"]
-                ).to(torch.int)
+                probs = torch.sigmoid(output["classification_logits"])
+                output["classification_logits"] = probs
+                output["classification_logits_index"] = (probs >= 0.5).to(
+                    torch.int
+                )
             else:
                 softmax = torch.nn.Softmax(dim=1)
                 output["classification_logits"] = softmax(
