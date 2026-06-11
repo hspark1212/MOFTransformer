@@ -17,10 +17,8 @@ class Accuracy(Metric):
         if len(logits.shape) > 1:
             preds = logits.argmax(dim=-1)
         else:
-            # binary accuracy
-            logits[logits >= 0.5] = 1
-            logits[logits < 0.5] = 0
-            preds = logits
+            # binary accuracy for BCE-with-logits (sigmoid(x) >= 0.5 iff x >= 0)
+            preds = (logits >= 0).long()
 
         preds = preds[target != -100]
         target = target[target != -100]
